@@ -26,8 +26,8 @@ object Example extends App {
   val typify = new Typify[String, Map[String, Any]]
   import typify.parsers._
 
-  implicit lazy val sp = typify.stringParser(p => s"${p.key}: ${p.error}")
-  implicit lazy val ip = typify.intParser(p => s"${p.key} cannot be parsed as int")
+  implicit lazy val sp = typify.parseBasic[String](p => s"${p.key}: ${p.error}")
+  implicit lazy val ip = typify.parseBasic[Int](p => s"${p.key} cannot be parsed as int")
 
 
   implicit lazy val vEmail = typify.validate[String, String @@ Email]((e: String) =>

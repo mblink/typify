@@ -58,8 +58,8 @@ meaningful and so they must be extended to create FieldParsers in the following 
 ```tut
   import typify.parsers._
 
-  implicit lazy val sp = typify.stringParser(p => s"${p.key}: ${p.error}")
-  implicit lazy val ip = typify.intParser(p => s"${p.key} cannot be parsed as int")
+  implicit lazy val sp = typify.parseBasic[String](p => s"${p.key}: ${p.error}")
+  implicit lazy val ip = typify.parseBasic[Int](p => s"${p.key} cannot be parsed as int")
 ```
 
 With these in scope we can create our FieldParsers. First let's define meaninful types for our fields.

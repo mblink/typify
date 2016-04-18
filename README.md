@@ -49,7 +49,7 @@ type we will parse from.
 
 ```scala
 scala>   val typify = new Typify[String, Map[String, Any]]
-typify: typify.Typify[String,Map[String,Any]] = typify.Typify@34661042
+typify: typify.Typify[String,Map[String,Any]] = typify.Typify@32b82729
 ```
 
 We can now create some BasicParsers that will be leveraged to validate. Note that these are insufficient to do
@@ -60,10 +60,10 @@ meaningful and so they must be extended to create FieldParsers in the following 
 scala>   import typify.parsers._
 import typify.parsers._
 
-scala>   implicit lazy val sp = typify.stringParser(p => s"${p.key}: ${p.error}")
+scala>   implicit lazy val sp = typify.parseBasic[String](p => s"${p.key}: ${p.error}")
 sp: typify.BasicParser[String,Map[String,Any],String] = <lazy>
 
-scala>   implicit lazy val ip = typify.intParser(p => s"${p.key} cannot be parsed as int")
+scala>   implicit lazy val ip = typify.parseBasic[Int](p => s"${p.key} cannot be parsed as int")
 ip: typify.BasicParser[String,Map[String,Any],Int] = <lazy>
 ```
 

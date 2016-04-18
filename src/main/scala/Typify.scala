@@ -52,20 +52,12 @@ object parsedinstances {
 
 class Typify[L, P: Parsed] {
 
-  def stringParser(err: ParseError => L)(implicit cp: CanParse[String, P]):
-  BasicParser[L, P, String] =
-    new BasicParser[L, P, String] {
-      def apply(k: String, p: P)(implicit cp: CanParse[String, P]) =
-        implicitly[Parsed[P]].as[String](p, k).leftMap(_.map(err))
+  def parseBasic[T: ClassTag](err: ParseError => L)(implicit cp: CanParse[T, P]):
+  BasicParser[L, P, T] =
+    new BasicParser[L, P, T] {
+      def apply(k: String, p: P)(implicit cp: CanParse[T, P]) =
+        implicitly[Parsed[P]].as[T](p, k).leftMap(_.map(err))
     }
-
-  def intParser(err: ParseError => L)(implicit cp: CanParse[String, P]):
-  BasicParser[L, P, Int] =
-    new BasicParser[L, P, Int] {
-      def apply(k: String, p: P)(implicit cp: CanParse[Int, P]) =
-        implicitly[Parsed[P]].as[Int](p, k).leftMap(_.map(err))
-    }
-
 
   object parsers {
 
