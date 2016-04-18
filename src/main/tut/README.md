@@ -121,3 +121,22 @@ compiler error.
 ```tut:fail
   Typify[String, Map[String, Any], UnsafePerson](Map("email" -> "foo@bar", "age" -> 22))
 ```
+
+###TODO
+
+* Validate params passed to a partial parse
+* Remove scalaz dependency?
+
+####Credits
+
+This was largely done in one weekend marathon session, including a first deep dive into Shapeless. That means lots of
+this was shamelessly modeled after (read: copy/paste/adjusted from) several excellent examples out there. Thanks to
+Miles Sabin for the shapeless library, Travis Brown for circe and his writings on meta.plasm.us, and Alexandre
+Archembault for argonaut-shapeless.
+
+Here are some particularly excellent resources which were essential to helping me brute force my way through:
+
+* [argonaut-shapeless HListProductDecodeJson](https://github.com/alexarchambault/argonaut-shapeless/blob/master/core/src/main/scala/argonaut/derive/MkDecodeJson.scala)
+* [circe IncompleteDerivedDecoders](https://github.com/travisbrown/circe/blob/d437295f5fa225ece1c9d073c56c1462fa2225f1/generic/shared/src/main/scala/io/circe/generic/decoding/IncompleteDerivedDecoders.scala)
+* [meta.plasm.us Generic derivation of typeclass instances](https://meta.plasm.us/posts/2015/11/08/type-classes-and-generic-derivation/)
+* [meta.plasm.us Deriving incomplete typeclass instances](https://meta.plasm.us/posts/2015/06/21/deriving-incomplete-type-class-instances/)
