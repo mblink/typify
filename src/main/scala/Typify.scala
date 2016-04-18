@@ -7,12 +7,12 @@ import shapeless.record._
 import shapeless.syntax.DynamicRecordOps
 import shapeless.syntax.singleton._
 import shapeless.tag.@@
+import scala.reflect.ClassTag
 import scalaz.syntax.applicative._
-import scalaz.syntax.nel._
 import scalaz.syntax.std.boolean._
 import scalaz.syntax.std.option._
 import scalaz.syntax.validation._
-import scalaz.{\/, ValidationNel}
+import scalaz.ValidationNel
 
 trait CanParse[T, P]
 
@@ -20,7 +20,7 @@ case class ParseError(key: String, error: String)
 
 trait Parsed[A] {
 
-  def as[T](p: A, key: String): ValidationNel[ParseError, T]
+  def as[T: ClassTag](p: A, key: String): ValidationNel[ParseError, T]
 }
 
 trait Parser[L, P, A] {
@@ -41,9 +41,11 @@ object parsers {
 
   implicit object ParsedMap extends Parsed[Map[String, Any]] {
 
-    def as[T](p: Map[String, Any], key: String): ValidationNel[ParseError, T] =
-      \/.fromTryCatchNonFatal(p(key).asInstanceOf[T]).leftMap(_ => ParseError(key, "could not parse").wrapNel)
-        .validation
+    def as[T: ClassTag](p: Map[String, Any], key: String): ValidationNel[ParseError, T] =
+      p.get(key).flatMap(x => x match {
+        case y: T => Some(y)
+        case _ => None
+      }).toSuccessNel(ParseError(key, "could not parse"))
   }
 
   def stringParser[L, P: Parsed](err: ParseError => L)(implicit cp: CanParse[String, P]):

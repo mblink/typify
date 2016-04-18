@@ -87,13 +87,13 @@ Here we have said that a valid email is anything that contains an @ symbol, whil
 
 With this in place, we are now able to parse a Map[String, Any] into a Person instance and validate it along the way.
 
-```scala
+```tut
   Typify[String, Map[String, Any], Person](Map("email" -> "foo", "age" -> 17))
   Typify[String, Map[String, Any], Person](Map("email" -> "foo@bar"))
   Typify[String, Map[String, Any], Person](Map("age" -> 22))
   Typify[String, Map[String, Any], Person](Map("email" -> "foo@bar", "age" -> 22))
   Typify[String, Map[String, Any], Person](Map("email" -> 2, "age" -> "bar"))
-``
+```
 
 The call to Typify is type-parameterized in order from left to right on the failure type, the type we are parsing
 from, and the target type for a successful parse/validation.

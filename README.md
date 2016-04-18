@@ -95,12 +95,21 @@ Here we have said that a valid email is anything that contains an @ symbol, whil
 With this in place, we are now able to parse a Map[String, Any] into a Person instance and validate it along the way.
 
 ```scala
-  Typify[String, Map[String, Any], Person](Map("email" -> "foo", "age" -> 17))
-  Typify[String, Map[String, Any], Person](Map("email" -> "foo@bar"))
-  Typify[String, Map[String, Any], Person](Map("age" -> 22))
-  Typify[String, Map[String, Any], Person](Map("email" -> "foo@bar", "age" -> 22))
-  Typify[String, Map[String, Any], Person](Map("email" -> 2, "age" -> "bar"))
-``
+scala>   Typify[String, Map[String, Any], Person](Map("email" -> "foo", "age" -> 17))
+res2: scalaz.ValidationNel[String,Person] = Failure(NonEmpty[invalid email,too young])
+
+scala>   Typify[String, Map[String, Any], Person](Map("email" -> "foo@bar"))
+res3: scalaz.ValidationNel[String,Person] = Failure(NonEmpty[age cannot be parsed as int])
+
+scala>   Typify[String, Map[String, Any], Person](Map("age" -> 22))
+res4: scalaz.ValidationNel[String,Person] = Failure(NonEmpty[email: could not parse])
+
+scala>   Typify[String, Map[String, Any], Person](Map("email" -> "foo@bar", "age" -> 22))
+res5: scalaz.ValidationNel[String,Person] = Success(Person(foo@bar,22))
+
+scala>   Typify[String, Map[String, Any], Person](Map("email" -> 2, "age" -> "bar"))
+res6: scalaz.ValidationNel[String,Person] = Failure(NonEmpty[email: could not parse,age cannot be parsed as int])
+```
 
 The call to Typify is type-parameterized in order from left to right on the failure type, the type we are parsing
 from, and the target type for a successful parse/validation.
