@@ -40,6 +40,8 @@ trait BasicParser[F, P, A] {
 object parsedinstances {
   lazy implicit val cpms = new CanParse[String, Map[String, Any]] {}
   lazy implicit val cpmi = new CanParse[Int, Map[String, Any]] {}
+  lazy implicit val cpmos = new CanParse[Option[String], Map[String, Any]] {}
+  lazy implicit val cpmoi = new CanParse[Option[Int], Map[String, Any]] {}
 
   implicit object ParsedMap extends Parsed[Map[String, Any]] {
 
