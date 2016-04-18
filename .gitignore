@@ -4,3 +4,13 @@
 /project/project/
 /project/target/
 /target/
+jvm/logs/
+jvm/project/*-shim.sbt
+jvm/project/project/
+jvm/project/target/
+jvm/target/
+js/logs/
+js/project/*-shim.sbt
+js/project/project/
+js/project/target/
+js/target/

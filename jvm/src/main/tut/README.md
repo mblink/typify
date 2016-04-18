@@ -119,7 +119,7 @@ We cannot "forget" to define validations for any fields on our data types, as do
 compiler error.
 
 ```tut:fail
-  Typify[String, Map[String, Any], UnsafePerson](Map("email" -> "foo@bar", "age" -> 22))
+  typify[UnsafePerson](Map("email" -> "foo@bar", "age" -> 22))
 ```
 
 ###TODO

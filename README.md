@@ -49,7 +49,7 @@ type we will parse from.
 
 ```scala
 scala>   val typify = new Typify[String, Map[String, Any]]
-typify: typify.Typify[String,Map[String,Any]] = typify.Typify@32b82729
+typify: typify.Typify[String,Map[String,Any]] = typify.Typify@2d874090
 ```
 
 We can now create some BasicParsers that will be leveraged to validate. Note that these are insufficient to do
@@ -138,10 +138,10 @@ We cannot "forget" to define validations for any fields on our data types, as do
 compiler error.
 
 ```scala
-scala>   Typify[String, Map[String, Any], UnsafePerson](Map("email" -> "foo@bar", "age" -> 22))
-<console>:42: error: not found: value Typify
-         Typify[String, Map[String, Any], UnsafePerson](Map("email" -> "foo@bar", "age" -> 22))
-         ^
+scala>   typify[UnsafePerson](Map("email" -> "foo@bar", "age" -> 22))
+<console>:42: error: could not find implicit value for parameter parser: typify.Parser[String,Map[String,Any],UnsafePerson]
+         typify[UnsafePerson](Map("email" -> "foo@bar", "age" -> 22))
+                             ^
 ```
 
 ###TODO
