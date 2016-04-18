@@ -133,6 +133,3 @@ scala>   Typify[String, Map[String, Any], UnsafePerson](Map("email" -> "foo@bar"
          Typify[String, Map[String, Any], UnsafePerson](Map("email" -> "foo@bar", "age" -> 22))
                                                        ^
 ```
-
-As we build up more validated types, we will add less and less as we can re-use the types that we have already
-defined rules for, and get the validation for free.
