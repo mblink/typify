@@ -2,16 +2,31 @@
 
 Typify is a library for parsing and validating poorly-typed data into well-typed data.
 
-It leverages [scalaz](https://github.com/scalaz/scalaz) for accumulation of parsing/validation errors,
+The biggest distinction between this and others like it, is that Typify associates parsing and validation
+rules with the field types on your case classes, and makes it hard for you to use meaningless or primitive
+types. In fact, if you haven't added some meaningful types with explicitly defined validations to the
+fields of a case class you are validating, you are met with a compiler error.
+
+Here's a quick preview before going further in depth.
+
+```scala
+  case class Person(email: String @@ Email, age: Int @@ Age)
+  case class UnsafePerson(email: String, age: Int)
+  Typify[String, Map[String, Any], Person](Map("email" -> "foo@bar", "age" -> 22)) // Success(User)
+  Typify[String, Map[String, Any], UnsafePerson](Map("email" -> "foo@bar", "age" -> 22)) // compile error
+```
+
+Typify leverages [scalaz](https://github.com/scalaz/scalaz) for accumulation of parsing/validation errors,
 and [shapeless](https://github.com/milessabin/shapeless) for compile-time introspection and added type safety.
 
-The general philosophy behind typify is that parsing and validation should be done according to the target type of a
-parsed and validated value, and that attempts to parse or validate on poor types (those that do not have
-validations defined) should result in a compile time failure.
+The philosophy of the library is that parsing and validation should be done according to the target type of a
+parsed and validated value, and that the compiler should enforce that you only work with types which have
+validations defined.
 
-Some care was taken to maintain practical flexibility, namely the error type is defined at the call site, as well
-as the actual parsing mechanism via a simple typeclass. A parser for Map[String, Any] is included for example purposes,
-and sub-projects will be added shortly to add additional parsing backends which leverage other dependencies.
+Some care was taken to maintain practical flexibility, namely the type used for failures is defined
+at the call site, as well as the actual parsing mechanism via a simple typeclass.
+A parser for Map[String, Any] is included for example purposes, and sub-projects will be added
+shortly to add additional parsing backends which leverage other dependencies.
 
 Use requires a minimal amount of one-time setup and is extremely concise from that point on, as illustrated in the
 following example.
@@ -48,19 +63,10 @@ meaningful types for our data, we need to tag our primitives. Let's create some 
 that leverages them.
 
 ```scala
-scala>   trait Email {}
-defined trait Email
+  trait Email {}
+  trait Age {}
 
-scala>   trait Age {}
-defined trait Age
-
-scala>   case class Person(email: String @@ Email, age: Int @@ Age)
-defined class Person
-```
-
-```scala
-scala>   case class UnsafePerson(email: String, age: Int)
-defined class UnsafePerson
+  case class Person(email: String @@ Email, age: Int @@ Age)
 ```
 
 We now need a shapeless.LabelledGeneric in scope for our type, to enable compile time introspection
@@ -104,8 +110,8 @@ Note that with this approach, as we build up a collection of validation rules fo
 Let's try with a target type that uses primitives for its fields.
 
 ```scala
-scala>   case class UnsafePerson(email: String, age: Int)
-defined class UnsafePerson
+  case class UnsafePerson(email: String, age: Int)
+  implicit lazy val genUP = LabelledGeneric[UnsafePerson]
 ```
 
 We cannot "forget" to define validations for any fields on our data types, as doing so will result in a
@@ -113,7 +119,7 @@ compiler error.
 
 ```scala
 scala>   Typify[String, Map[String, Any], UnsafePerson](Map("email" -> "foo@bar", "age" -> 22))
-<console>:37: error: could not find implicit value for parameter parser: typify.Parser[String,Map[String,Any],UnsafePerson]
+<console>:38: error: could not find implicit value for parameter parser: typify.Parser[String,Map[String,Any],UnsafePerson]
          Typify[String, Map[String, Any], UnsafePerson](Map("email" -> "foo@bar", "age" -> 22))
                                                        ^
 ```
