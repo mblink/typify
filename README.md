@@ -19,32 +19,20 @@ following example.
 First import some requirements.
 
 ```scala
-scala> import typify.Typify
 import typify.Typify
-
-scala> import typify.parsers._
 import typify.parsers._
-
-scala> import scalaz.syntax.std.boolean._
 import scalaz.syntax.std.boolean._
-
-scala> import scalaz.syntax.std.option._
 import scalaz.syntax.std.option._
-
-scala> import shapeless.LabelledGeneric
 import shapeless.LabelledGeneric
-
-scala> import shapeless.tag
 import shapeless.tag
+import shapeless.tag.@@
 
-scala> import shapeless.tag.@@
-import shapeless.tag.$at$at
 ```
 
 With this in place, let's set up the base parsers for String and Int, fixed to our error type, in this case String.
 
 ```scala
-scala>   implicit lazy val sp = stringParser[String, Map[String, Any]](p => s"${p.key}: ${p.error}")
+     |   implicit lazy val sp = stringParser[String, Map[String, Any]](p => s"${p.key}: ${p.error}")
 sp: typify.BasicParser[String,Map[String,Any],String] = <lazy>
 
 scala>   implicit lazy val ip = intParser[String, Map[String, Any]](p => s"${p.key} cannot be parsed as int")

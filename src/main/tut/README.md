@@ -18,7 +18,7 @@ following example.
 
 First import some requirements.
 
-```tut
+```tut:silent
 import typify.Typify
 import typify.parsers._
 import scalaz.syntax.std.boolean._
