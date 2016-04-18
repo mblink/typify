@@ -49,7 +49,7 @@ type we will parse from.
 
 ```scala
 scala>   val typify = new Typify[String, Map[String, Any]]
-typify: typify.Typify[String,Map[String,Any]] = typify.Typify@4fbcb516
+typify: typify.Typify[String,Map[String,Any]] = typify.Typify@5b2ff176
 ```
 
 We can now create some BasicParsers that will be leveraged to validate. Note that these are insufficient to do
