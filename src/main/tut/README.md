@@ -98,7 +98,8 @@ With this in place, we are now able to parse a Map[String, Any] into a Person in
 The call to Typify is type-parameterized in order from left to right on the failure type, the type we are parsing
 from, and the target type for a successful parse/validation.
 
-Note that with this approach, as we build up a collection of validation rules for specific types, we will add
+Note that with this approach, as we build up a collection of validation rules for specific types, we will add them
+less and less often, and re-use simply by tagging fields with previously validated types.
 
 Let's try with a target type that uses primitives for its fields.
 
