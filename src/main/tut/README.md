@@ -12,8 +12,9 @@ Here's a quick preview before going further in depth.
 ```scala
   case class Person(email: String @@ Email, age: Int @@ Age)
   case class UnsafePerson(email: String, age: Int)
-  Typify[String, Map[String, Any], Person](Map("email" -> "foo@bar", "age" -> 22)) // Success(User)
-  Typify[String, Map[String, Any], UnsafePerson](Map("email" -> "foo@bar", "age" -> 22)) // compile error
+  typify[Person](Map("email" -> "foo@bar", "age" -> 22)) // Success(User)
+  typify[String @@ Email => Person](Map("age" -> 22)).map(_("foo@bar")) // Success(User)
+  typify[UnsafePerson](Map("email" -> "foo@bar", "age" -> 22)) // compile error
 ```
 
 Typify leverages [scalaz](https://github.com/scalaz/scalaz) for accumulation of parsing/validation errors,
@@ -34,30 +35,34 @@ following example.
 First import some requirements.
 
 ```tut:silent
+import typify.parsedinstances._
 import typify.Typify
-import typify.parsers._
 import scalaz.syntax.std.boolean._
 import scalaz.syntax.std.option._
 import shapeless.LabelledGeneric
 import shapeless.tag
 import shapeless.tag.@@
-
 ```
 
-With this in place, let's set up the base parsers for String and Int, fixed to our error type, in this case String.
+With this in place, let's create an instance of Typify, specifying the type we will use for failures, and the
+type we will parse from.
 
 ```tut
-  implicit lazy val sp = stringParser[String, Map[String, Any]](p => s"${p.key}: ${p.error}")
-  implicit lazy val ip = intParser[String, Map[String, Any]](p => s"${p.key} cannot be parsed as int")
+  val typify = new Typify[String, Map[String, Any]]
 ```
 
-These methods are provided by the typify.parsers._ import. While they are capable of parsing strings and ints from
-poorly typed structures, they are typed as BasicParsers and attempting to parse out values that use these primitive
-types will result in a compiler error.
+We can now create some BasicParsers that will be leveraged to validate. Note that these are insufficient to do
+real work, as they are meant only to handle primitive values. We want to enforce that our values are more
+meaningful and so they must be extended to create FieldParsers in the following steps.
 
-In order to associate validation rules with field types and enforce at compile time that we are using
-meaningful types for our data, we need to tag our primitives. Let's create some tags and define a User type
-that leverages them.
+```tut
+  import typify.parsers._
+
+  implicit lazy val sp = typify.stringParser(p => s"${p.key}: ${p.error}")
+  implicit lazy val ip = typify.intParser(p => s"${p.key} cannot be parsed as int")
+```
+
+With these in scope we can create our FieldParsers. First let's define meaninful types for our fields.
 
 ```tut:silent
   trait Email {}
@@ -66,37 +71,39 @@ that leverages them.
   case class Person(email: String @@ Email, age: Int @@ Age)
 ```
 
+And now for the FieldParsers
+
+```tut
+  implicit lazy val vEmail = typify.validate[String, String @@ Email]((e: String) =>
+    e.contains("@").option(tag[Email](e)).toSuccessNel("invalid email"))
+  implicit lazy val vAge = typify.validate[Int, Int @@ Age](a =>
+    (a > 18).option(tag[Age](a)).toSuccessNel("too young"))
+```
+
+Here we have said that a valid email is anything that contains an @ symbol, while a valid age is anything over 18.
+
 We now need a shapeless.LabelledGeneric in scope for our type, to enable compile time introspection
 
 ```tut
   implicit lazy val genP = LabelledGeneric[Person]
 ```
 
-And now we define some validation rules for the types we are using, in this case Email and Age respectively.
-Note that these are simply functions from the underlying primitive, to a ValidationNel of our chosen failure type
-or the tagged target type.
-
-```tut
-  implicit lazy val vEmail = Typify.validate[String, Map[String, Any], String, String @@ Email]((e: String) =>
-    e.contains("@").option(tag[Email](e)).toSuccessNel("invalid email"))
-  implicit lazy val vAge = Typify.validate[String, Map[String, Any], Int, Int @@ Age](a =>
-    (a > 18).option(tag[Age](a)).toSuccessNel("too young"))
-```
-
-Here we have said that a valid email is anything that contains an @ symbol, while a valid age is anything over 18.
 
 With this in place, we are now able to parse a Map[String, Any] into a Person instance and validate it along the way.
 
 ```tut
-  Typify[String, Map[String, Any], Person](Map("email" -> "foo", "age" -> 17))
-  Typify[String, Map[String, Any], Person](Map("email" -> "foo@bar"))
-  Typify[String, Map[String, Any], Person](Map("age" -> 22))
-  Typify[String, Map[String, Any], Person](Map("email" -> "foo@bar", "age" -> 22))
-  Typify[String, Map[String, Any], Person](Map("email" -> 2, "age" -> "bar"))
+  typify[Person](Map("email" -> "foo", "age" -> 17))
+  typify[Person](Map("email" -> "foo@bar"))
+  typify[Person](Map("age" -> 22))
+  typify[Person](Map("email" -> "foo@bar", "age" -> 22))
+  typify[Person](Map("email" -> 2, "age" -> "bar"))
 ```
 
-The call to Typify is type-parameterized in order from left to right on the failure type, the type we are parsing
-from, and the target type for a successful parse/validation.
+If we have a partial structure and can pull remaining values from elsewhere, partial parsing is also supported
+
+```tut
+  typify[Int @@ Age => Person](Map("email" -> "foo@bar")).map(_(tag[Age](25)))
+```
 
 Note that with this approach, as we build up a collection of validation rules for specific types, we will add them
 less and less often, and re-use simply by tagging fields with previously validated types.
