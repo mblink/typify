@@ -8,6 +8,7 @@ import shapeless.record._
 import shapeless.syntax.DynamicRecordOps
 import shapeless.syntax.singleton._
 import shapeless.tag.@@
+import scala.language.implicitConversions
 import scala.reflect.ClassTag
 import scalaz.syntax.applicative._
 import scalaz.syntax.std.boolean._
@@ -24,16 +25,16 @@ trait Parsed[A] {
   def as[T: ClassTag](p: A, key: String): ValidationNel[ParseError, T]
 }
 
-trait Parser[L, P, A] {
-  def apply(p: P): ValidationNel[L, A]
+trait Parser[F, P, A] {
+  def apply(p: P): ValidationNel[F, A]
 }
 
-trait FieldParser[L, P, A] {
-  def apply(k: String, p: P): ValidationNel[L, A]
+trait FieldParser[F, P, A] {
+  def apply(k: String, p: P): ValidationNel[F, A]
 }
 
-trait BasicParser[L, P, A] {
-  def apply(k: String, p: P)(implicit cp: CanParse[A, P]): ValidationNel[L, A]
+trait BasicParser[F, P, A] {
+  def apply(k: String, p: P)(implicit cp: CanParse[A, P]): ValidationNel[F, A]
 }
 
 object parsedinstances {
@@ -61,12 +62,12 @@ class Typify[L, P: Parsed] {
 
   object parsers {
 
-    implicit def hnilParser[L, P: Parsed]: Parser[L, P, HNil] = new Parser[L, P, HNil] {
+    implicit def hnilParser: Parser[L, P, HNil] = new Parser[L, P, HNil] {
       def apply(p: P): ValidationNel[L, HNil] =
         HNil.successNel[L]
     }
 
-    implicit def hconsParser[L, K <: Symbol, H, T <: HList, P: Parsed](
+    implicit def hconsParser[K <: Symbol, H, T <: HList](
       implicit key: Witness.Aux[K],
       fp: FieldParser[L, P, H], tp: Parser[L, P, T]):
     Parser[L, P, shapeless.::[FieldType[K, H], T]] = new Parser[L, P, shapeless.::[FieldType[K, H], T]] {
@@ -75,14 +76,14 @@ class Typify[L, P: Parsed] {
             |@| implicitly[Parser[L, P, T]].apply(p))(_ :: _)
     }
 
-    implicit def caseClassParser[L, A, P: Parsed, R <: HList](implicit
+    implicit def caseClassParser[A, R <: HList](implicit
       gen: LabelledGeneric.Aux[A, R],
       reprParser: Lazy[Parser[L, P, R]]
     ): Parser[L, P, A] = new Parser[L, P, A] {
       def apply(p: P): ValidationNel[L, A] = reprParser.value.apply(p).map(gen.from)
     }
 
-    implicit def partialParser[L, A, F, P: Parsed, Pt <: HList, R <: HList, Rm <: HList](implicit
+    implicit def partialParser[A, F, Pt <: HList, R <: HList, Rm <: HList](implicit
       ffp: FnFromProduct.Aux[Pt => A, F],
       gen: LabelledGeneric.Aux[A, R],
       rma: RemoveAll.Aux[R, Pt, (Pt, Rm)],
@@ -90,7 +91,6 @@ class Typify[L, P: Parsed] {
         def apply(p: P) = parser(p).map(r => ffp(pt => gen.from(rma.reinsert((pt, r)))))
       }
   }
-
 
   def validate[A, B](v: A => ValidationNel[L, B])(implicit
                           fp: BasicParser[L, P, A], cp: CanParse[A, P]):
@@ -100,4 +100,5 @@ class Typify[L, P: Parsed] {
   }
 
   def apply[A](p: P)(implicit parser: Parser[L, P, A]): ValidationNel[L, A] = parser(p)
+
 }
