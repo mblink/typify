@@ -26,8 +26,8 @@ validations defined.
 
 Some care was taken to maintain practical flexibility, namely the type used for failures is defined
 at the call site, as well as the actual parsing mechanism via a simple typeclass.
-A parser for Map[String, Any] is included for example purposes, and sub-projects will be added
-shortly to add additional parsing backends which leverage other dependencies.
+A parser for Map[String, Any] is included for example purposes and the json4s-typify sub-project
+contains a parser for the json4s AST.
 
 Use requires a minimal amount of one-time setup and is extremely concise from that point on, as illustrated in the
 following example.
@@ -49,7 +49,7 @@ type we will parse from.
 
 ```scala
 scala>   val typify = new Typify[String, Map[String, Any]]
-typify: typify.Typify[String,Map[String,Any]] = typify.Typify@2d874090
+typify: typify.Typify[String,Map[String,Any]] = typify.Typify@20c1df3a
 ```
 
 We can now create some BasicParsers that will be leveraged to validate. Note that these are insufficient to do
@@ -147,7 +147,6 @@ scala>   typify[UnsafePerson](Map("email" -> "foo@bar", "age" -> 22))
 ###TODO
 
 * Validate params passed to a partial parse
-* Remove scalaz dependency?
 
 ####Credits
 

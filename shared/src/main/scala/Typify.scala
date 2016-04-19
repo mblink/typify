@@ -16,13 +16,15 @@ import scalaz.syntax.std.option._
 import scalaz.syntax.validation._
 import scalaz.ValidationNel
 
-trait CanParse[T, P]
+trait CanParse[T, P] {
+  def parse(k: String, p: P): ValidationNel[ParseError, T]
+}
 
 case class ParseError(key: String, error: String)
 
 trait Parsed[A] {
 
-  def as[T: ClassTag](p: A, key: String): ValidationNel[ParseError, T]
+  def as[T: ClassTag](p: A, key: String)(implicit cp: CanParse[T, A]): ValidationNel[ParseError, T]
 }
 
 trait Parser[F, P, A] {
@@ -38,14 +40,19 @@ trait BasicParser[F, P, A] {
 }
 
 object parsedinstances {
-  lazy implicit val cpms = new CanParse[String, Map[String, Any]] {}
-  lazy implicit val cpmi = new CanParse[Int, Map[String, Any]] {}
-  lazy implicit val cpmos = new CanParse[Option[String], Map[String, Any]] {}
-  lazy implicit val cpmoi = new CanParse[Option[Int], Map[String, Any]] {}
+  trait MCanParse[T, P] extends CanParse[T, P] {
+    def parse(k: String, p: P): ValidationNel[ParseError, T] =
+      ParseError(k, "canparse unused").failureNel[T]
+  }
+  lazy implicit val cpms = new MCanParse[String, Map[String, Any]] {}
+  lazy implicit val cpmi = new MCanParse[Int, Map[String, Any]] {}
+  lazy implicit val cpmos = new MCanParse[Option[String], Map[String, Any]] {}
+  lazy implicit val cpmoi = new MCanParse[Option[Int], Map[String, Any]] {}
 
   implicit object ParsedMap extends Parsed[Map[String, Any]] {
 
-    def as[T: ClassTag](p: Map[String, Any], key: String): ValidationNel[ParseError, T] =
+    def as[T: ClassTag](p: Map[String, Any], key: String)(implicit cp: CanParse[T, Map[String, Any]]):
+    ValidationNel[ParseError, T] =
       p.get(key).flatMap(x => x match {
         case y: T => Some(y)
         case _ => None
