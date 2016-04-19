@@ -10,7 +10,7 @@ import shapeless.LabelledGeneric
 import shapeless.tag
 import shapeless.tag.@@
 
-object Example extends App {
+object Json4sExample extends App {
 
   trait Email {}
   trait Age {}
@@ -52,6 +52,7 @@ object Example extends App {
   println(p)
   val pp = typify[(String @@ Email, Gender) => Person](parse("""{"age":23}"""))
   println(pp.map(_(tag[Email]("boo@far"), Male)))
+  println(typify[Person](parse("[]")))
   // will not compile - println(typify[UnsafePerson](parse("{}")))
 }
 
