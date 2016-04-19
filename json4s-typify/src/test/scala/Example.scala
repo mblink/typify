@@ -52,7 +52,7 @@ object Example extends App {
   println(p)
   val pp = typify[(String @@ Email, Gender) => Person](parse("""{"age":23}"""))
   println(pp.map(_(tag[Email]("boo@far"), Male)))
-  // will not compile - println(typify[UnsafePerson](Map()))
+  // will not compile - println(typify[UnsafePerson](parse("{}")))
 }
 
 
