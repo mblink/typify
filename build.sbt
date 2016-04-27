@@ -28,7 +28,9 @@ lazy val typify = crossProject.in(file(".")).
     libraryDependencies ++= Seq(
       "com.chuusai" %%% "shapeless" % "2.3.0",
       "org.scalaz" %%% "scalaz-core" % "7.2.2"
-    )
+    ),
+    licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
+    bintrayReleaseOnPublish in ThisBuild := false
   ).
   jvmSettings(
     // Add JVM-specific settings here
@@ -48,7 +50,9 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
     version := "1.0",
     scalaVersion := "2.11.8",
     scalacOptions ++= scalacF,
+    licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
       "org.json4s" %% "json4s-jackson" % "3.3.0",
       "org.scalaz" %% "scalaz-core" % "7.2.2"
-    ))
+    ),
+    bintrayReleaseOnPublish in ThisBuild := false)
