@@ -61,7 +61,7 @@ lazy val sjsTypify = project.in(file("jsdynamic-typify"))
   .dependsOn(typifyJS)
   .settings(
     name := "jsdynamic-typify",
-    version := "1.0.1",
+    version := "1.0.2",
     scalaVersion := "2.11.8",
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
