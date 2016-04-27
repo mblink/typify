@@ -69,6 +69,13 @@ class Typify[L, P] {
         p.as[T](k).leftMap(_.map(err))
     }
 
+  def parseBasic[T: ClassTag](err: (Parsed[P], ParseError) => L)(implicit cp: CanParse[T, P], sp: CanParse[P, P]):
+  BasicParser[L, P, T] =
+    new BasicParser[L, P, T] {
+      def apply(k: String, p: Parsed[P])(implicit cp: CanParse[T, P]) =
+        p.as[T](k).leftMap(_.map(err(p, _)))
+    }
+
   object parsers {
 
     implicit def hnilParser: Parser[L, P, HNil] = new Parser[L, P, HNil] {

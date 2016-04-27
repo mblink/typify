@@ -29,9 +29,9 @@ object Json4sExample extends App {
   val typify = new Typify[String, JValue]
   import typify.parsers._
 
-  implicit lazy val sp = typify.parseBasic[String](p => s"${p.key}: ${p.error}")
-  implicit lazy val ip = typify.parseBasic[Int](p => s"${p.key} cannot be parsed as int")
-  implicit lazy val osp = typify.parseBasic[Option[Int]](p => s"${p.key} cannot be parsed as Option[Int]")
+  implicit lazy val sp = typify.parseBasic[String]((p: ParseError) => s"${p.key}: ${p.error}")
+  implicit lazy val ip = typify.parseBasic[Int]((p: ParseError) => s"${p.key} cannot be parsed as int")
+  implicit lazy val osp = typify.parseBasic[Option[Int]]((p: ParseError) => s"${p.key} cannot be parsed as Option[Int]")
 
   implicit lazy val vEmail = typify.validate[String, String @@ Email]((e: String) =>
     e.contains("@").option(tag[Email](e)).toSuccessNel("invalid email"))
