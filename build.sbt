@@ -61,13 +61,15 @@ lazy val sjsTypify = project.in(file("jsdynamic-typify"))
   .dependsOn(typifyJS)
   .settings(
     name := "jsdynamic-typify",
-    version := "1.0",
+    version := "1.0.1",
     scalaVersion := "2.11.8",
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
       "org.scalaz" %%% "scalaz-core" % "7.2.2"
     ),
+    scalaJSSemantics ~= { _.withAsInstanceOfs(
+        org.scalajs.core.tools.sem.CheckedBehavior.Compliant) },
     bintrayReleaseOnPublish in ThisBuild := false)
   .enablePlugins(ScalaJSPlugin)
 
