@@ -1,16 +1,18 @@
 package typify
 
-import org.json4s.jackson.JsonMethods._
-import org.json4s.JValue
-import org.json4s.typify.parsedinstances._
+import scala.scalajs.js
+import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.typify.parsedinstances._
 import scalaz.syntax.std.boolean._
 import scalaz.syntax.std.option._
 import scalaz.syntax.validation._
+import scalaz.ValidationNel
 import shapeless.LabelledGeneric
 import shapeless.tag
 import shapeless.tag.@@
 
-object Json4sExample extends App {
+@JSExport
+object jsDynamicExample {
 
   trait Email {}
   trait Age {}
@@ -26,7 +28,7 @@ object Json4sExample extends App {
   implicit lazy val genP = LabelledGeneric[Person]
   implicit lazy val genUP = LabelledGeneric[UnsafePerson]
 
-  val typify = new Typify[String, JValue]
+  val typify = new Typify[String, js.Dynamic]
   import typify.parsers._
 
   implicit lazy val sp = typify.parseBasic[String](p => s"${p.key}: ${p.error}")
@@ -48,12 +50,16 @@ object Json4sExample extends App {
       case None => None.successNel[String]
     })
 
-  val p = typify[Person](parse("""{"email":"foo","age":17,"gender":"ms","session":3}"""))
-  println(p)
-  val pp = typify[(String @@ Email, Gender) => Person](parse("""{"foo":{"age":23}}"""), Seq("foo"))
-  println(pp.map(_(tag[Email]("boo@far"), Male)))
-  println(typify[Person](parse("[]")))
-  // will not compile - println(typify[UnsafePerson](parse("{}")))
+  @JSExport
+  def validatePerson(jsd: String): ValidationNel[String, Person] = {
+    typify[Person](js.JSON.parse(jsd))
+  }
+
+  @JSExport
+  def partialValidatePerson(jsd: String, root: Seq[String] = Seq()):
+  ValidationNel[String, (String, Int) => Person] =
+    typify[(String @@ Email, Int @@ Age) => Person](js.JSON.parse(jsd), root)
+      .map(fn => (s: String, i: Int) => fn(tag[Email](s), tag[Age](i)))
 }
 
 

@@ -19,3 +19,8 @@ json4s-typify/project/*-shim.sbt
 json4s-typify/project/project/
 json4s-typify/project/target/
 json4s-typify/target/
+jsdynamic-typify/logs/
+jsdynamic-typify/project/*-shim.sbt
+jsdynamic-typify/project/project/
+jsdynamic-typify/project/target/
+jsdynamic-typify/target/

@@ -23,7 +23,7 @@ lazy val scalacF = Seq(
 lazy val typify = crossProject.in(file(".")).
   settings(
     name := "typify",
-    version := "1.0",
+    version := "1.0.1",
     scalaVersion := "2.11.8",
     libraryDependencies ++= Seq(
       "com.chuusai" %%% "shapeless" % "2.3.0",
@@ -47,7 +47,7 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
   .dependsOn(typifyJVM)
   .settings(
     name := "json4s-typify",
-    version := "1.0",
+    version := "1.0.1",
     scalaVersion := "2.11.8",
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
@@ -56,3 +56,18 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
       "org.scalaz" %% "scalaz-core" % "7.2.2"
     ),
     bintrayReleaseOnPublish in ThisBuild := false)
+
+lazy val sjsTypify = project.in(file("jsdynamic-typify"))
+  .dependsOn(typifyJS)
+  .settings(
+    name := "jsdynamic-typify",
+    version := "1.0",
+    scalaVersion := "2.11.8",
+    scalacOptions ++= scalacF,
+    licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
+    libraryDependencies ++= Seq(
+      "org.scalaz" %%% "scalaz-core" % "7.2.2"
+    ),
+    bintrayReleaseOnPublish in ThisBuild := false)
+  .enablePlugins(ScalaJSPlugin)
+

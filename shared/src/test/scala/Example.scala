@@ -1,9 +1,10 @@
 package typify
 
-import typify.parsedinstances._
+import typify.parsedmap._
 import scalaz.syntax.std.boolean._
 import scalaz.syntax.std.option._
 import scalaz.syntax.validation._
+import scalaz.ValidationNel
 import shapeless.LabelledGeneric
 import shapeless.tag
 import shapeless.tag.@@
@@ -38,9 +39,9 @@ object Example extends App {
     case "f" => Female.successNel[String]
     case x => s"Invalid gender $x".failureNel[Gender]
   })
-  implicit lazy val vAge = typify.validate[Int, Int @@ Age](a =>
-    (a > 18).option(tag[Age](a)).toSuccessNel("too young"))
-  implicit lazy val sid = typify.validate[Option[Int], Option[Int @@ SessId]](i =>
+  implicit lazy val vAge = typify.validate[Int, Int @@ Age]((k: String, a: Int, p: Parsed[Map[String, Any]]) =>
+    (a > 18).option(tag[Age](a)).toSuccessNel(s"$k too young"))
+  implicit lazy val sid = typify.validate[Option[Int], Option[Int @@ SessId]]((i: Option[Int]) =>
     i match {
       case Some(id) => (id > 10000).option(Some(tag[SessId](id))).toSuccessNel(s"invalid session $id")
       case None => None.successNel[String]
@@ -49,7 +50,8 @@ object Example extends App {
   val p = typify[Person](Map("email" -> "foo", "age" -> 17, "gender" -> "ms", "session" -> Some(33)))
   println(p)
   val pp = typify[(String @@ Email, Gender) => Person](Map("age" -> 23, "session" -> None))
-  println(pp.map(_(tag[Email]("boo@far"), Male)))
+            .map(_(tag[Email]("boo@far"), Male))
+  println(pp)
   // will not compile - println(typify[UnsafePerson](Map()))
 }
 
