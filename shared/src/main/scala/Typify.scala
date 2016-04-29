@@ -156,13 +156,14 @@ class Typify[L, P] { typify =>
             .validation
       }
 
-    implicit def opF[A](implicit ps: Parser[L, P, A], ct: ClassTag[P], e2l: E2L,
+    implicit def opF[A](implicit ps: Parser[L, P, Option[A]], ct: ClassTag[P], e2l: E2L,
                           cpo: CanParse[Option[P], P], cp: CanParse[P, P]) =
-      typify.validate[Option[P], Option[A]]((op: Option[P]) => op.map(p => typify[A](p)).sequenceU)
+      typify.validate[Option[P], Option[A]]((k: String, op: Option[P], p: Parsed[P]) =>
+        typify[Option[A]](p.run, p.root ++ Seq(k)))
 
     implicit def pF[A](implicit ps: Parser[L, P, A], ct: ClassTag[P], e2l: E2L,
                          cpo: CanParse[Option[P], P], cp: CanParse[P, P]) =
-      typify.validate[P, A](typify[A](_: P))
+      typify.validate[P, A]((k: String, ip: P, p: Parsed[P]) => typify[A](p.run, p.root ++ Seq(k)))
   }
 
   def validate[A, B](v: A => ValidationNel[L, B])(implicit ct: ClassTag[A],

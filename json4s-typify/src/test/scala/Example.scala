@@ -28,7 +28,7 @@ object Json4sExample extends App {
   val typify = new Typify[String, JValue]
   import typify.parsers._
 
-  implicit def e2l = (p: Parsed[JValue], e: ParseError) => s"${e.key}: ${e.error}"
+  implicit def e2l = (p: Parsed[JValue], e: ParseError) => s"${p.root}:${e.key}: ${e.error}"
 
   implicit lazy val vEmail = typify.validate[String, String @@ Email]((e: String) =>
     e.contains("@").option(tag[Email](e)).toSuccessNel("invalid email"))
@@ -51,6 +51,7 @@ object Json4sExample extends App {
 
   println(typify[Optional[Person]](valid))
   println(typify[Optional[Person]](parse("null")))
+  println(typify[Optional[Person]](parse("""{"b":{"a":{"email":"foo@bar"}}}"""), Seq("b")))
   println(typify[Mandatory[Person]](valid))
   println(typify[Mandatory[Person]](parse("null")))
 

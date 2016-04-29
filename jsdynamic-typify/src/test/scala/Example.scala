@@ -60,6 +60,12 @@ object jsDynamicExample {
     typify[Person](js.JSON.parse(jsd))
   }
 
+  case class Optional[A](a: Option[A])
+
+  @JSExport
+  def opPerson(jsd: String): ValidationNel[String, Optional[Person]] =
+    typify[Optional[Person]](js.JSON.parse(jsd), Seq("b"))
+
   @JSExport
   def partialValidatePerson(jsd: String, root: Seq[String] = Seq()):
   ValidationNel[String, (String, Int) => Person] =
