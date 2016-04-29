@@ -45,6 +45,15 @@ object Json4sExample extends App {
       case None => None.successNel[String]
     })
 
+  case class Optional[A](a: Option[A])
+  case class Mandatory[A](a: A)
+  val valid = parse("""{"a":{"email":"foo@opman","age":22,"gender":"m","session":77777}}""")
+
+  println(typify[Optional[Person]](valid))
+  println(typify[Optional[Person]](parse("null")))
+  println(typify[Mandatory[Person]](valid))
+  println(typify[Mandatory[Person]](parse("null")))
+
   val npps = typify[Option[Person]](parse("null"))
   println(npps)
   val osps = typify[Option[Person]](parse("""{"email":"foo@bar","age":22,"gender":"m","session":77777}"""))

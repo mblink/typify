@@ -72,6 +72,7 @@ object parsedmap {
 }
 
 class Typify[L, P] { typify =>
+  type E2L = (Parsed[P], ParseError) => L
 
   def parseBasic[T: ClassTag](err: ParseError => L)(
                               implicit cp: CanParse[T, P], sp: CanParse[P, P], osp: CanParse[Option[P], P]):
@@ -116,7 +117,7 @@ class Typify[L, P] { typify =>
       gen: LabelledGeneric.Aux[B, R],
       reprParser: Lazy[Parser[L, P, R]],
       cp: CanParse[Option[P], P],
-      e2l: (Parsed[P], ParseError) => L,
+      e2l: E2L,
       ct: ClassTag[P],
       ev: A === Option[B]
     ): Parser[L, P, Option[B]] = new Parser[L, P, Option[B]] {
@@ -140,7 +141,7 @@ class Typify[L, P] { typify =>
       ev: B === Option[F],
       ffp: FnFromProduct.Aux[Pt => A, F],
       gen: LabelledGeneric.Aux[A, R],
-      e2l: (Parsed[P], ParseError) => L,
+      e2l: E2L,
       cp: CanParse[Option[P], P],
       ct: ClassTag[P],
       rma: RemoveAll.Aux[R, Pt, (Pt, Rm)],
@@ -154,10 +155,18 @@ class Typify[L, P] { typify =>
                       .sequenceU)
             .validation
       }
+
+    implicit def opF[A](implicit ps: Parser[L, P, A], ct: ClassTag[P], e2l: E2L,
+                          cpo: CanParse[Option[P], P], cp: CanParse[P, P]) =
+      typify.validate[Option[P], Option[A]]((op: Option[P]) => op.map(p => typify[A](p)).sequenceU)
+
+    implicit def pF[A](implicit ps: Parser[L, P, A], ct: ClassTag[P], e2l: E2L,
+                         cpo: CanParse[Option[P], P], cp: CanParse[P, P]) =
+      typify.validate[P, A](typify[A](_: P))
   }
 
   def validate[A, B](v: A => ValidationNel[L, B])(implicit ct: ClassTag[A],
-                          e2l: (Parsed[P], ParseError) => L, cp: CanParse[A, P],
+                          e2l: E2L, cp: CanParse[A, P],
                           cpp: CanParse[P, P]):
   FieldParser[L, P, B] = new FieldParser[L, P, B] {
     def apply(k: String, p: Parsed[P]) =
@@ -165,7 +174,7 @@ class Typify[L, P] { typify =>
   }
 
   def validate[A, B](v: (String, A, Parsed[P]) => ValidationNel[L, B])(implicit
-                          ct: ClassTag[A], e2l: (Parsed[P], ParseError) => L,
+                          ct: ClassTag[A], e2l: E2L,
                           cp: CanParse[A, P], cpp: CanParse[P, P]):
   FieldParser[L, P, B] = new FieldParser[L, P, B] {
     def apply(k: String, p: Parsed[P]) =
@@ -173,7 +182,7 @@ class Typify[L, P] { typify =>
   }
 
   def validate[A, B](v: (String, A) => ValidationNel[L, B])(implicit
-                          ct: ClassTag[A], e2l: (Parsed[P], ParseError) => L,
+                          ct: ClassTag[A], e2l: E2L,
                           cp: CanParse[A, P], cpp: CanParse[P, P]):
   FieldParser[L, P, B] = new FieldParser[L, P, B] {
     def apply(k: String, p: Parsed[P]) =
