@@ -3,9 +3,11 @@ package typify
 import org.json4s.jackson.JsonMethods._
 import org.json4s.JValue
 import org.json4s.typify.parsedinstances._
+import scalaz.Leibniz.===
 import scalaz.syntax.std.boolean._
 import scalaz.syntax.std.option._
 import scalaz.syntax.validation._
+import scalaz.{\/, NonEmptyList}
 import shapeless.LabelledGeneric
 import shapeless.tag
 import shapeless.tag.@@
@@ -23,15 +25,10 @@ object Json4sExample extends App {
   case class Person(email: String @@ Email, age: Int @@ Age, gender: Gender, session: Option[Int @@ SessId])
   case class UnsafePerson(email: String, age: Int)
 
-  implicit lazy val genP = LabelledGeneric[Person]
-  implicit lazy val genUP = LabelledGeneric[UnsafePerson]
-
   val typify = new Typify[String, JValue]
   import typify.parsers._
 
-  implicit lazy val sp = typify.parseBasic[String]((p: ParseError) => s"${p.key}: ${p.error}")
-  implicit lazy val ip = typify.parseBasic[Int]((p: ParseError) => s"${p.key} cannot be parsed as int")
-  implicit lazy val osp = typify.parseBasic[Option[Int]]((p: ParseError) => s"${p.key} cannot be parsed as Option[Int]")
+  implicit def e2l = (p: Parsed[JValue], e: ParseError) => s"${e.key}: ${e.error}"
 
   implicit lazy val vEmail = typify.validate[String, String @@ Email]((e: String) =>
     e.contains("@").option(tag[Email](e)).toSuccessNel("invalid email"))
@@ -48,6 +45,16 @@ object Json4sExample extends App {
       case None => None.successNel[String]
     })
 
+  val npps = typify[Option[Person]](parse("null"))
+  println(npps)
+  val osps = typify[Option[Person]](parse("""{"email":"foo@bar","age":22,"gender":"m","session":77777}"""))
+  println(osps)
+  val ofpf = typify[Option[Person]](parse("""{"email":"foobar","age":2,"gender":"m","session":77777}"""))
+  println(ofpf)
+  val opps = typify[Option[String @@ Email => Person]](parse("""{"email":"foobar","age":22,"gender":"m","session":77777}"""))
+  println(opps.map(_.map(_(tag[Email]("foo@partial")))))
+  val nppps = typify[Option[String @@ Email => Person]](parse("null"))
+  println(nppps.map(_.map(_(tag[Email]("foo@bar")))))
   val p = typify[Person](parse("""{"email":"foo","age":17,"gender":"ms","session":3}"""))
   println(p)
   val pp = typify[(String @@ Email, Gender) => Person](parse("""{"foo":{"age":23}}"""), Seq("foo"))

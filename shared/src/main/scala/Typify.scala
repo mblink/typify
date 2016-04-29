@@ -9,16 +9,22 @@ import shapeless.record._
 import shapeless.syntax.DynamicRecordOps
 import shapeless.syntax.singleton._
 import shapeless.tag.@@
+import scala.annotation.implicitNotFound
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
+import scalaz.Leibniz.===
+import scalaz.std.option._
 import scalaz.syntax.applicative._
 import scalaz.syntax.std.boolean._
 import scalaz.syntax.std.option._
+import scalaz.syntax.traverse._
 import scalaz.syntax.validation._
 import scalaz.ValidationNel
 
+@implicitNotFound(msg = "Cannot find CanParse from ${P} to ${T}")
 trait CanParse[T, P] {
   def parse(k: String, p: P)(implicit ct: ClassTag[T]): ValidationNel[ParseError, T]
+  def as(p: P)(implicit ct: ClassTag[T]): ValidationNel[ParseError, T]
 }
 
 case class ParseError(key: String, error: String)
@@ -33,10 +39,12 @@ case class Parsed[A: ClassTag](run: A, root: Seq[String]) {
   def withRoot(newRoot: Seq[String]): Parsed[A] = Parsed[A](run, newRoot)
 }
 
+@implicitNotFound(msg = "Cannot find Parser from ${P} to ${A}")
 trait Parser[F, P, A] {
   def apply(p: Parsed[P]): ValidationNel[F, A]
 }
 
+@implicitNotFound(msg = "Cannot find FieldParser from ${P} to ${A}")
 trait FieldParser[F, P, A] {
   def apply(k: String, p: Parsed[P]): ValidationNel[F, A]
 }
@@ -52,24 +60,29 @@ object parsedmap {
         case y: T => Some(y)
         case _ => None
       }).toSuccessNel(ParseError(k, "could not parse"))
+    def as(p: Map[String, Any])(implicit ct: ClassTag[T]): ValidationNel[ParseError, T] =
+      ParseError("_root_", "Map[String, Any] cannot be converted at root").failureNel[T]
   }
   lazy implicit val cpmas = new MCanParse[Map[String, Any]] {}
+  lazy implicit val cpomas = new MCanParse[Option[Map[String, Any]]] {}
   lazy implicit val cpms = new MCanParse[String] {}
   lazy implicit val cpmi = new MCanParse[Int] {}
   lazy implicit val cpmos = new MCanParse[Option[String]] {}
   lazy implicit val cpmoi = new MCanParse[Option[Int]] {}
 }
 
-class Typify[L, P] {
+class Typify[L, P] { typify =>
 
-  def parseBasic[T: ClassTag](err: ParseError => L)(implicit cp: CanParse[T, P], sp: CanParse[P, P]):
+  def parseBasic[T: ClassTag](err: ParseError => L)(
+                              implicit cp: CanParse[T, P], sp: CanParse[P, P], osp: CanParse[Option[P], P]):
   BasicParser[L, P, T] =
     new BasicParser[L, P, T] {
       def apply(k: String, p: Parsed[P])(implicit cp: CanParse[T, P]) =
         p.as[T](k).leftMap(_.map(err))
     }
 
-  def parseBasic[T: ClassTag](err: (Parsed[P], ParseError) => L)(implicit cp: CanParse[T, P], sp: CanParse[P, P]):
+  def parseBasic[T: ClassTag](err: (Parsed[P], ParseError) => L)(
+                              implicit cp: CanParse[T, P], sp: CanParse[P, P], osp: CanParse[Option[P], P]):
   BasicParser[L, P, T] =
     new BasicParser[L, P, T] {
       def apply(k: String, p: Parsed[P])(implicit cp: CanParse[T, P]) =
@@ -99,6 +112,22 @@ class Typify[L, P] {
       def apply(p: Parsed[P]): ValidationNel[L, A] = reprParser.value.apply(p).map(gen.from)
     }
 
+    implicit def caseClassParserO[A, B, R <: HList](implicit
+      gen: LabelledGeneric.Aux[B, R],
+      reprParser: Lazy[Parser[L, P, R]],
+      cp: CanParse[Option[P], P],
+      e2l: (Parsed[P], ParseError) => L,
+      ct: ClassTag[P],
+      ev: A === Option[B]
+    ): Parser[L, P, Option[B]] = new Parser[L, P, Option[B]] {
+      def apply(p: Parsed[P]): ValidationNel[L, Option[B]] =
+        cp.as(p.run).disjunction
+          .leftMap(_.map(e2l(p, _)))
+          .flatMap(_.map(op => reprParser.value.apply(p.copy(run = op)).map(gen.from).disjunction)
+          .sequenceU)
+          .validation
+    }
+
     implicit def partialParser[A, F, Pt <: HList, R <: HList, Rm <: HList](implicit
       ffp: FnFromProduct.Aux[Pt => A, F],
       gen: LabelledGeneric.Aux[A, R],
@@ -106,27 +135,49 @@ class Typify[L, P] {
       parser: Parser[L, P, Rm]): Parser[L, P, F] = new Parser[L, P, F] {
         def apply(p: Parsed[P]) = parser(p).map(r => ffp(pt => gen.from(rma.reinsert((pt, r)))))
       }
+
+    implicit def partialParserO[A, B, F, Pt <: HList, R <: HList, Rm <: HList](implicit
+      ev: B === Option[F],
+      ffp: FnFromProduct.Aux[Pt => A, F],
+      gen: LabelledGeneric.Aux[A, R],
+      e2l: (Parsed[P], ParseError) => L,
+      cp: CanParse[Option[P], P],
+      ct: ClassTag[P],
+      rma: RemoveAll.Aux[R, Pt, (Pt, Rm)],
+      parser: Parser[L, P, Rm]): Parser[L, P, Option[F]] = new Parser[L, P, Option[F]] {
+        def apply(p: Parsed[P]) =
+          cp.as(p.run).disjunction
+            .leftMap(_.map(e2l(p, _)))
+            .flatMap(_.map(op => parser(p.copy(run = op))
+                                   .map(r => ffp(pt => gen.from(rma.reinsert((pt, r)))))
+                                   .disjunction)
+                      .sequenceU)
+            .validation
+      }
   }
 
-  def validate[A, B](v: A => ValidationNel[L, B])(implicit
-                          fp: BasicParser[L, P, A], cp: CanParse[A, P]):
+  def validate[A, B](v: A => ValidationNel[L, B])(implicit ct: ClassTag[A],
+                          e2l: (Parsed[P], ParseError) => L, cp: CanParse[A, P],
+                          cpp: CanParse[P, P]):
   FieldParser[L, P, B] = new FieldParser[L, P, B] {
     def apply(k: String, p: Parsed[P]) =
-      fp.apply(k, p).disjunction.flatMap(v.andThen(_.disjunction)).validation
+      p.as[A](k).leftMap(_.map(e2l(p, _))).disjunction.flatMap(v.andThen(_.disjunction)).validation
   }
 
   def validate[A, B](v: (String, A, Parsed[P]) => ValidationNel[L, B])(implicit
-                          fp: BasicParser[L, P, A], cp: CanParse[A, P]):
+                          ct: ClassTag[A], e2l: (Parsed[P], ParseError) => L,
+                          cp: CanParse[A, P], cpp: CanParse[P, P]):
   FieldParser[L, P, B] = new FieldParser[L, P, B] {
     def apply(k: String, p: Parsed[P]) =
-      fp.apply(k, p).disjunction.flatMap(v(k, _, p).disjunction).validation
+      p.as[A](k).leftMap(_.map(e2l(p, _))).disjunction.flatMap(v(k, _, p).disjunction).validation
   }
 
   def validate[A, B](v: (String, A) => ValidationNel[L, B])(implicit
-                          fp: BasicParser[L, P, A], cp: CanParse[A, P]):
+                          ct: ClassTag[A], e2l: (Parsed[P], ParseError) => L,
+                          cp: CanParse[A, P], cpp: CanParse[P, P]):
   FieldParser[L, P, B] = new FieldParser[L, P, B] {
     def apply(k: String, p: Parsed[P]) =
-      fp.apply(k, p).disjunction.flatMap(v(k, _).disjunction).validation
+      p.as[A](k).leftMap(_.map(e2l(p, _))).disjunction.flatMap(v(k, _).disjunction).validation
   }
 
   def apply[A](p: P, root: Seq[String] = Seq())(implicit ct: ClassTag[P], parser: Parser[L, P, A]):

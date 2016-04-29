@@ -1,8 +1,9 @@
 lazy val root = project.in(file(".")).
-  aggregate(typifyJS, typifyJVM).
+  aggregate(typifyJS, typifyJVM, json4sTypify, sjsTypify).
   settings(
     publish := {},
-    publishLocal := {}
+    publishLocal := {},
+    bintrayReleaseOnPublish in ThisBuild := false
   )
 
 lazy val scalacF = Seq(
@@ -23,7 +24,7 @@ lazy val scalacF = Seq(
 lazy val typify = crossProject.in(file(".")).
   settings(
     name := "typify",
-    version := "1.0.2",
+    version := "1.1.2",
     scalaVersion := "2.11.8",
     libraryDependencies ++= Seq(
       "com.chuusai" %%% "shapeless" % "2.3.0",
@@ -47,7 +48,7 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
   .dependsOn(typifyJVM)
   .settings(
     name := "json4s-typify",
-    version := "1.0.1",
+    version := "1.0.2",
     scalaVersion := "2.11.8",
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
@@ -61,7 +62,7 @@ lazy val sjsTypify = project.in(file("jsdynamic-typify"))
   .dependsOn(typifyJS)
   .settings(
     name := "jsdynamic-typify",
-    version := "1.0.2",
+    version := "1.0.3",
     scalaVersion := "2.11.8",
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),

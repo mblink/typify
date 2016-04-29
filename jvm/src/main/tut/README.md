@@ -35,8 +35,8 @@ following example.
 First import some requirements.
 
 ```tut:silent
-import typify.parsedinstances._
-import typify.Typify
+import typify.parsedmap._
+import typify.{Parsed, ParseError, Typify}
 import scalaz.syntax.std.boolean._
 import scalaz.syntax.std.option._
 import shapeless.LabelledGeneric
@@ -51,15 +51,13 @@ type we will parse from.
   val typify = new Typify[String, Map[String, Any]]
 ```
 
-We can now create some BasicParsers that will be leveraged to validate. Note that these are insufficient to do
-real work, as they are meant only to handle primitive values. We want to enforce that our values are more
-meaningful and so they must be extended to create FieldParsers in the following steps.
+We need to import the parsers from our typify instance and define an
+implicit conversion from ParseError to our chosen failure type:
 
 ```tut
   import typify.parsers._
 
-  implicit lazy val sp = typify.parseBasic[String](p => s"${p.key}: ${p.error}")
-  implicit lazy val ip = typify.parseBasic[Int](p => s"${p.key} cannot be parsed as int")
+  implicit lazy val e2s = (p: Parsed[Map[String, Any]], e: ParseError) => s"${e.key}: ${e.error}"
 ```
 
 With these in scope we can create our FieldParsers. First let's define meaninful types for our fields.
@@ -76,18 +74,11 @@ And now for the FieldParsers
 ```tut
   implicit lazy val vEmail = typify.validate[String, String @@ Email]((e: String) =>
     e.contains("@").option(tag[Email](e)).toSuccessNel("invalid email"))
-  implicit lazy val vAge = typify.validate[Int, Int @@ Age](a =>
+  implicit lazy val vAge = typify.validate[Int, Int @@ Age]((a: Int) =>
     (a > 18).option(tag[Age](a)).toSuccessNel("too young"))
 ```
 
 Here we have said that a valid email is anything that contains an @ symbol, while a valid age is anything over 18.
-
-We now need a shapeless.LabelledGeneric in scope for our type, to enable compile time introspection
-
-```tut
-  implicit lazy val genP = LabelledGeneric[Person]
-```
-
 
 With this in place, we are now able to parse a Map[String, Any] into a Person instance and validate it along the way.
 

@@ -22,16 +22,10 @@ object Example extends App {
   case class Person(email: String @@ Email, age: Int @@ Age, gender: Gender, session: Option[Int @@ SessId])
   case class UnsafePerson(email: String, age: Int)
 
-  implicit lazy val genP = LabelledGeneric[Person]
-  implicit lazy val genUP = LabelledGeneric[UnsafePerson]
-
   val typify = new Typify[String, Map[String, Any]]
   import typify.parsers._
 
-  implicit lazy val sp = typify.parseBasic[String]((ps: Parsed[Map[String, Any]], p: ParseError) =>
-    s"${ps.root}, ${p.key}: ${p.error}")
-  implicit lazy val ip = typify.parseBasic[Int]((p: ParseError) => s"${p.key} cannot be parsed as int")
-  implicit lazy val osp = typify.parseBasic[Option[Int]]((p: ParseError) => s"${p.key} cannot be parsed as Option[Int]")
+  implicit lazy val e2s = (ps: Parsed[Map[String, Any]], p: ParseError) => s"${ps.root}, ${p.key}: ${p.error}"
 
   implicit lazy val vEmail = typify.validate[String, String @@ Email]((e: String) =>
     e.contains("@").option(tag[Email](e)).toSuccessNel("invalid email"))
