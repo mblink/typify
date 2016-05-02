@@ -39,7 +39,7 @@ case class Parsed[A: ClassTag](run: A, root: Seq[String]) {
   def withRoot(newRoot: Seq[String]): Parsed[A] = Parsed[A](run, newRoot)
 }
 
-@implicitNotFound(msg = "Cannot find Parser from ${P} to ${A}")
+@implicitNotFound(msg = "Cannot find Parser from ${P} to ${F} \\/ ${A}")
 trait Parser[F, P, A] {
   def apply(p: Parsed[P]): ValidationNel[F, A]
 }

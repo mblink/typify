@@ -31,6 +31,8 @@ lazy val typify = crossProject.in(file(".")).
       "org.scalaz" %%% "scalaz-core" % "7.2.2"
     ),
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
+    bintrayOrganization := Some("bondlink"),
+    bintrayRepository := "Typify",
     bintrayReleaseOnPublish in ThisBuild := false
   ).
   jvmSettings(
@@ -56,6 +58,8 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
       "org.json4s" %% "json4s-jackson" % "3.3.0",
       "org.scalaz" %% "scalaz-core" % "7.2.2"
     ),
+    bintrayOrganization := Some("bondlink"),
+    bintrayRepository := "Typify",
     bintrayReleaseOnPublish in ThisBuild := false)
 
 lazy val sjsTypify = project.in(file("jsdynamic-typify"))
@@ -71,6 +75,8 @@ lazy val sjsTypify = project.in(file("jsdynamic-typify"))
     ),
     scalaJSSemantics ~= { _.withAsInstanceOfs(
         org.scalajs.core.tools.sem.CheckedBehavior.Compliant) },
+    bintrayOrganization := Some("bondlink"),
+    bintrayRepository := "Typify",
     bintrayReleaseOnPublish in ThisBuild := false)
   .enablePlugins(ScalaJSPlugin)
 
