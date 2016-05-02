@@ -24,3 +24,8 @@ jsdynamic-typify/project/*-shim.sbt
 jsdynamic-typify/project/project/
 jsdynamic-typify/project/target/
 jsdynamic-typify/target/
+play-json-typify/logs/
+play-json-typify/project/*-shim.sbt
+play-json-typify/project/project/
+play-json-typify/project/target/
+play-json-typify/target/
