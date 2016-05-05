@@ -70,6 +70,20 @@ object parsedinstances {
         .validation
   }
 
+  lazy implicit val cpl = new CanParse[Long, Dynamic] {
+    def as(d: Dynamic)(implicit ct: ClassTag[Long]) =
+      (Option(d).filterNot(js.isUndefined) \/> "null found").map(_ => d)
+        .flatMap(parseInt).map(_.toLong)
+        .leftMap(_ => NonEmptyList(ParseError("_root_", "Could not be interpreted as Long")))
+        .validation
+
+    def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Long]) =
+      nf(d.selectDynamic)(k)
+        .flatMap(as(_).disjunction)
+        .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Long")))
+        .validation
+  }
+
   lazy implicit val cpos = new CanParse[Option[String], Dynamic] {
     def as(d: Dynamic)(implicit ct: ClassTag[Option[String]]) =
       Option(d).filterNot(js.isUndefined).map(nf(_.asInstanceOf[String])).sequenceU
@@ -93,6 +107,20 @@ object parsedinstances {
       nf(d.selectDynamic)(k)
         .flatMap(as(_).disjunction)
         .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Option[Int]")))
+        .validation
+  }
+
+  lazy implicit val cpol = new CanParse[Option[Long], Dynamic] {
+    def as(d: Dynamic)(implicit ct: ClassTag[Option[Long]]) =
+      Option(d).filterNot(js.isUndefined).map(parseInt).map(_.map(_.toLong)).sequenceU
+        .leftMap(_ =>
+            NonEmptyList(ParseError("_root_", "Could not be interpreted as Option[Long]")))
+        .validation
+
+    def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Option[Long]]) =
+      nf(d.selectDynamic)(k)
+        .flatMap(as(_).disjunction)
+        .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Option[Long]")))
         .validation
   }
 }

@@ -47,6 +47,16 @@ object parsedinstances {
       as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Int").wrapNel)
   }
 
+  lazy implicit val cpjl = new CanParse[Long, JsValue] {
+    def as(jv: JsValue)(implicit ct: ClassTag[Long]) = jv match {
+      case JsNumber(i) => i.toLong.successNel[ParseError]
+      case _ => ParseError("_root_", "Could not be interpreted as Long").failureNel[Long]
+    }
+
+    def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Long]) =
+      as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Long").wrapNel)
+  }
+
   lazy implicit val cpjos = new CanParse[Option[String], JsValue] {
     def as(jv: JsValue)(implicit ct: ClassTag[Option[String]]) = jv match {
       case JsString(s) => Some(s).successNel[ParseError]
@@ -62,11 +72,24 @@ object parsedinstances {
     def as(jv: JsValue)(implicit ct: ClassTag[Option[Int]]) = jv match {
       case JsNumber(i) => Some(i.toInt).successNel[ParseError]
       case _: JsUndefined | JsNull => None.successNel[ParseError]
-      case _ => ParseError("_root_", "Could not be interpreted as Option[Int]").failureNel[Option[Int]]
+      case _ => ParseError("_root_", "Could not be interpreted as Option[Int]")
+                  .failureNel[Option[Int]]
     }
 
     def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Option[Int]]) =
       as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Option[Int]").wrapNel)
+  }
+
+  lazy implicit val cpjol = new CanParse[Option[Long], JsValue] {
+    def as(jv: JsValue)(implicit ct: ClassTag[Option[Long]]) = jv match {
+      case JsNumber(i) => Some(i.toLong).successNel[ParseError]
+      case _: JsUndefined | JsNull => None.successNel[ParseError]
+      case _ => ParseError("_root_", "Could not be interpreted as Option[Long]")
+                  .failureNel[Option[Long]]
+    }
+
+    def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Option[Long]]) =
+      as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Option[Long]").wrapNel)
   }
 
 }

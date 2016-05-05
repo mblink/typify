@@ -67,8 +67,10 @@ object parsedmap {
   lazy implicit val cpomas = new MCanParse[Option[Map[String, Any]]] {}
   lazy implicit val cpms = new MCanParse[String] {}
   lazy implicit val cpmi = new MCanParse[Int] {}
+  lazy implicit val cpml = new MCanParse[Long] {}
   lazy implicit val cpmos = new MCanParse[Option[String]] {}
   lazy implicit val cpmoi = new MCanParse[Option[Int]] {}
+  lazy implicit val cpmol = new MCanParse[Option[Long]] {}
 }
 
 class Typify[L, P] { typify =>

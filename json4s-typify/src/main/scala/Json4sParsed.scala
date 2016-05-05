@@ -1,6 +1,6 @@
 package org.json4s.typify
 
-import org.json4s.{JValue, JObject, JString, JInt, JNothing, JNull}
+import org.json4s.{JValue, JObject, JString, JInt, JLong, JNothing, JNull}
 import typify.{CanParse, Parsed, ParseError}
 import scala.reflect.ClassTag
 import scalaz.syntax.nel._
@@ -47,6 +47,17 @@ object parsedinstances {
       as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Int").wrapNel)
   }
 
+  lazy implicit val cpjl = new CanParse[Long, JValue] {
+    def as(jv: JValue)(implicit ct: ClassTag[Long]) = jv match {
+      case JLong(l) => l.toLong.successNel[ParseError]
+      case JInt(i) => i.toLong.successNel[ParseError]
+      case _ => ParseError("_root_", "Could not be interpreted as Long").failureNel[Long]
+    }
+
+    def parse(k: String, jv: JValue)(implicit ct: ClassTag[Long]) =
+      as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Long").wrapNel)
+  }
+
   lazy implicit val cpjos = new CanParse[Option[String], JValue] {
     def as(jv: JValue)(implicit ct: ClassTag[Option[String]]) = jv match {
       case JString(s) => Some(s).successNel[ParseError]
@@ -69,4 +80,15 @@ object parsedinstances {
       as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Option[Int]").wrapNel)
   }
 
+  lazy implicit val cpjol = new CanParse[Option[Long], JValue] {
+    def as(jv: JValue)(implicit ct: ClassTag[Option[Long]]) = jv match {
+      case JLong(l) => Some(l.toLong).successNel[ParseError]
+      case JInt(i) => Some(i.toLong).successNel[ParseError]
+      case JNothing | JNull => None.successNel[ParseError]
+      case _ => ParseError("_root_", "Could not be interpreted as Option[Long]").failureNel[Option[Long]]
+    }
+
+    def parse(k: String, jv: JValue)(implicit ct: ClassTag[Option[Long]]) =
+      as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Option[Long]").wrapNel)
+  }
 }

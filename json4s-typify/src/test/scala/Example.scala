@@ -22,7 +22,7 @@ object Json4sExample extends App {
   case object Male extends Gender
   case object Female extends Gender
 
-  case class Person(email: String @@ Email, age: Int @@ Age, gender: Gender, session: Option[Int @@ SessId])
+  case class Person(email: String @@ Email, age: Long @@ Age, gender: Gender, session: Option[Int @@ SessId])
   case class UnsafePerson(email: String, age: Int)
 
   val typify = new Typify[String, JValue]
@@ -37,7 +37,7 @@ object Json4sExample extends App {
     case "f" => Female.successNel[String]
     case x => s"Invalid gender $x".failureNel[Gender]
   })
-  implicit lazy val vAge = typify.validate[Int, Int @@ Age]((a: Int) =>
+  implicit lazy val vAge = typify.validate[Long, Long @@ Age]((a: Long) =>
     (a > 18).option(tag[Age](a)).toSuccessNel("too young"))
   implicit lazy val sid = typify.validate[Option[Int], Option[Int @@ SessId]]((i: Option[Int]) =>
     i match {

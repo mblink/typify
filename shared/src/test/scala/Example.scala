@@ -19,7 +19,7 @@ object Example extends App {
   case object Male extends Gender
   case object Female extends Gender
 
-  case class Person(email: String @@ Email, age: Int @@ Age, gender: Gender, session: Option[Int @@ SessId])
+  case class Person(email: String @@ Email, age: Long @@ Age, gender: Gender, session: Option[Int @@ SessId])
   case class UnsafePerson(email: String, age: Int)
 
   val typify = new Typify[String, Map[String, Any]]
@@ -34,7 +34,7 @@ object Example extends App {
     case "f" => Female.successNel[String]
     case x => s"Invalid gender $x".failureNel[Gender]
   })
-  implicit lazy val vAge = typify.validate[Int, Int @@ Age]((k: String, a: Int, p: Parsed[Map[String, Any]]) =>
+  implicit lazy val vAge = typify.validate[Long, Long @@ Age]((k: String, a: Long, p: Parsed[Map[String, Any]]) =>
     (a > 18).option(tag[Age](a)).toSuccessNel(s"$k too young"))
   implicit lazy val sid = typify.validate[Option[Int], Option[Int @@ SessId]]((i: Option[Int]) =>
     i match {
@@ -42,11 +42,11 @@ object Example extends App {
       case None => None.successNel[String]
     })
 
-  val bp = typify[Person](Map("emmail" -> "foo", "age" -> 17, "gender" -> "ms", "session" -> Some(33)))
+  val bp = typify[Person](Map("emmail" -> "foo", "age" -> 17L, "gender" -> "ms", "session" -> Some(33)))
   println(bp)
-  val p = typify[Person](Map("email" -> "foo", "age" -> 17, "gender" -> "ms", "session" -> Some(33)))
+  val p = typify[Person](Map("email" -> "foo", "age" -> 17L, "gender" -> "ms", "session" -> Some(33)))
   println(p)
-  val pp = typify[(String @@ Email, Gender) => Person](Map("age" -> 23, "session" -> None))
+  val pp = typify[(String @@ Email, Gender) => Person](Map("age" -> 23L, "session" -> None))
             .map(_(tag[Email]("boo@far"), Male))
   println(pp)
   // will not compile - println(typify[UnsafePerson](Map()))
