@@ -50,7 +50,7 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
   .dependsOn(typifyJVM)
   .settings(
     name := "json4s-typify",
-    version := "1.0.2",
+    version := "1.0.3",
     scalaVersion := "2.11.8",
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
