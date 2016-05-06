@@ -45,7 +45,7 @@ object PlayJsonExample extends App {
 
   case class Optional[A](a: Option[A])
   case class Mandatory[A](a: A)
-  val valid = parse("""{"a":{"email":"foo@opman","age":22,"gender":"m","session":77777}}""")
+  val valid = parse("""{"a":{"email":"foo@opman","age":"22","gender":"m","session":"77777"}}""")
 
   println(typify[Optional[Person]](valid))
   println(typify[Optional[Person]](parse("null")))
