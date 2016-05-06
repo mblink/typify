@@ -84,12 +84,12 @@ lazy val playjsonTypify = project.in(file("play-json-typify"))
   .dependsOn(typifyJVM)
   .settings(
     name := "play-json-typify",
-    version := "1.0.1",
+    version := "1.0.2",
     scalaVersion := "2.11.8",
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
-			"com.typesafe.play" %% "play-json" % "2.3.4",
+			"com.typesafe.play" %% "play-json" % "2.5.0",
       "org.scalaz" %% "scalaz-core" % "7.2.2"
     ),
     bintrayOrganization := Some("bondlink"),
