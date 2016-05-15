@@ -27,13 +27,14 @@ lazy val typify = crossProject.in(file(".")).
     version := "1.1.5",
     scalaVersion := "2.11.8",
     libraryDependencies ++= Seq(
-      "com.chuusai" %%% "shapeless" % "2.3.0",
+      "com.chuusai" %%% "shapeless" % "2.3.1",
       "org.scalaz" %%% "scalaz-core" % "7.2.2"
     ),
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     bintrayOrganization := Some("bondlink"),
     bintrayRepository := "Typify",
-    bintrayReleaseOnPublish in ThisBuild := false
+    bintrayReleaseOnPublish in ThisBuild := false,
+    publishArtifact in Test := true
   ).
   jvmSettings(
     // Add JVM-specific settings here
@@ -47,7 +48,7 @@ lazy val typifyJVM = typify.jvm
 lazy val typifyJS = typify.js.enablePlugins(ScalaJSPlugin)
 
 lazy val json4sTypify = project.in(file("json4s-typify"))
-  .dependsOn(typifyJVM)
+  .dependsOn(typifyJVM % "test->test;compile->compile")
   .settings(
     name := "json4s-typify",
     version := "1.0.3",
@@ -63,7 +64,7 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
     bintrayReleaseOnPublish in ThisBuild := false)
 
 lazy val sjsTypify = project.in(file("jsdynamic-typify"))
-  .dependsOn(typifyJS)
+  .dependsOn(typifyJS % "test->test;compile->compile")
   .settings(
     name := "jsdynamic-typify",
     version := "1.0.4",
@@ -81,7 +82,7 @@ lazy val sjsTypify = project.in(file("jsdynamic-typify"))
   .enablePlugins(ScalaJSPlugin)
 
 lazy val playjsonTypify = project.in(file("play-json-typify"))
-  .dependsOn(typifyJVM)
+  .dependsOn(typifyJVM % "test->test;compile->compile")
   .settings(
     name := "play-json-typify",
     version := "1.0.3",
@@ -89,7 +90,7 @@ lazy val playjsonTypify = project.in(file("play-json-typify"))
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
-			"com.typesafe.play" %% "play-json" % "2.5.0",
+      "com.typesafe.play" %% "play-json" % "2.5.0",
       "org.scalaz" %% "scalaz-core" % "7.2.2"
     ),
     bintrayOrganization := Some("bondlink"),

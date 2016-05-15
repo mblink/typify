@@ -9,68 +9,43 @@ import scalaz.syntax.std.option._
 import scalaz.syntax.traverse._
 import scalaz.syntax.validation._
 import scalaz.ValidationNel
-import shapeless.LabelledGeneric
-import shapeless.tag
-import shapeless.tag.@@
+import shapeless.{::, HNil}
+import shapeless.syntax.singleton._
+import shapeless.record._
+import typify.convert._
+import typify.parsedmap._
 
 @JSExport
 object jsDynamicExample {
 
-  trait Email {}
-  trait Age {}
-  trait SessId {}
-
-  sealed trait Gender
-  case object Male extends Gender
-  case object Female extends Gender
-
-  case class Person(email: String @@ Email, age: Long @@ Age, gender: Gender, session: Option[Int @@ SessId])
-  case class UnsafePerson(email: String, age: Int)
-
-  val typify = new Typify[String, js.Dynamic]
-  import typify.parsers._
+  val typify = new Typify[String, Parsed[js.Dynamic]]
+  import typify.syntax._
 
   implicit lazy val e2s = (pd: Parsed[js.Dynamic], p: ParseError) => s"${p.key}: ${p.error}"
 
-  implicit lazy val vEmail = typify.validate[String, String @@ Email]((e: String) =>
-    e.contains("@").option(tag[Email](e)).toSuccessNel("invalid email"))
-  implicit lazy val vGender = typify.validate[String, Gender]((e: String) => e match {
-    case "m" => Male.successNel[String]
-    case "f" => Female.successNel[String]
-    case x => s"Invalid gender $x".failureNel[Gender]
-  })
-  implicit lazy val vAge = typify.validate[Long, Long @@ Age]((k: String, a: Long) =>
-    (a > 18).option(tag[Age](a)).toSuccessNel(s"${k} too young"))
-  implicit lazy val sid = typify.validate[Option[Int], Option[Int @@ SessId]]((i: Option[Int]) =>
-    i match {
-      case Some(id) => (id > 10000).option(Some(tag[SessId](id))).toSuccessNel(s"invalid session $id")
-      case None => None.successNel[String]
-    })
-
-  implicit lazy val oPerson = typify.validate[Option[js.Dynamic], Option[Person]](
-    (k: String, jsd: Option[js.Dynamic], p: Parsed[js.Dynamic]) =>
-      jsd.map(op => typify[Person](op)).sequenceU)
+  val setup = new TestSetup(typify)
+  import setup._
 
   @JSExport
   def optionalPerson(jsd: String): ValidationNel[String, Option[Person]] =
-    typify[Option[Person]](js.JSON.parse(jsd))
+    Parsed(js.JSON.parse(jsd)).parseOption(person).map(_.map(_.convertTo[Person]))
 
   @JSExport
   def validatePerson(jsd: String): ValidationNel[String, Person] = {
-    typify[Person](js.JSON.parse(jsd))
+    Parsed(js.JSON.parse(jsd)).parse(person).map(_.convertTo[Person])
   }
 
   case class Optional[A](a: Option[A])
+  val pp = (p: js.Dynamic) => Parsed(p).parse(person).map(_.convertTo[Person])
+  val opp = ('a ->> Typify.optional(pp)) :: HNil
 
   @JSExport
   def opPerson(jsd: String): ValidationNel[String, Optional[Person]] =
-    typify[Optional[Person]](js.JSON.parse(jsd), Seq("b"))
+    Parsed(js.JSON.parse(jsd), Seq("b")).parse(opp).map(_.convertTo[Optional[Person]])
 
   @JSExport
-  def partialValidatePerson(jsd: String, root: Seq[String] = Seq()):
-  ValidationNel[String, (String, Long) => Person] =
-    typify[(String @@ Email, Long @@ Age) => Person](js.JSON.parse(jsd), root)
-      .map(fn => (s: String, i: Long) => fn(tag[Email](s), tag[Age](i)))
+  def partialValidatePerson(jsd: String, root: Seq[String] = Seq()) =
+    Parsed(js.JSON.parse(jsd), root).parse(person - 'email - 'age)
 }
 
 

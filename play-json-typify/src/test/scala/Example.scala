@@ -7,68 +7,67 @@ import scalaz.syntax.std.boolean._
 import scalaz.syntax.std.option._
 import scalaz.syntax.validation._
 import scalaz.{\/, NonEmptyList}
-import shapeless.tag
-import shapeless.tag.@@
+import shapeless.ops.hlist.LeftFolder
+import shapeless.syntax.singleton._
+import shapeless.record._
+import shapeless.{::, HList, HNil}
+import typify.convert._
 
 object PlayJsonExample extends App {
 
-  trait Email {}
-  trait Age {}
-  trait SessId {}
+  val typify = new Typify[String, Parsed[JsValue]]
+  import typify.syntax._
 
-  sealed trait Gender
-  case object Male extends Gender
-  case object Female extends Gender
-
-  case class Person(email: String @@ Email, age: Long @@ Age, gender: Gender, session: Option[Int @@ SessId])
-  case class UnsafePerson(email: String, age: Int)
-
-  val typify = new Typify[String, JsValue]
-  import typify.parsers._
 
   implicit def e2l = (p: Parsed[JsValue], e: ParseError) => s"${p.root}:${e.key}: ${e.error}"
 
-  implicit lazy val vEmail = typify.validate[String, String @@ Email]((e: String) =>
-    e.contains("@").option(tag[Email](e)).toSuccessNel("invalid email"))
-  implicit lazy val vGender = typify.validate[String, Gender]((e: String) => e match {
-    case "m" => Male.successNel[String]
-    case "f" => Female.successNel[String]
-    case x => s"Invalid gender $x".failureNel[Gender]
-  })
-  implicit lazy val vAge = typify.validate[Long, Long @@ Age]((a: Long) =>
-    (a > 18).option(tag[Age](a)).toSuccessNel("too young"))
-  implicit lazy val sid = typify.validate[Option[Int], Option[Int @@ SessId]]((i: Option[Int]) =>
-    i match {
-      case Some(id) => (id > 10000).option(Some(tag[SessId](id))).toSuccessNel(s"invalid session $id")
-      case None => None.successNel[String]
-    })
+  val setup = new TestSetup(typify)
+  import setup._
 
   case class Optional[A](a: Option[A])
   case class Mandatory[A](a: A)
-  val valid = parse("""{"a":{"email":"foo@opman","age":"22","gender":"m","session":"77777"}}""")
+  val pp = (p: JsValue) => Parsed(p).parse(person).map(_.convertTo[Person])
+  val opp = 'a ->> Typify.optional(pp) :: HNil
+  val mpp = 'a ->> Typify.validate(pp) :: HNil
 
-  println(typify[Optional[Person]](valid))
-  println(typify[Optional[Person]](parse("null")))
-  println(typify[Optional[Person]](parse("""{"b":{"a":{"email":"foo@bar"}}}"""), Seq("b")))
-  println(typify[Mandatory[Person]](valid))
-  println(typify[Mandatory[Person]](parse("null")))
+  val valid = Parsed(parse("""{"a":{"email":"foo@opman","age":"22","gender":"m","session":"77777"}}"""))
 
-  val npps = typify[Option[Person]](parse("null"))
+  println(valid.parse(opp).map(_.convertTo[Optional[Person]]))
+  println(Parsed(parse("null")).parse(opp).map(_.convertTo[Optional[Person]]))
+  println(Parsed(parse("""{"b":{"a":{"email":"foo@bar"}}}"""), Seq("b"))
+            .parse(opp).map(_.convertTo[Optional[Person]]))
+  println(valid.parse(mpp).map(_.convertTo[Mandatory[Person]]))
+  println(Parsed(parse("null")).parse(mpp).map(_.convertTo[Mandatory[Person]]))
+
+  val npps = Parsed(parse("null")).parseOption(person).map(_.map(_.convertTo[Person]))
   println(npps)
-  val osps = typify[Option[Person]](parse("""{"email":"foo@bar","age":22,"gender":"m","session":77777}"""))
+  val osps = Parsed(parse("""{"email":"foo@bar","age":22,"gender":"m","session":77777}"""))
+                .parseOption(person).map(_.map(_.convertTo[Person]))
   println(osps)
-  val ofpf = typify[Option[Person]](parse("""{"email":"foobar","age":2,"gender":"m","session":77777}"""))
+  val ofpf = Parsed(parse("""{"email":"foobar","age":2,"gender":"m","session":77777}"""))
+                .parseOption(person).map(_.map(_.convertTo[Person]))
   println(ofpf)
-  val opps = typify[Option[String @@ Email => Person]](parse("""{"email":"foobar","age":22,"gender":"m","session":77777}"""))
-  println(opps.map(_.map(_(tag[Email]("foo@partial")))))
-  val nppps = typify[Option[String @@ Email => Person]](parse("null"))
-  println(nppps.map(_.map(_(tag[Email]("foo@bar")))))
-  val p = typify[Person](parse("""{"email":"foo","age":17,"gender":"ms","session":3}"""))
+  val opps = Parsed(parse("""{"email":"foobar","age":22,"gender":"m","session":77777}"""))
+                .parseOption(person - 'email)
+                .map(_.map(x => (x + ('email ->> "foo@bar")).convertTo[Person]))
+  println(opps)
+  val nppps = Parsed(parse("null"))
+                .parseOption(person - 'email)
+                .map(_.map(x => (x + ('email ->> "foobar")).convertTo[Person]))
+  println(nppps)
+  val p = Parsed(parse("""{"a":{"b":{"email":"foo","age":17,"gender":"ms","session":3}}}"""),
+                Seq("a", "b"))
+            .parse(person).map(_.convertTo[Person])
   println(p)
-  val pp = typify[(String @@ Email, Gender) => Person](parse("""{"foo":{"age":23}}"""), Seq("foo"))
-  println(pp.map(_(tag[Email]("boo@far"), Male)))
-  println(typify[Person](parse("[]")))
-  // will not compile - println(typify[UnsafePerson](parse("{}")))
+  val bpp = Parsed(parse("""{"foo":{"age":23}}"""), Seq("foo"))
+            .parse(person - 'email - 'gender)
+            .map(x => (x + ('email ->> "e") + ('gender ->> (Male: Gender))).convertTo[Person])
+  println(bpp)
+  println(Parsed(parse("[]"), Seq("a")).parse(person).map(_.convertTo[Person]))
+
+  def parsed[R <: HList, G <: HList, P](i: R)(jv: Parsed[JsValue])(implicit
+    lf: LeftFolder.Aux[R,typify.PV[HNil],typify.foldPV.type,typify.PV[G]]) =
+    jv.parse(i)
+
+  println(parsed(mpp)(valid).map(_.convertTo[Mandatory[Person]]))
 }
-
-
