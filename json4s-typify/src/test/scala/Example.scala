@@ -1,6 +1,7 @@
 package typify
 
 import typify.convert._
+import typify.convert.syntax._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.JValue
 import org.json4s.typify.parsedinstances._

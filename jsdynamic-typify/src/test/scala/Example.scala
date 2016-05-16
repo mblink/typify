@@ -13,6 +13,7 @@ import shapeless.{::, HNil}
 import shapeless.syntax.singleton._
 import shapeless.record._
 import typify.convert._
+import typify.convert.syntax._
 import typify.parsedmap._
 
 @JSExport

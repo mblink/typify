@@ -1,6 +1,7 @@
 package typify
 
 import typify.convert._
+import typify.convert.syntax._
 import typify.parsedmap._
 import scalaz.syntax.std.boolean._
 import scalaz.syntax.std.option._
