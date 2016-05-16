@@ -42,7 +42,7 @@ object Json4sExample extends App {
   val npps = Parsed(parse("null")).parseOption(person).map(_.map(_.convertTo[Person]))
   println(npps)
   val osps = Parsed(parse("""{"a":{"email":"foo@bar","age":22,"gender":"m","session":77777}}"""),
-                  Seq("a")).parseOption(person).map(_.map(_.convertTo[Person]))
+                  Seq("b")).parseOption(person).map(_.map(_.convertTo[Person]))
   println(osps)
   val ofpf = Parsed(parse("""{"email":"foobar","age":2,"gender":"m","session":77777}"""))
                 .parseOption(person).map(_.map(_.convertTo[Person]))

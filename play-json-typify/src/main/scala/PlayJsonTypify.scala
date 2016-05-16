@@ -25,6 +25,20 @@ trait CatchAllInstance {
 
 object parsedinstances extends CatchAllInstance {
 
+  implicit def parseJSV = new CanParse[JsValue, JsValue] {
+   def parse(k: String, jv: JsValue)(implicit ct: ClassTag[JsValue]):
+    ValidationNel[ParseError, JsValue] = (jv \ k) match {
+      case _: JsUndefined => JsNull.successNel[ParseError]
+      case JsDefined(r) => as(r)
+    }
+
+    def as(jv: JsValue)(implicit ct: ClassTag[JsValue]):
+    ValidationNel[ParseError, JsValue] = jv match {
+      case JsNull => JsNull.successNel[ParseError]
+      case s: JsValue => s.successNel[ParseError]
+    }
+  }
+
   implicit def parseO[T](implicit rd: Reads[T]) = new CanParse[Option[T], JsValue] {
    def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Option[T]]):
     ValidationNel[ParseError, Option[T]] = (jv \ k) match {
