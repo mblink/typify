@@ -12,6 +12,7 @@ import shapeless.syntax.singleton._
 import shapeless.record._
 import shapeless.{::, HList, HNil}
 import typify.convert._
+import typify.convert.syntax._
 
 object PlayJsonExample extends App {
 
@@ -41,8 +42,8 @@ object PlayJsonExample extends App {
 
   val npps = Parsed(parse("null")).parseOption(person).map(_.map(_.convertTo[Person]))
   println(npps)
-  val osps = Parsed(parse("""{"email":"foo@bar","age":22,"gender":"m","session":77777}"""))
-                .parseOption(person).map(_.map(_.convertTo[Person]))
+  val osps = Parsed(parse("""{"a":{"email":"foo@bar","age":22,"gender":"m","session":77777}}"""),
+                Seq("a")).parseOption(person).map(_.map(_.convertTo[Person]))
   println(osps)
   val ofpf = Parsed(parse("""{"email":"foobar","age":2,"gender":"m","session":77777}"""))
                 .parseOption(person).map(_.map(_.convertTo[Person]))

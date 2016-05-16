@@ -30,6 +30,12 @@ case class Parsed[A: ClassTag](run: A, root: Seq[String] = Seq()) {
         (r, k) => r.flatMap(sp.parse(k, _).disjunction))
       .flatMap(cp.parse(key, _).disjunction).validation
 
+  def to[T: ClassTag](implicit cp: CanParse[T, A], sp: CanParse[A, A]):
+  ValidationNel[ParseError, T] =
+    root.foldLeft(run.successNel[ParseError].disjunction)(
+        (r, k) => r.flatMap(sp.parse(k, _).disjunction))
+      .flatMap(cp.as(_).disjunction).validation
+
   def withRoot(newRoot: Seq[String]): Parsed[A] = Parsed[A](run, newRoot)
 }
 
@@ -154,8 +160,9 @@ class Typify[L, P] { typify =>
       def parseOption[I <: HList, R <: HList, B](in: I)(implicit
         ev: P <:< Parsed[B], rev: Parsed[B] === P, ct: ClassTag[B],
         lf: LeftFolder.Aux[I, PV[HNil], foldPV.type, PV[R]],
-        e2l: Typify.E2L[L, B], cp: CanParse[Option[B], B]): ValidationNel[L, Option[R]] =
-          cp.as(ev(p).run).leftMap(_.map(e2l(ev(p), _)))
+        e2l: Typify.E2L[L, B], cp: CanParse[Option[B], B],
+        cpb: CanParse[B, B]): ValidationNel[L, Option[R]] =
+          p.to[Option[B]].leftMap(_.map(e2l(ev(p), _)))
             .disjunction
             .flatMap(_.map(x => new HLOps(rev(Parsed(x))).parse(in)).sequenceU.disjunction)
             .validation
