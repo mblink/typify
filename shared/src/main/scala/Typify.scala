@@ -39,26 +39,6 @@ case class Parsed[A: ClassTag](run: A, root: Seq[String] = Seq()) {
   def withRoot(newRoot: Seq[String]): Parsed[A] = Parsed[A](run, newRoot)
 }
 
-object parsedmap {
-  trait MCanParse[T] extends CanParse[T, Map[String, Any]] {
-    def parse(k: String, p: Map[String, Any])(implicit ct: ClassTag[T]): ValidationNel[ParseError, T] =
-      p.get(k).flatMap(x => x match {
-        case y: T => Some(y)
-        case _ => None
-      }).toSuccessNel(ParseError(k, "could not parse"))
-    def as(p: Map[String, Any])(implicit ct: ClassTag[T]): ValidationNel[ParseError, T] =
-      ParseError("_root_", "Map[String, Any] cannot be converted at root").failureNel[T]
-  }
-  lazy implicit val cpmas = new MCanParse[Map[String, Any]] {}
-  lazy implicit val cpomas = new MCanParse[Option[Map[String, Any]]] {}
-  lazy implicit val cpms = new MCanParse[String] {}
-  lazy implicit val cpmi = new MCanParse[Int] {}
-  lazy implicit val cpml = new MCanParse[Long] {}
-  lazy implicit val cpmos = new MCanParse[Option[String]] {}
-  lazy implicit val cpmoi = new MCanParse[Option[Int]] {}
-  lazy implicit val cpmol = new MCanParse[Option[Long]] {}
-}
-
 object Typify {
   type E2L[L, P] = (Parsed[P], ParseError) => L
 
