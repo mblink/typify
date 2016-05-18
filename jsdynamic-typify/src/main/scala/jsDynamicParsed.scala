@@ -5,9 +5,11 @@ import scala.scalajs.js.Dynamic
 import typify.{CanParse, Parsed, ParseError}
 import scala.reflect.ClassTag
 import scalaz.std.option._
+import scalaz.syntax.either._
+import scalaz.syntax.nel._
+import scalaz.syntax.std.boolean._
 import scalaz.syntax.std.option._
 import scalaz.syntax.std.string._
-import scalaz.syntax.nel._
 import scalaz.syntax.traverse._
 import scalaz.syntax.validation._
 import scalaz.{\/, NonEmptyList, ValidationNel}
@@ -17,12 +19,14 @@ object parsedinstances {
     { a: A => \/.fromTryCatchNonFatal(fn(a)) }
 
   lazy implicit val cpd = new CanParse[Dynamic, Dynamic] {
-    def as(d: Dynamic)(implicit ct: ClassTag[Dynamic]) = d.successNel[ParseError]
+    def as(d: Dynamic)(implicit ct: ClassTag[Dynamic]) =
+      Option(d).filterNot(js.isUndefined)
+        .toSuccessNel(ParseError("_root_", "Could not be interpreted as Dynamic"))
 
     def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Dynamic]) =
       nf(d.selectDynamic)(k)
-        .flatMap(x => (Option(x).filterNot(js.isUndefined) \/> "null found").map(_ => x))
         .flatMap(nf(_.asInstanceOf[Dynamic]))
+        .ensure("null encountered")(x => !js.isUndefined(x))
         .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Dynamic")))
         .validation
   }
@@ -34,6 +38,7 @@ object parsedinstances {
     def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Option[Dynamic]]) =
       nf(d.selectDynamic)(k)
         .flatMap(as(_).disjunction)
+        .orElse(None.right[NonEmptyList[ParseError]])
         .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Option[Dynamic]")))
         .validation
   }
@@ -70,10 +75,14 @@ object parsedinstances {
         .validation
   }
 
+  def parseLong(d: Dynamic): \/[Throwable, Long] =
+    \/.fromTryCatchNonFatal(d.asInstanceOf[Double].toLong)
+      .orElse(\/.fromTryCatchNonFatal(d.asInstanceOf[String]).flatMap(_.parseLong.disjunction))
+
   lazy implicit val cpl = new CanParse[Long, Dynamic] {
     def as(d: Dynamic)(implicit ct: ClassTag[Long]) =
       (Option(d).filterNot(js.isUndefined) \/> "null found").map(_ => d)
-        .flatMap(parseInt).map(_.toLong)
+        .flatMap(parseLong)
         .leftMap(_ => NonEmptyList(ParseError("_root_", "Could not be interpreted as Long")))
         .validation
 
@@ -92,7 +101,9 @@ object parsedinstances {
 
     def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Option[String]]) =
       nf(d.selectDynamic)(k)
-        .flatMap(as(_).disjunction)
+        .toOption
+        .successNel[ParseError].disjunction
+        .flatMap(_.flatMap(as(_).disjunction.sequenceU).sequenceU)
         .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Option[String]")))
         .validation
   }
@@ -105,21 +116,25 @@ object parsedinstances {
 
     def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Option[Int]]) =
       nf(d.selectDynamic)(k)
-        .flatMap(as(_).disjunction)
+        .toOption
+        .successNel[ParseError].disjunction
+        .flatMap(_.flatMap(as(_).disjunction.sequenceU).sequenceU)
         .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Option[Int]")))
         .validation
   }
 
   lazy implicit val cpol = new CanParse[Option[Long], Dynamic] {
     def as(d: Dynamic)(implicit ct: ClassTag[Option[Long]]) =
-      Option(d).filterNot(js.isUndefined).map(parseInt).map(_.map(_.toLong)).sequenceU
+      Option(d).filterNot(js.isUndefined).map(parseLong).sequenceU
         .leftMap(_ =>
             NonEmptyList(ParseError("_root_", "Could not be interpreted as Option[Long]")))
         .validation
 
     def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Option[Long]]) =
       nf(d.selectDynamic)(k)
-        .flatMap(as(_).disjunction)
+        .toOption
+        .successNel[ParseError].disjunction
+        .flatMap(_.flatMap(as(_).disjunction.sequenceU).sequenceU)
         .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Option[Long]")))
         .validation
   }

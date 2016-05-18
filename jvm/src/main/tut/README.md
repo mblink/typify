@@ -2,131 +2,146 @@
 
 Typify is a library for parsing and validating poorly-typed data into well-typed data.
 
-The biggest distinction between this and others like it, is that Typify associates parsing and validation
-rules with the field types on your case classes, and makes it hard for you to use meaningless or primitive
-types. In fact, if you haven't added some meaningful types with explicitly defined validations to the
-fields of a case class you are validating, you are met with a compiler error.
+While it currently provides support for json4s, play-json, scalajs, and the Any type,
+new source types can be added easily by implementing a type class for your source type.
 
-Here's a quick preview before going further in depth.
+Typify also does not prescribe a failure type, so you are able to accumulate parse/validation
+failures of your own type with whatever data is relevant to your use case.
+
+Validation rules and results are bare shapeless HLists, so shapeless record and HList
+operations are available to compose and manipulate validations and results. This easily
+supports re-use of validation rules, and partial parsing of inputs.
+
+It is best understood through an example.
+
+Let's say we want to validate a user, making sure that they have a valid email, age,
+and an optional session id.
+
+First some imports.
+
+```tut:silent
+import shapeless.{::, HNil}
+import shapeless.syntax.singleton._
+import typify.{Typify, Parsed, ParseError}
+import typify.convert._
+import typify.convert.syntax._
+```
+
+Now we can create an instance of Typify  by specifying the failure type we will use and
+the type we will parse from.
+
+Typify currently includes support for parsing from Any, play json, json4s, and scalajs Dynamic.
+New types can be added by implementing the CanParse typeclass for your desired source type.
+
+Let's use Any for this example.
+
+```tut
+import typify.parsedany._
+
+case class Fail(reason: String)
+
+val tp = new Typify[Fail, Parsed[Any]]
+```
+
+We also need to define an implicit function to convert a typify.ParseError to our failure type.
+
+ParseError looks like this
 
 ```scala
-  case class Person(email: String @@ Email, age: Int @@ Age)
-  case class UnsafePerson(email: String, age: Int)
-  typify[Person](Map("email" -> "foo@bar", "age" -> 22)) // Success(User)
-  typify[String @@ Email => Person](Map("age" -> 22)).map(_("foo@bar")) // Success(User)
-  typify[UnsafePerson](Map("email" -> "foo@bar", "age" -> 22)) // compile error
+case class ParseError(key: String, error: String)
 ```
-
-Typify leverages [scalaz](https://github.com/scalaz/scalaz) for accumulation of parsing/validation errors,
-and [shapeless](https://github.com/milessabin/shapeless) for compile-time introspection and added type safety.
-
-The philosophy of the library is that parsing and validation should be done according to the target type of a
-parsed and validated value, and that the compiler should enforce that you only work with types which have
-validations defined.
-
-Some care was taken to maintain practical flexibility, namely the type used for failures is defined
-at the call site, as well as the actual parsing mechanism via a simple typeclass.
-A parser for Map[String, Any] is included for example purposes and the json4s-typify sub-project
-contains a parser for the json4s AST.
-
-Use requires a minimal amount of one-time setup and is extremely concise from that point on, as illustrated in the
-following example.
-
-First import some requirements.
-
-```tut:silent
-import typify.parsedmap._
-import typify.{Parsed, ParseError, Typify}
-import scalaz.syntax.std.boolean._
-import scalaz.syntax.std.option._
-import shapeless.LabelledGeneric
-import shapeless.tag
-import shapeless.tag.@@
-```
-
-With this in place, let's create an instance of Typify, specifying the type we will use for failures, and the
-type we will parse from.
 
 ```tut
-  val typify = new Typify[String, Map[String, Any]]
+implicit val parse2Error = (p: Parsed[Any], pe: ParseError) => Fail(s"${pe.key} - ${pe.error}")
 ```
 
-We need to import the parsers from our typify instance and define an
-implicit conversion from ParseError to our chosen failure type:
+Now we can define some validation functions.
+Let's validate an email, an age and an optional session id.
 
 ```tut
-  import typify.parsers._
+import scalaz.NonEmptyList
+import scalaz.syntax.either._
+import scalaz.syntax.nel._
+import scalaz.syntax.validation._
 
-  implicit lazy val e2s = (p: Parsed[Map[String, Any]], e: ParseError) => s"${e.key}: ${e.error}"
+val checkEmail = Typify.validate((s: String) =>
+  s.right[NonEmptyList[Fail]]
+   .ensure(Fail("Email is invalid").wrapNel)(_.contains("@"))
+   .validation)
+
+val checkAge = Typify.validate((i: Int) =>
+  i.right[NonEmptyList[Fail]]
+   .ensure(Fail("Too young").wrapNel)(_ > 21)
+   .validation)
+
+val checkSessId = Typify.optional((i: Int) =>
+  i.right[NonEmptyList[Fail]]
+   .ensure(Fail("Invalid session id").wrapNel)(_ > 3000)
+   .validation)
 ```
 
-With these in scope we can create our FieldParsers. First let's define meaninful types for our fields.
-
-```tut:silent
-  trait Email {}
-  trait Age {}
-
-  case class Person(email: String @@ Email, age: Int @@ Age)
-```
-
-And now for the FieldParsers
+Now we can define in which fields to look for these values under our source value as follows.
 
 ```tut
-  implicit lazy val vEmail = typify.validate[String, String @@ Email]((e: String) =>
-    e.contains("@").option(tag[Email](e)).toSuccessNel("invalid email"))
-  implicit lazy val vAge = typify.validate[Int, Int @@ Age]((a: Int) =>
-    (a > 18).option(tag[Age](a)).toSuccessNel("too young"))
+val checkPerson = 'email ->> checkEmail :: 'age ->> checkAge :: 'session ->> checkSessId :: HNil
 ```
 
-Here we have said that a valid email is anything that contains an @ symbol, while a valid age is anything over 18.
-
-With this in place, we are now able to parse a Map[String, Any] into a Person instance and validate it along the way.
+From here we are able to parse a person out of Any using our Typify instance.
 
 ```tut
-  typify[Person](Map("email" -> "foo", "age" -> 17))
-  typify[Person](Map("email" -> "foo@bar"))
-  typify[Person](Map("age" -> 22))
-  typify[Person](Map("email" -> "foo@bar", "age" -> 22))
-  typify[Person](Map("email" -> 2, "age" -> "bar"))
+import tp.syntax._
+
+val passes: Any = Map("email" -> "foo@bar", "age" -> 22, "session" -> 77777, 3 -> "junk")
+val passesNoSess: Any = Map("email" -> "foo@bar", "age" -> 22, 500L -> "extra doesnt matter")
+val failsAtParse: Any = 33
+val failsAtValidation: Any = Map("email" -> "foo", "session" -> 77777)
+
+val passed = Parsed(passes).parse(checkPerson)
+val passedNoSess = Parsed(passesNoSess).parse(checkPerson)
+val failedAtParse = Parsed(failsAtParse).parse(checkPerson)
+val failedAtValidation = Parsed(failsAtValidation).parse(checkPerson)
 ```
 
-If we have a partial structure and can pull remaining values from elsewhere, partial parsing is also supported
+Note that a successful validation returns an HList. We can easily convert it to a compatible case
+class. Field order is not important, and supersets of target types are allowed.
+
+These conversions are type safe. Attempting to convert to a case class that requires fields which
+are not present on a given HList will fail at compile time.
 
 ```tut
-  typify[Int @@ Age => Person](Map("email" -> "foo@bar")).map(_(tag[Age](25)))
+case class Person(age: Int, email: String)
+case class PersonWithSession(session: Option[Int], email: String, age: Int)
+
+passed.map(_.convertTo[Person])
+passed.map(_.convertTo[PersonWithSession])
+passedNoSess.map(_.convertTo[Person])
+passedNoSess.map(_.convertTo[PersonWithSession])
 ```
 
-Note that with this approach, as we build up a collection of validation rules for specific types, we will add them
-less and less often, and re-use simply by tagging fields with previously validated types.
+Because our validation rules and results are both simply HLists, we can use HList and record
+operations to compose rules, and do partial validation.
 
-Let's try with a target type that uses primitives for its fields.
+```tut
+import shapeless.record._
 
-```tut:silent
-  case class UnsafePerson(email: String, age: Int)
-  implicit lazy val genUP = LabelledGeneric[UnsafePerson]
+val checkSessId = ((i: Int) =>
+  i.right[NonEmptyList[Fail]]
+   .ensure(Fail("Invalid session id").wrapNel)(_ > 3000)
+   .validation)
+
+val checkSessM = Typify.validate(checkSessId)
+val checkSessO = Typify.optional(checkSessId)
+
+val checkPerson = 'email ->> checkEmail :: 'age ->> checkAge :: 'session ->> checkSessO :: HNil
+val checkPersonWithSession = (checkPerson - 'session) + ('session ->> checkSessM)
+
+val passed = Parsed(passes).parse(checkPersonWithSession)
+val failedNoSession = Parsed(passesNoSess).parse(checkPersonWithSession)
+val passedPartialSession = Parsed(passesNoSess).parse(checkPersonWithSession - 'session)
+
+case class PersonRequireSession(session: Int, email: String, age: Int)
+
+passed.map(_.convertTo[PersonRequireSession])
+failedNoSession.map(_.convertTo[PersonRequireSession])
+passedPartialSession.map(_ + ('session ->> 7777)).map(_.convertTo[PersonRequireSession])
 ```
-
-We cannot "forget" to define validations for any fields on our data types, as doing so will result in a
-compiler error.
-
-```tut:fail
-  typify[UnsafePerson](Map("email" -> "foo@bar", "age" -> 22))
-```
-
-###TODO
-
-* Validate params passed to a partial parse
-
-####Credits
-
-This was largely done in one weekend marathon session, including a first deep dive into Shapeless. That means lots of
-this was shamelessly modeled after (read: copy/paste/adjusted from) several excellent examples out there. Thanks to
-Miles Sabin for the shapeless library, Travis Brown for circe and his writings on meta.plasm.us, and Alexandre
-Archembault for argonaut-shapeless.
-
-Here are some particularly excellent resources which were essential to helping me brute force my way through:
-
-* [argonaut-shapeless HListProductDecodeJson](https://github.com/alexarchambault/argonaut-shapeless/blob/master/core/src/main/scala/argonaut/derive/MkDecodeJson.scala)
-* [circe IncompleteDerivedDecoders](https://github.com/travisbrown/circe/blob/d437295f5fa225ece1c9d073c56c1462fa2225f1/generic/shared/src/main/scala/io/circe/generic/decoding/IncompleteDerivedDecoders.scala)
-* [meta.plasm.us Generic derivation of typeclass instances](https://meta.plasm.us/posts/2015/11/08/type-classes-and-generic-derivation/)
-* [meta.plasm.us Deriving incomplete typeclass instances](https://meta.plasm.us/posts/2015/06/21/deriving-incomplete-type-class-instances/)
