@@ -33,7 +33,7 @@ object parsedinstances {
 
   lazy implicit val cpod = new CanParse[Option[Dynamic], Dynamic] {
     def as(d: Dynamic)(implicit ct: ClassTag[Option[Dynamic]]) = {
-      Some(d).filterNot(js.isUndefined).successNel[ParseError]
+      Option(d).filterNot(js.isUndefined).successNel[ParseError]
     }
 
     def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Option[Dynamic]]) =

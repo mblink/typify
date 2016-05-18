@@ -28,18 +28,18 @@ object MakeJsDynamic extends MakeParsed[js.Dynamic] {
                     .getOrElse(().asInstanceOf[js.Dynamic])
       case MPI => v.asInstanceOf[js.Dynamic]
       case MPOI => MPOI(v).map(_.asInstanceOf[js.Dynamic])
-                    .getOrElse(().asInstanceOf[js.Dynamic])
+                    .getOrElse(null.asInstanceOf[js.Dynamic])
       case MPL => v.asInstanceOf[js.Dynamic]
       case MPOL => MPOL(v).map(_.asInstanceOf[js.Dynamic])
                     .getOrElse(().asInstanceOf[js.Dynamic])
       case MPP => v.asInstanceOf[js.Dynamic]
       case MPOP => MPOP(v).map(_.asInstanceOf[js.Dynamic])
-                    .getOrElse(().asInstanceOf[js.Dynamic])
+                    .getOrElse(null.asInstanceOf[js.Dynamic])
     }
 }
 
 @JSExport
-object jsDynamicCanParse extends Properties("playjson CanParse") {
+object jsDynamicCanParse extends Properties("js.Dynamic CanParse") {
 
   val prop = new CanParseProp(MakeJsDynamic)
 
