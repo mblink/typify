@@ -32,17 +32,15 @@ object parsedinstances {
   }
 
   lazy implicit val cpod = new CanParse[Option[Dynamic], Dynamic] {
-    def as(d: Dynamic)(implicit ct: ClassTag[Option[Dynamic]]) = {
+    def as(d: Dynamic)(implicit ct: ClassTag[Option[Dynamic]]) =
       Option(d).filterNot(js.isUndefined).successNel[ParseError]
-    }
 
     def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Option[Dynamic]]) =
-      js.isUndefined(d).fold(None.successNel[ParseError],
-        nf(d.selectDynamic)(k)
-          .flatMap(as(_).disjunction)
-          .orElse(None.right[NonEmptyList[ParseError]])
-          .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Option[Dynamic]")))
-          .validation)
+      nf(d.selectDynamic)(k)
+        .flatMap(as(_).disjunction)
+        .orElse(None.right[NonEmptyList[ParseError]])
+        .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Option[Dynamic]")))
+        .validation
   }
 
   lazy implicit val cps = new CanParse[String, Dynamic] {

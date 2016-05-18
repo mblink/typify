@@ -40,9 +40,9 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
                                        g: A, b: B, rc: Boolean = false)(implicit
     mpa: MustParse[A], mpb: MustParse[B]): Prop =
     (((cp.parse(k, mp.make(k, g)).toOption == some(g)) :|
-      s"$l parses valid") && {
+      s"$l parses valid") &&
      ((cp.parse(k + "a", mp.make(k, g)).toOption == none[A]) :|
-      s"$l missed key") } &&
+      s"$l missed key") &&
      ((cp.parse(k, mp.make(k, b)).toOption == rc.fold(some(b), none[A])) :|
       s"$l wrong type") &&
      ((cp.as(mp.to(g)).toOption == some(g)) :|
