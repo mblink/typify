@@ -9,7 +9,7 @@ import scalaz.syntax.applicative._
 import scalaz.syntax.std.option._
 import scalaz.syntax.traverse._
 import scalaz.syntax.validation._
-import scalaz.ValidationNel
+import scalaz.{NonEmptyList, ValidationNel}
 import shapeless.{::, HList, HNil, Poly2, Witness}
 import shapeless.labelled.{field, FieldType}
 import shapeless.ops.hlist.{Prepend, LeftFolder}
@@ -162,10 +162,12 @@ class Typify[L, P] { typify =>
         lf: LeftFolder.Aux[I, PV[HNil], foldPV.type, PV[R]],
         e2l: Typify.E2L[L, B], cp: CanParse[Option[B], B],
         cpb: CanParse[B, B]): ValidationNel[L, Option[R]] =
-          p.to[Option[B]].leftMap(_.map(e2l(ev(p), _)))
-            .disjunction
-            .flatMap(_.map(x => new HLOps(rev(Parsed(x))).parse(in)).sequenceU.disjunction)
-            .validation
+          p.root.foldLeft(cp.as(p.run).disjunction)(
+              (r, k) => r.flatMap(_.map(cp.parse(k, _).disjunction)
+                                   .getOrElse(none[B].successNel[ParseError].disjunction)))
+           .leftMap(_.map(e2l(p, _)))
+           .flatMap(_.map(x => new HLOps(rev(Parsed(x))).parse(in)).sequenceU.disjunction)
+           .validation
     }
   }
 }

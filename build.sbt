@@ -28,7 +28,8 @@ lazy val typify = crossProject.in(file(".")).
     scalaVersion := "2.11.8",
     libraryDependencies ++= Seq(
       "com.chuusai" %%% "shapeless" % "2.3.1",
-      "org.scalaz" %%% "scalaz-core" % "7.2.2"
+      "org.scalaz" %%% "scalaz-core" % "7.2.2",
+      "org.scalacheck" %%% "scalacheck" % "1.12.5" % "test"
     ),
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     bintrayOrganization := Some("bondlink"),
@@ -57,7 +58,8 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
       "org.json4s" %% "json4s-jackson" % "3.3.0",
-      "org.scalaz" %% "scalaz-core" % "7.2.2"
+      "org.scalaz" %% "scalaz-core" % "7.2.2",
+      "org.scalacheck" %% "scalacheck" % "1.12.5" % "test"
     ),
     bintrayOrganization := Some("bondlink"),
     bintrayRepository := "Typify",
@@ -67,12 +69,13 @@ lazy val sjsTypify = project.in(file("jsdynamic-typify"))
   .dependsOn(typifyJS % "test->test;compile->compile")
   .settings(
     name := "jsdynamic-typify",
-    version := "1.0.4",
+    version := "1.0.5",
     scalaVersion := "2.11.8",
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
-      "org.scalaz" %%% "scalaz-core" % "7.2.2"
+      "org.scalaz" %%% "scalaz-core" % "7.2.2",
+      "org.scalacheck" %%% "scalacheck" % "1.12.5" % "test"
     ),
     scalaJSSemantics ~= { _.withAsInstanceOfs(
         org.scalajs.core.tools.sem.CheckedBehavior.Compliant) },
@@ -91,7 +94,8 @@ lazy val playjsonTypify = project.in(file("play-json-typify"))
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % "2.5.0",
-      "org.scalaz" %% "scalaz-core" % "7.2.2"
+      "org.scalaz" %% "scalaz-core" % "7.2.2",
+      "org.scalacheck" %% "scalacheck" % "1.12.5" % "test"
     ),
     bintrayOrganization := Some("bondlink"),
     bintrayRepository := "Typify",

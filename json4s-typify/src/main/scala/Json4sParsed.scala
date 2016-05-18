@@ -4,16 +4,23 @@ import org.json4s.{JValue, JObject, JString, JInt, JLong, JNothing, JNull}
 import typify.{CanParse, Parsed, ParseError}
 import scala.reflect.ClassTag
 import scalaz.syntax.nel._
+import scalaz.syntax.id._
+import scalaz.syntax.std.string._
 import scalaz.syntax.validation._
 import scalaz.ValidationNel
 
 object parsedinstances {
   lazy implicit val cpjv = new CanParse[JValue, JValue] {
     def parse(k: String, jv: JValue)(implicit ct: ClassTag[JValue]) = (jv \ k) match {
+      case JNull | JNothing => ParseError(k, "Could not be parsed as JValue").failureNel[JValue]
       case s: JValue => s.successNel[ParseError]
       case _ => ParseError(k, "Could not be parsed as JValue").failureNel[JValue]
     }
-    def as(jv: JValue)(implicit ct: ClassTag[JValue]) = jv.successNel[ParseError]
+    def as(jv: JValue)(implicit ct: ClassTag[JValue]) = jv match {
+      case JNull | JNothing =>
+        ParseError("_root_", "Could not be represented as JValue").failureNel[JValue]
+      case s: JValue => s.successNel[ParseError]
+    }
   }
 
   lazy implicit val cpojv = new CanParse[Option[JValue], JValue] {
@@ -40,6 +47,9 @@ object parsedinstances {
   lazy implicit val cpji = new CanParse[Int, JValue] {
     def as(jv: JValue)(implicit ct: ClassTag[Int]) = jv match {
       case JInt(i) => i.toInt.successNel[ParseError]
+      case JString(s) =>
+        s.parseInt.leftMap(_ =>
+          ParseError("_root_", "Could not be interpreted as Int").wrapNel)
       case _ => ParseError("_root_", "Could not be interpreted as Int").failureNel[Int]
     }
 
@@ -51,6 +61,9 @@ object parsedinstances {
     def as(jv: JValue)(implicit ct: ClassTag[Long]) = jv match {
       case JLong(l) => l.toLong.successNel[ParseError]
       case JInt(i) => i.toLong.successNel[ParseError]
+      case JString(s) =>
+        s.parseLong.leftMap(_ =>
+          ParseError("_root_", "Could not be interpreted as Long").wrapNel)
       case _ => ParseError("_root_", "Could not be interpreted as Long").failureNel[Long]
     }
 
@@ -72,6 +85,10 @@ object parsedinstances {
   lazy implicit val cpjoi = new CanParse[Option[Int], JValue] {
     def as(jv: JValue)(implicit ct: ClassTag[Option[Int]]) = jv match {
       case JInt(i) => Some(i.toInt).successNel[ParseError]
+      case JString(s) =>
+        s.parseInt.map(Some(_))
+          .leftMap(_ =>
+            ParseError("_root_", "Could not be interpreted as Option[Int]").wrapNel)
       case JNothing | JNull => None.successNel[ParseError]
       case _ => ParseError("_root_", "Could not be interpreted as Option[Int]").failureNel[Option[Int]]
     }
@@ -84,6 +101,10 @@ object parsedinstances {
     def as(jv: JValue)(implicit ct: ClassTag[Option[Long]]) = jv match {
       case JLong(l) => Some(l.toLong).successNel[ParseError]
       case JInt(i) => Some(i.toLong).successNel[ParseError]
+      case JString(s) =>
+        s.parseLong.map(Some(_))
+          .leftMap(_ =>
+            ParseError("_root_", "Could not be interpreted as Option[Long]").wrapNel)
       case JNothing | JNull => None.successNel[ParseError]
       case _ => ParseError("_root_", "Could not be interpreted as Option[Long]").failureNel[Option[Long]]
     }
