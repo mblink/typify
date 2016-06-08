@@ -18,6 +18,10 @@ trait MakeParsed[P] {
     implicit case object MPOI extends MustParse[Option[Int]]
     implicit case object MPL extends MustParse[Long]
     implicit case object MPOL extends MustParse[Option[Long]]
+    implicit case object MPLI extends MustParse[List[Int]]
+    implicit case object MPOLI extends MustParse[Option[List[Int]]]
+    implicit case object MPLS extends MustParse[List[String]]
+    implicit case object MPOLS extends MustParse[Option[List[String]]]
     implicit case object MPP extends MustParse[P]
     implicit case object MPOP extends MustParse[Option[P]]
   }
@@ -33,6 +37,7 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
    cpl: CanParse[Long, P], cpol: CanParse[Option[Long], P],
    cti: ClassTag[Int], ctoi: ClassTag[Option[Int]], cts: ClassTag[String],
    ctos: ClassTag[Option[String]], ctl: ClassTag[Long], ctol: ClassTag[Option[Long]],
+   cpli: CanParse[List[Int], P], cpoli: CanParse[Option[List[Int]], P],
    ctp: ClassTag[P], ctop: ClassTag[Option[P]]) {
   import mp.implicits._
 
@@ -54,8 +59,9 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
                    g: A, b: B, rc: Boolean = false)(implicit
     mpoa: MustParse[Option[A]], mpob: MustParse[Option[B]],
     ctoa: ClassTag[Option[A]], ctob: ClassTag[Option[B]]): Prop =
-    (((cp.parse(k, mp.make(k, some(g))).toOption == some(some(g))) :|
-      s"some[$l] parses valid") &&
+    ({ val a = cp.parse(k, mp.make(k, some(g)))
+    ((cp.parse(k, mp.make(k, some(g))).toOption == some(some(g))) :|
+      s"some[$l] parses valid: get ${a} ex ${some(some(g))}") } &&
      ((cp.parse(k, mp.make(k, none[A])).toOption == some(none[A])) :|
       s"none[$l] parses valid") &&
      ((cp.parse(k + "a", mp.make(k, some(g))).toOption == some(none[A])) :|
@@ -112,6 +118,26 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
        "some[Long] represents stringified")
     }
 
+  type NEList[A] = List[A]
+  implicit def arbNEL[A](implicit aa: Arbitrary[A]) =
+    Arbitrary { Arbitrary.arbitrary[List[A]].suchThat(_.nonEmpty) }
+
+  def list =
+    forAllNoShrink { (k: NEString, li: NEList[Int], ls: NEList[String], ll: NEList[Long]) =>
+      // List[Int]
+      assert("List[Int]", k, cpli, li, ls) &&
+      ((cpli.parse(k, mp.make(k, li.map(_.toString))).toOption == some(li)) :|
+       "List[Int] parses stringified") &&
+      ((cpli.as(mp.to(li.map(_.toString))).toOption == some(li)) :|
+       "List[Int] represents stringified") &&
+      // Option[List[Int]]
+      assertO("List[Int]", k, cpoli, li, ls) &&
+      ((cpoli.parse(k, mp.make(k, some(li.map(_.toString)))).toOption == some(some(li))) :|
+       "some[List[Int]] parses stringified") &&
+      ((cpoli.as(mp.to(some(li.map(_.toString)))).toOption == some(some(li))) :|
+       "some[List[Int]] represents stringified")
+    }
+
   def recursive =
     forAllNoShrink { (k: NEString, i: Int, s: String, l: Long) =>
       val nested = mp.make(k, s)
@@ -122,5 +148,5 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
       assertO("P", k, cpop, nested, bnested, true)
     }
 
-  def apply = int && string && long && recursive
+  def apply = int && string && long && list && recursive
 }

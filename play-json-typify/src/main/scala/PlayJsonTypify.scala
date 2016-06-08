@@ -4,9 +4,13 @@ import play.api.libs.json.{JsValue, JsObject, JsString, JsDefined}
 import play.api.libs.json.{JsNumber, JsUndefined, JsNull, Reads}
 import typify.{CanParse, Parsed, ParseError}
 import scala.reflect.ClassTag
+import scalaz.std.list._
+import scalaz.std.option._
+import scalaz.std.string._
 import scalaz.syntax.nel._
 import scalaz.syntax.std.option._
 import scalaz.syntax.std.string._
+import scalaz.syntax.traverse._
 import scalaz.syntax.validation._
 import scalaz.ValidationNel
 
@@ -23,7 +27,7 @@ trait CatchAllInstance {
   }
 }
 
-object parsedinstances extends CatchAllInstance {
+trait CatchOptionInstance extends CatchAllInstance {
 
   implicit def parseO[T](implicit rd: Reads[T]) = new CanParse[Option[T], JsValue] {
    def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Option[T]]):
@@ -41,6 +45,9 @@ object parsedinstances extends CatchAllInstance {
                             s"Could not be interpreted as Option[${ct.toString}]"))
     }
   }
+}
+
+object parsedinstances extends CatchOptionInstance {
 
   implicit lazy val pi = new CanParse[Int, JsValue] {
     def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Int]) =
@@ -72,6 +79,36 @@ object parsedinstances extends CatchAllInstance {
     }
   }
 
+  implicit lazy val pli = new CanParse[List[Int], JsValue] {
+    def parse(k: String, jv: JsValue)(implicit ct: ClassTag[List[Int]]) =
+      (jv \ k).asOpt[List[Int]]
+        .orElse((jv \ k).asOpt[List[String]].flatMap(_.traverseU(_.parseInt.toOption)))
+        .toSuccessNel(ParseError(k, s"Could not be parsed as List[Int]"))
+
+    def as(jv: JsValue)(implicit ct: ClassTag[List[Int]]) =
+      jv.asOpt[List[Int]]
+        .orElse(jv.asOpt[List[String]].flatMap(_.traverseU(_.parseInt.toOption)))
+        .toSuccessNel(ParseError("_root_", s"Could not be interpreted as List[Int]"))
+  }
+
+  implicit lazy val plio = new CanParse[Option[List[Int]], JsValue] {
+   def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Option[List[Int]]]):
+    ValidationNel[ParseError, Option[List[Int]]] = (jv \ k) match {
+      case _: JsUndefined => None.successNel[ParseError]
+      case JsDefined(r) => as(r)
+    }
+
+    def as(jv: JsValue)(implicit ct: ClassTag[Option[List[Int]]]):
+    ValidationNel[ParseError, Option[List[Int]]] = jv match {
+      case JsNull => None.successNel[ParseError]
+      case s: JsValue => s.asOpt[List[Int]]
+                          .orElse(s.asOpt[List[String]].flatMap(_.traverseU(_.parseInt.toOption)))
+                          .map(Some(_))
+                          .toSuccessNel(ParseError("_root_",
+                            s"Could not be interpreted as Option[List[Int]]"))
+    }
+  }
+
   implicit lazy val pl = new CanParse[Long, JsValue] {
     def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Long]) =
       (jv \ k).asOpt[Long]
@@ -99,6 +136,36 @@ object parsedinstances extends CatchAllInstance {
                           .map(Some(_))
                           .toSuccessNel(ParseError("_root_",
                             s"Could not be interpreted as Option[Long]"))
+    }
+  }
+
+  implicit lazy val pll = new CanParse[List[Long], JsValue] {
+    def parse(k: String, jv: JsValue)(implicit ct: ClassTag[List[Long]]) =
+      (jv \ k).asOpt[List[Long]]
+        .orElse((jv \ k).asOpt[List[String]].flatMap(_.traverseU(_.parseLong.toOption)))
+        .toSuccessNel(ParseError(k, s"Could not be parsed as List[Long]"))
+
+    def as(jv: JsValue)(implicit ct: ClassTag[List[Long]]) =
+      jv.asOpt[List[Long]]
+        .orElse(jv.asOpt[List[String]].flatMap(_.traverseU(_.parseLong.toOption)))
+        .toSuccessNel(ParseError("_root_", s"Could not be interpreted as List[Long]"))
+  }
+
+  implicit lazy val pllo = new CanParse[Option[List[Long]], JsValue] {
+   def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Option[List[Long]]]):
+    ValidationNel[ParseError, Option[List[Long]]] = (jv \ k) match {
+      case _: JsUndefined => None.successNel[ParseError]
+      case JsDefined(r) => as(r)
+    }
+
+    def as(jv: JsValue)(implicit ct: ClassTag[Option[List[Long]]]):
+    ValidationNel[ParseError, Option[List[Long]]] = jv match {
+      case JsNull => None.successNel[ParseError]
+      case s: JsValue => s.asOpt[List[Long]]
+                          .orElse(s.asOpt[List[String]].flatMap(_.traverseU(_.parseLong.toOption)))
+                          .map(Some(_))
+                          .toSuccessNel(ParseError("_root_",
+                            s"Could not be interpreted as Option[List[Long]]"))
     }
   }
 }

@@ -4,6 +4,7 @@ import scala.scalajs.js
 import scala.scalajs.js.Dynamic
 import typify.{CanParse, Parsed, ParseError}
 import scala.reflect.ClassTag
+import scalaz.std.list._
 import scalaz.std.option._
 import scalaz.syntax.either._
 import scalaz.syntax.nel._
@@ -40,6 +41,22 @@ object parsedinstances {
         .flatMap(as(_).disjunction)
         .orElse(None.right[NonEmptyList[ParseError]])
         .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Option[Dynamic]")))
+        .validation
+  }
+
+  implicit def cpla[A: ClassTag](implicit cpa: CanParse[A, Dynamic]) =
+    new CanParse[List[A], Dynamic] {
+      def as(d: Dynamic)(implicit ct: ClassTag[List[A]]) =
+      (Option(d).filterNot(js.isUndefined) \/> "null found").map(_ => d)
+        .flatMap(nf(_.asInstanceOf[js.Array[Dynamic]].seq.toList))
+        .flatMap(_.traverseU(cpa.as(_)).disjunction)
+        .leftMap(_ => ParseError("_root_", s"${d} Could not be interpreted as ${ct}").wrapNel)
+        .validation
+
+    def parse(k: String, d: Dynamic)(implicit ct: ClassTag[List[A]]) =
+      nf(d.selectDynamic)(k)
+        .flatMap(as(_).disjunction)
+        .leftMap(_ => ParseError(k, s"${d} Could not be parsed as ${ct}").wrapNel)
         .validation
   }
 
@@ -92,6 +109,26 @@ object parsedinstances {
         .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Long")))
         .validation
   }
+
+  implicit def cpola[A: ClassTag](implicit cpa: CanParse[A, Dynamic]) =
+    new CanParse[Option[List[A]], Dynamic] {
+      def as(d: Dynamic)(implicit ct: ClassTag[Option[List[A]]]) =
+        Option(d).filterNot(js.isUndefined)
+          .map(nf(_.asInstanceOf[js.Array[Dynamic]].seq.toList))
+          .map(_.flatMap(_.traverseU(cpa.as(_).disjunction)))
+          .sequenceU
+          .leftMap(_ => NonEmptyList(ParseError("_root_", s"Could not be interpreted as ${ct}")))
+          .validation
+
+      def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Option[List[A]]]) =
+        nf(d.selectDynamic)(k)
+          .toOption
+          .right[Throwable]
+          .flatMap(_.traverseU(as(_).disjunction))
+          .map(_.flatten)
+          .leftMap(_ => ParseError(k, s"${d} Could not be parsed as ${ct}").wrapNel)
+          .validation
+    }
 
   lazy implicit val cpos = new CanParse[Option[String], Dynamic] {
     def as(d: Dynamic)(implicit ct: ClassTag[Option[String]]) =

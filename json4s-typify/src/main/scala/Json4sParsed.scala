@@ -1,11 +1,13 @@
 package org.json4s.typify
 
-import org.json4s.{JValue, JObject, JString, JInt, JLong, JNothing, JNull}
+import org.json4s.{JValue, JObject, JArray, JString, JInt, JLong, JNothing, JNull}
 import typify.{CanParse, Parsed, ParseError}
 import scala.reflect.ClassTag
+import scalaz.std.list._
 import scalaz.syntax.nel._
 import scalaz.syntax.id._
 import scalaz.syntax.std.string._
+import scalaz.syntax.traverse._
 import scalaz.syntax.validation._
 import scalaz.ValidationNel
 
@@ -32,6 +34,18 @@ object parsedinstances {
 
     def parse(k: String, jv: JValue)(implicit ct: ClassTag[Option[JValue]]) =
       as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Option[JValue]").wrapNel)
+  }
+
+  implicit def cpjla[A: ClassTag](implicit cpa: CanParse[A, JValue]) = new CanParse[List[A], JValue] {
+    def as(jv: JValue)(implicit ct: ClassTag[List[A]]) = jv match {
+      case JArray(l) => l.traverseU(cpa.as(_))
+                         .leftMap(_ =>
+                          ParseError("_root_", s"Could not be interpreted as ${ct}").wrapNel)
+      case _ => ParseError("_root_", s"Could not be interpreted as ${ct}").failureNel[List[A]]
+    }
+
+    def parse(k: String, jv: JValue)(implicit ct: ClassTag[List[A]]) =
+      as(jv \ k).leftMap(_ => ParseError(k, s"Could not be parsed as ${ct}").wrapNel)
   }
 
   lazy implicit val cpjs = new CanParse[String, JValue] {
@@ -70,6 +84,21 @@ object parsedinstances {
     def parse(k: String, jv: JValue)(implicit ct: ClassTag[Long]) =
       as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Long").wrapNel)
   }
+
+  implicit def cpjola[A: ClassTag](implicit cpa: CanParse[A, JValue]) =
+    new CanParse[Option[List[A]], JValue] {
+      def as(jv: JValue)(implicit ct: ClassTag[Option[List[A]]]) = jv match {
+        case JArray(l) => l.traverseU(cpa.as(_))
+                           .map(Some(_))
+                           .leftMap(_ =>
+                            ParseError("_root_", s"Could not be interpreted as ${ct}").wrapNel)
+        case JNothing | JNull => None.successNel[ParseError]
+        case _ => ParseError("_root_", s"Could not be interpreted as ${ct}").failureNel[Option[List[A]]]
+      }
+
+      def parse(k: String, jv: JValue)(implicit ct: ClassTag[Option[List[A]]]) =
+        as(jv \ k).leftMap(_ => ParseError(k, s"Could not be parsed as ${ct}").wrapNel)
+    }
 
   lazy implicit val cpjos = new CanParse[Option[String], JValue] {
     def as(jv: JValue)(implicit ct: ClassTag[Option[String]]) = jv match {
