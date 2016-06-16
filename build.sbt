@@ -88,7 +88,7 @@ lazy val playjsonTypify = project.in(file("play-json-typify"))
   .dependsOn(typifyJVM % "test->test;compile->compile")
   .settings(
     name := "play-json-typify",
-    version := "1.0.6",
+    version := "1.0.7",
     scalaVersion := "2.11.8",
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),

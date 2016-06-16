@@ -33,7 +33,7 @@ trait CatchOptionInstance extends CatchAllInstance {
    def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Option[T]]):
     ValidationNel[ParseError, Option[T]] = (jv \ k) match {
       case _: JsUndefined => None.successNel[ParseError]
-      case JsDefined(r) => as(r)
+      case JsDefined(r) => as(r).leftMap(_.map(_.copy(key = k)))
     }
 
     def as(jv: JsValue)(implicit ct: ClassTag[Option[T]]):
@@ -65,7 +65,7 @@ object parsedinstances extends CatchOptionInstance {
    def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Option[Int]]):
     ValidationNel[ParseError, Option[Int]] = (jv \ k) match {
       case _: JsUndefined => None.successNel[ParseError]
-      case JsDefined(r) => as(r)
+      case JsDefined(r) => as(r).leftMap(_.map(_.copy(key = k)))
     }
 
     def as(jv: JsValue)(implicit ct: ClassTag[Option[Int]]):
@@ -95,7 +95,7 @@ object parsedinstances extends CatchOptionInstance {
    def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Option[List[Int]]]):
     ValidationNel[ParseError, Option[List[Int]]] = (jv \ k) match {
       case _: JsUndefined => None.successNel[ParseError]
-      case JsDefined(r) => as(r)
+      case JsDefined(r) => as(r).leftMap(_.map(_.copy(key = k)))
     }
 
     def as(jv: JsValue)(implicit ct: ClassTag[Option[List[Int]]]):
@@ -125,7 +125,7 @@ object parsedinstances extends CatchOptionInstance {
    def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Option[Long]]):
     ValidationNel[ParseError, Option[Long]] = (jv \ k) match {
       case _: JsUndefined => None.successNel[ParseError]
-      case JsDefined(r) => as(r)
+      case JsDefined(r) => as(r).leftMap(_.map(_.copy(key = k)))
     }
 
     def as(jv: JsValue)(implicit ct: ClassTag[Option[Long]]):
@@ -155,7 +155,7 @@ object parsedinstances extends CatchOptionInstance {
    def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Option[List[Long]]]):
     ValidationNel[ParseError, Option[List[Long]]] = (jv \ k) match {
       case _: JsUndefined => None.successNel[ParseError]
-      case JsDefined(r) => as(r)
+      case JsDefined(r) => as(r).leftMap(_.map(_.copy(key = k)))
     }
 
     def as(jv: JsValue)(implicit ct: ClassTag[Option[List[Long]]]):
