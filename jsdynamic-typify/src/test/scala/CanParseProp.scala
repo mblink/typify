@@ -30,6 +30,7 @@ object MakeJsDynamic extends MakeParsed[js.Dynamic] {
       case MPOLS => MPOLS(v).map(x => literal(k -> x.toSeq.toJSArray)).getOrElse(none)
       case MPP => literal(k -> v)
       case MPOP => MPOP(v).map(x => literal(k -> x)).getOrElse(none)
+      case MPLP => literal(k -> v.toSeq.toJSArray)
     }
 
   def to[A](v: A)(implicit mp: MustParse[A]): js.Dynamic =
@@ -46,6 +47,7 @@ object MakeJsDynamic extends MakeParsed[js.Dynamic] {
       case MPOLS => MPOLS(v).map(_.toSeq.toJSArray.asInstanceOf[js.Dynamic]).getOrElse(none)
       case MPP => v.asInstanceOf[js.Dynamic]
       case MPOP => MPOP(v).map(_.asInstanceOf[js.Dynamic]).getOrElse(none)
+      case MPLP => MPLP(v).toSeq.toJSArray.asInstanceOf[js.Dynamic]
     }
 }
 
