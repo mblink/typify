@@ -24,7 +24,7 @@ lazy val scalacF = Seq(
 lazy val typify = crossProject.in(file(".")).
   settings(
     name := "typify",
-    version := "2.0.3",
+    version := "2.1.0",
     scalaVersion := "2.11.8",
     libraryDependencies ++= Seq(
       "com.chuusai" %%% "shapeless" % "2.3.1",
