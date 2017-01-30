@@ -24,6 +24,8 @@ object MakeJsDynamic extends MakeParsed[js.Dynamic] {
       case MPOI => MPOI(v).map(x => literal(k -> x)).getOrElse(none)
       case MPL => literal(k -> v)
       case MPOL => MPOL(v).map(x => literal(k -> x)).getOrElse(none)
+      case MPB => literal(k -> v)
+      case MPOB => MPOB(v).map(x => literal(k -> x)).getOrElse(none)
       case MPLI => literal(k -> v.toSeq.toJSArray)
       case MPOLI => MPOLI(v).map(x => literal(k -> x.toSeq.toJSArray)).getOrElse(none)
       case MPLS => literal(k -> v.toSeq.toJSArray)
@@ -41,6 +43,8 @@ object MakeJsDynamic extends MakeParsed[js.Dynamic] {
       case MPOI => MPOI(v).map(_.asInstanceOf[js.Dynamic]).getOrElse(none)
       case MPL => v.asInstanceOf[js.Dynamic]
       case MPOL => MPOL(v).map(_.asInstanceOf[js.Dynamic]).getOrElse(none)
+      case MPB => v.asInstanceOf[js.Dynamic]
+      case MPOB => MPOB(v).map(_.asInstanceOf[js.Dynamic]).getOrElse(none)
       case MPLI => MPLI(v).toSeq.toJSArray.asInstanceOf[js.Dynamic]
       case MPOLI => MPOLI(v).map(_.toSeq.toJSArray.asInstanceOf[js.Dynamic]).getOrElse(none)
       case MPLS => MPLS(v).toSeq.toJSArray.asInstanceOf[js.Dynamic]
@@ -59,5 +63,5 @@ object jsDynamicCanParse extends Properties("js.Dynamic CanParse") {
   // scalajs and long have an "opaque" relationship, see here
   // http://stackoverflow.com/questions/27821841/working-with-opaque-types-char-and-long
   property("parses required types correctly") =
-    prop.string && prop.int && prop.list && prop.recursive
+    prop.string && prop.int && prop.boolean && prop.list && prop.recursive
 }
