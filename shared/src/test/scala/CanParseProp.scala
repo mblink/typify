@@ -20,6 +20,8 @@ trait MakeParsed[P] {
     implicit case object MPOI extends MustParse[Option[Int]]
     implicit case object MPL extends MustParse[Long]
     implicit case object MPOL extends MustParse[Option[Long]]
+    implicit case object MPB extends MustParse[Boolean]
+    implicit case object MPOB extends MustParse[Option[Boolean]]
     implicit case object MPLI extends MustParse[List[Int]]
     implicit case object MPOLI extends MustParse[Option[List[Int]]]
     implicit case object MPLS extends MustParse[List[String]]
@@ -38,8 +40,10 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
    cpi: CanParse[Int, P], cpoi: CanParse[Option[Int], P],
    cps: CanParse[String, P], cpos: CanParse[Option[String], P],
    cpl: CanParse[Long, P], cpol: CanParse[Option[Long], P],
+   cpb: CanParse[Boolean, P], cpob: CanParse[Option[Boolean], P],
    cti: ClassTag[Int], ctoi: ClassTag[Option[Int]], cts: ClassTag[String],
    ctos: ClassTag[Option[String]], ctl: ClassTag[Long], ctol: ClassTag[Option[Long]],
+   ctb: ClassTag[Boolean], ctob: ClassTag[Option[Boolean]],
    cpli: CanParse[List[Int], P], cpoli: CanParse[Option[List[Int]], P],
    cplp: CanParse[List[P], P], ctp: ClassTag[P], ctop: ClassTag[Option[P]]) {
   import mp.implicits._
@@ -121,6 +125,14 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
        "some[Long] represents stringified")
     }
 
+  def boolean =
+    forAllNoShrink { (k: NEString, i: Int, b: Boolean) =>
+      // Boolean
+      assert("Boolean", k, cpb, b, i) &&
+      // Option[Boolean]
+      assertO("Boolean", k, cpob, b, i)
+    }
+
   type NEList[A] = List[A]
   implicit def arbNEL[A](implicit aa: Arbitrary[A]) =
     Arbitrary { Arbitrary.arbitrary[List[A]].suchThat(_.nonEmpty) }
@@ -157,5 +169,5 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
       assertO("P", k, cpop, nested, bnested, true)
     }
 
-  def apply = int && string && long && list && recursive
+  def apply = int && string && long && boolean && list && recursive
 }

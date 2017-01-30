@@ -168,4 +168,34 @@ object parsedinstances extends CatchOptionInstance {
                             s"Could not be interpreted as Option[List[Long]]"))
     }
   }
+
+  implicit lazy val pb = new CanParse[Boolean, JsValue] {
+    def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Boolean]) =
+      (jv \ k).asOpt[Boolean]
+        .orElse((jv \ k).asOpt[String].flatMap(_.parseBoolean.toOption))
+        .toSuccessNel(ParseError(k, s"Could not be parsed as Boolean"))
+
+    def as(jv: JsValue)(implicit ct: ClassTag[Boolean]) =
+      jv.asOpt[Boolean]
+        .orElse(jv.asOpt[String].flatMap(_.parseBoolean.toOption))
+        .toSuccessNel(ParseError("_root_", s"Could not be interpreted as Boolean"))
+  }
+
+  implicit lazy val pbo = new CanParse[Option[Boolean], JsValue] {
+    def parse(k: String, jv: JsValue)(implicit ct: ClassTag[Option[Boolean]]):
+      ValidationNel[ParseError, Option[Boolean]] = (jv \ k) match {
+        case _: JsUndefined => None.successNel[ParseError]
+        case JsDefined(r) => as(r).leftMap(_.map(_.copy(key = k)))
+      }
+
+    def as(jv: JsValue)(implicit ct: ClassTag[Option[Boolean]]):
+      ValidationNel[ParseError, Option[Boolean]] = jv match {
+        case JsNull => None.successNel[ParseError]
+        case s: JsValue => s.asOpt[Boolean]
+                            .orElse(s.asOpt[String].flatMap(_.parseBoolean.toOption))
+                            .map(Some(_))
+                            .toSuccessNel(ParseError("_root_",
+                              s"Could not be interpreted as Option[Boolean]"))
+    }
+  }
 }

@@ -1,6 +1,6 @@
 package typify
 
-import play.api.libs.json.{Json, JsValue, JsObject, JsString, JsDefined}
+import play.api.libs.json.{Json, JsBoolean, JsValue, JsObject, JsString, JsDefined}
 import play.api.libs.json.{JsNumber, JsUndefined, JsNull, Reads}
 import play.api.libs.json.typify.parsedinstances._
 import org.scalacheck.Properties
@@ -17,6 +17,8 @@ object MakeJsValue extends MakeParsed[JsValue] {
       case MPOI => MPOI(v).map(x => JsObject(Seq(k -> JsNumber(x)))).getOrElse(JsNull)
       case MPL => JsObject(Seq(k -> JsNumber(v)))
       case MPOL => MPOL(v).map(x => JsObject(Seq(k -> JsNumber(x)))).getOrElse(JsNull)
+      case MPB => JsObject(Seq(k -> JsBoolean(v)))
+      case MPOB => MPOB(v).map(x => JsObject(Seq(k -> JsBoolean(x)))).getOrElse(JsNull)
       case MPLI => JsObject(Seq(k -> Json.toJson(v)))
       case MPOLI => MPOLI(v).map(x => JsObject(Seq(k -> Json.toJson(x)))).getOrElse(JsNull)
       case MPLS => JsObject(Seq(k -> Json.toJson(v)))
@@ -33,6 +35,8 @@ object MakeJsValue extends MakeParsed[JsValue] {
       case MPOI => MPOI(v).map(JsNumber(_)).getOrElse(JsNull)
       case MPL => JsNumber(v)
       case MPOL => MPOL(v).map(JsNumber(_)).getOrElse(JsNull)
+      case MPB => JsBoolean(v)
+      case MPOB => MPOB(v).map(JsBoolean(_)).getOrElse(JsNull)
       case MPLI => Json.toJson(v)
       case MPOLI => MPOLI(v).map(Json.toJson(_)).getOrElse(JsNull)
       case MPLS => Json.toJson(v)
