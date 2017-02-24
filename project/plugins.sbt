@@ -1,4 +1,4 @@
-addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.4.2")
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.9")
-addSbtPlugin("org.brianmckenna" % "sbt-wartremover" % "0.14")
+addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.4.8")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.14")
+addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.0.2")
 addSbtPlugin("me.lessis" % "bintray-sbt" % "0.3.0")
