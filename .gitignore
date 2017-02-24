@@ -29,3 +29,4 @@ play-json-typify/project/*-shim.sbt
 play-json-typify/project/project/
 play-json-typify/project/target/
 play-json-typify/target/
+.idea/
