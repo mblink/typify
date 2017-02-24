@@ -17,12 +17,15 @@ object MakeJValue extends MakeParsed[JValue] {
       case MPOI => MPOI(v).map(x => (k -> x): JValue).getOrElse(JNull: JValue)
       case MPL => (k -> MPL(v))
       case MPOL => MPOL(v).map(x => (k -> x): JValue).getOrElse(JNull: JValue)
+      case MPB => (k -> MPB(v))
+      case MPOB => MPOB(v).map(x => (k -> x): JValue).getOrElse(JNull: JValue)
       case MPLI => (k -> MPLI(v))
       case MPOLI => MPOLI(v).map(x => (k -> x): JValue).getOrElse(JNull: JValue)
       case MPLS => (k -> MPLS(v))
       case MPOLS => MPOLS(v).map(x => (k -> x): JValue).getOrElse(JNull: JValue)
       case MPP => (k -> MPP(v))
       case MPOP => MPOP(v).map(x => (k -> v): JValue).getOrElse(JNull: JValue)
+      case MPLP => (k -> MPLP(v))
     }
   def to[A](v: A)(implicit mp: MustParse[A]): JValue =
     mp match {
@@ -32,12 +35,15 @@ object MakeJValue extends MakeParsed[JValue] {
       case MPOI => MPOI(v).map(x => (x: JValue)).getOrElse(JNull: JValue)
       case MPL => MPL(v)
       case MPOL => MPOL(v).map(x => (x: JValue)).getOrElse(JNull: JValue)
+      case MPB => MPB(v)
+      case MPOB => MPOB(v).map(x => (x: JValue)).getOrElse(JNull: JValue)
       case MPLI => MPLI(v)
       case MPOLI => MPOLI(v).map(x => (x: JValue)).getOrElse(JNull: JValue)
       case MPLS => MPLS(v)
       case MPOLS => MPOLS(v).map(x => (x: JValue)).getOrElse(JNull: JValue)
       case MPP => MPP(v)
       case MPOP => MPOP(v).getOrElse(JNull: JValue)
+      case MPLP => MPLP(v)
     }
 }
 

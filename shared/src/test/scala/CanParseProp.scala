@@ -3,8 +3,10 @@ package typify
 import org.scalacheck.{Arbitrary, Gen, Prop}
 import org.scalacheck.Prop.{BooleanOperators, ExtendedBoolean, forAllNoShrink}
 import scala.reflect.ClassTag
+import scalaz.std.list._
 import scalaz.std.option._
 import scalaz.syntax.std.boolean._
+import scalaz.syntax.traverse._
 
 trait MakeParsed[P] {
 
@@ -18,12 +20,15 @@ trait MakeParsed[P] {
     implicit case object MPOI extends MustParse[Option[Int]]
     implicit case object MPL extends MustParse[Long]
     implicit case object MPOL extends MustParse[Option[Long]]
+    implicit case object MPB extends MustParse[Boolean]
+    implicit case object MPOB extends MustParse[Option[Boolean]]
     implicit case object MPLI extends MustParse[List[Int]]
     implicit case object MPOLI extends MustParse[Option[List[Int]]]
     implicit case object MPLS extends MustParse[List[String]]
     implicit case object MPOLS extends MustParse[Option[List[String]]]
     implicit case object MPP extends MustParse[P]
     implicit case object MPOP extends MustParse[Option[P]]
+    implicit case object MPLP extends MustParse[List[P]]
   }
 
   def make[A](k: String, v: A)(implicit mp: implicits.MustParse[A]): P
@@ -35,10 +40,12 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
    cpi: CanParse[Int, P], cpoi: CanParse[Option[Int], P],
    cps: CanParse[String, P], cpos: CanParse[Option[String], P],
    cpl: CanParse[Long, P], cpol: CanParse[Option[Long], P],
+   cpb: CanParse[Boolean, P], cpob: CanParse[Option[Boolean], P],
    cti: ClassTag[Int], ctoi: ClassTag[Option[Int]], cts: ClassTag[String],
    ctos: ClassTag[Option[String]], ctl: ClassTag[Long], ctol: ClassTag[Option[Long]],
+   ctb: ClassTag[Boolean], ctob: ClassTag[Option[Boolean]],
    cpli: CanParse[List[Int], P], cpoli: CanParse[Option[List[Int]], P],
-   ctp: ClassTag[P], ctop: ClassTag[Option[P]]) {
+   cplp: CanParse[List[P], P], ctp: ClassTag[P], ctop: ClassTag[Option[P]]) {
   import mp.implicits._
 
   def assert[A: ClassTag, B: ClassTag](l: String, k: String, cp: CanParse[A, P],
@@ -118,6 +125,14 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
        "some[Long] represents stringified")
     }
 
+  def boolean =
+    forAllNoShrink { (k: NEString, i: Int, b: Boolean) =>
+      // Boolean
+      assert("Boolean", k, cpb, b, i) &&
+      // Option[Boolean]
+      assertO("Boolean", k, cpob, b, i)
+    }
+
   type NEList[A] = List[A]
   implicit def arbNEL[A](implicit aa: Arbitrary[A]) =
     Arbitrary { Arbitrary.arbitrary[List[A]].suchThat(_.nonEmpty) }
@@ -135,7 +150,13 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
       ((cpoli.parse(k, mp.make(k, some(li.map(_.toString)))).toOption == some(some(li))) :|
        "some[List[Int]] parses stringified") &&
       ((cpoli.as(mp.to(some(li.map(_.toString)))).toOption == some(some(li))) :|
-       "some[List[Int]] represents stringified")
+       "some[List[Int]] represents stringified") &&
+      // List[P]
+      ((cplp.as(mp.to(li.map(i => mp.make(k, i))))
+        .disjunction
+        .flatMap(_.map(cpi.parse(k, _)).sequenceU.disjunction)
+        .toOption == some(li)) :|
+       "List[Int] parses via List[P]")
     }
 
   def recursive =
@@ -148,5 +169,5 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
       assertO("P", k, cpop, nested, bnested, true)
     }
 
-  def apply = int && string && long && list && recursive
+  def apply = int && string && long && boolean && list && recursive
 }

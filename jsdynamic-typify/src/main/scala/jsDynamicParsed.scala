@@ -110,6 +110,24 @@ object parsedinstances {
         .validation
   }
 
+  def parseBoolean(d: Dynamic): \/[Throwable, Boolean] =
+    \/.fromTryCatchNonFatal(d.asInstanceOf[Boolean])
+      .orElse(\/.fromTryCatchNonFatal(d.asInstanceOf[String]).flatMap(_.parseBoolean.disjunction))
+
+  lazy implicit val cpb = new CanParse[Boolean, Dynamic] {
+    def as(d: Dynamic)(implicit ct: ClassTag[Boolean]) =
+      (Option(d).filterNot(js.isUndefined) \/> "null found").map(_ => d)
+        .flatMap(parseBoolean)
+        .leftMap(_ => NonEmptyList(ParseError("_root_", "Could not be interpreted as Boolean")))
+        .validation
+
+    def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Boolean]) =
+      nf(d.selectDynamic)(k)
+        .flatMap(as(_).disjunction)
+        .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Boolean")))
+        .validation
+  }
+
   implicit def cpola[A: ClassTag](implicit cpa: CanParse[A, Dynamic]) =
     new CanParse[Option[List[A]], Dynamic] {
       def as(d: Dynamic)(implicit ct: ClassTag[Option[List[A]]]) =
@@ -173,6 +191,21 @@ object parsedinstances {
         .successNel[ParseError].disjunction
         .flatMap(_.flatMap(as(_).disjunction.sequenceU).sequenceU)
         .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Option[Long]")))
+        .validation
+  }
+
+  lazy implicit val cpob = new CanParse[Option[Boolean], Dynamic] {
+    def as(d: Dynamic)(implicit ct: ClassTag[Option[Boolean]]) =
+      Option(d).filterNot(js.isUndefined).map(parseBoolean).sequenceU
+        .leftMap(_ => NonEmptyList(ParseError("_root_", "Could not be interpreted as Option[Boolean]")))
+        .validation
+
+    def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Option[Boolean]]) =
+      nf(d.selectDynamic)(k)
+        .toOption
+        .successNel[ParseError].disjunction
+        .flatMap(_.flatMap(as(_).disjunction.sequenceU).sequenceU)
+        .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Option[Boolean]")))
         .validation
   }
 }

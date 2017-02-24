@@ -1,6 +1,6 @@
 package org.json4s.typify
 
-import org.json4s.{JValue, JObject, JArray, JString, JInt, JLong, JNothing, JNull}
+import org.json4s.{JValue, JObject, JArray, JBool, JString, JInt, JLong, JNothing, JNull}
 import typify.{CanParse, Parsed, ParseError}
 import scala.reflect.ClassTag
 import scalaz.std.list._
@@ -85,6 +85,19 @@ object parsedinstances {
       as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Long").wrapNel)
   }
 
+  lazy implicit val cpjb = new CanParse[Boolean, JValue] {
+    def as(jv: JValue)(implicit ct: ClassTag[Boolean]) = jv match {
+      case JBool(b) => b.successNel[ParseError]
+      case JString(s) =>
+        s.parseBoolean.leftMap(_ =>
+          ParseError("_root_", "Could not be interpreted as Boolean").wrapNel)
+      case _ => ParseError("_root_", "Could not be interpreted as Boolean").failureNel[Boolean]
+    }
+
+    def parse(k: String, jv: JValue)(implicit ct: ClassTag[Boolean]) =
+      as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Boolean").wrapNel)
+  }
+
   implicit def cpjola[A: ClassTag](implicit cpa: CanParse[A, JValue]) =
     new CanParse[Option[List[A]], JValue] {
       def as(jv: JValue)(implicit ct: ClassTag[Option[List[A]]]) = jv match {
@@ -140,5 +153,20 @@ object parsedinstances {
 
     def parse(k: String, jv: JValue)(implicit ct: ClassTag[Option[Long]]) =
       as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Option[Long]").wrapNel)
+  }
+
+  lazy implicit val cpjob = new CanParse[Option[Boolean], JValue] {
+    def as(jv: JValue)(implicit ct: ClassTag[Option[Boolean]]) = jv match {
+      case JBool(b) => Some(b).successNel[ParseError]
+      case JString(s) =>
+        s.parseBoolean.map(Some(_))
+          .leftMap(_ =>
+            ParseError("_root_", "Could not be interpreted as Option[Boolean]").wrapNel)
+      case JNothing | JNull => None.successNel[ParseError]
+      case _ => ParseError("_root_", "Could not be interpreted as Option[Boolean]").failureNel[Option[Boolean]]
+    }
+
+    def parse(k: String, jv: JValue)(implicit ct: ClassTag[Option[Boolean]]) =
+      as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Option[Boolean]").wrapNel)
   }
 }
