@@ -31,7 +31,7 @@ lazy val typify = crossProject.in(file(".")).
     scalaVersion := "2.11.11",
     libraryDependencies ++= Seq(
       "com.chuusai" %%% "shapeless" % "2.3.2",
-      "org.scalaz" %%% "scalaz-core" % "7.2.9",
+      "org.scalaz" %%% "scalaz-core" % "7.2.14",
       "org.scalacheck" %%% "scalacheck" % "1.12.6" % "test"
     ),
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
@@ -61,7 +61,7 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
       "org.json4s" %% "json4s-jackson" % "3.5.0",
-      "org.scalaz" %% "scalaz-core" % "7.2.9",
+      "org.scalaz" %% "scalaz-core" % "7.2.14",
       "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
     ),
     bintrayOrganization := Some("bondlink"),
@@ -77,7 +77,7 @@ lazy val sjsTypify = project.in(file("jsdynamic-typify"))
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
-      "org.scalaz" %%% "scalaz-core" % "7.2.9",
+      "org.scalaz" %%% "scalaz-core" % "7.2.14",
       "org.scalacheck" %%% "scalacheck" % "1.12.6" % "test"
     ),
     scalaJSSemantics ~= { _.withAsInstanceOfs(
@@ -96,8 +96,8 @@ lazy val playjsonTypify = project.in(file("play-json-typify"))
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
-      "org.scalaz" %% "scalaz-core" % "7.2.9",
       "com.typesafe.play" %% "play-json" % "2.6.0",
+      "org.scalaz" %% "scalaz-core" % "7.2.14",
       "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
     ),
     bintrayOrganization := Some("bondlink"),
