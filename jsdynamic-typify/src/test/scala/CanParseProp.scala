@@ -2,7 +2,7 @@ package typify
 
 import scala.scalajs.js
 import scala.scalajs.js.Dynamic.literal
-import scala.scalajs.js.annotation.JSExport
+import scala.scalajs.js.annotation.JSExportTopLevel
 import scala.scalajs.js.typify.parsedinstances._
 import org.scalacheck.{Gen, Properties}
 
@@ -55,7 +55,7 @@ object MakeJsDynamic extends MakeParsed[js.Dynamic] {
     }
 }
 
-@JSExport
+@JSExportTopLevel("jsDynamicCanParse")
 object jsDynamicCanParse extends Properties("js.Dynamic CanParse") {
 
   val prop = new CanParseProp(MakeJsDynamic)
