@@ -110,6 +110,24 @@ object parsedinstances {
         .validation
   }
 
+  def parseDouble(d: Dynamic): \/[Throwable, Double] =
+    \/.fromTryCatchNonFatal(d.asInstanceOf[Double].toDouble)
+      .orElse(\/.fromTryCatchNonFatal(d.asInstanceOf[String]).flatMap(_.parseDouble.disjunction))
+
+  lazy implicit val cpdbl = new CanParse[Double, Dynamic] {
+    def as(d: Dynamic)(implicit ct: ClassTag[Double]) =
+      (Option(d).filterNot(js.isUndefined) \/> "null found").map(_ => d)
+        .flatMap(parseDouble)
+        .leftMap(_ => NonEmptyList(ParseError("_root_", "Could not be interpreted as Double")))
+        .validation
+
+    def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Double]) =
+      nf(d.selectDynamic)(k)
+        .flatMap(as(_).disjunction)
+        .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Double")))
+        .validation
+  }
+
   def parseBoolean(d: Dynamic): \/[Throwable, Boolean] =
     \/.fromTryCatchNonFatal(d.asInstanceOf[Boolean])
       .orElse(\/.fromTryCatchNonFatal(d.asInstanceOf[String]).flatMap(_.parseBoolean.disjunction))
@@ -191,6 +209,22 @@ object parsedinstances {
         .successNel[ParseError].disjunction
         .flatMap(_.flatMap(as(_).disjunction.sequenceU).sequenceU)
         .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Option[Long]")))
+        .validation
+  }
+
+  lazy implicit val cpodbl = new CanParse[Option[Double], Dynamic] {
+    def as(d: Dynamic)(implicit ct: ClassTag[Option[Double]]) =
+      Option(d).filterNot(js.isUndefined).map(parseDouble).sequenceU
+        .leftMap(_ =>
+            NonEmptyList(ParseError("_root_", "Could not be interpreted as Option[Double]")))
+        .validation
+
+    def parse(k: String, d: Dynamic)(implicit ct: ClassTag[Option[Double]]) =
+      nf(d.selectDynamic)(k)
+        .toOption
+        .successNel[ParseError].disjunction
+        .flatMap(_.flatMap(as(_).disjunction.sequenceU).sequenceU)
+        .leftMap(_ => NonEmptyList(ParseError(k, "Could not be parsed as Option[Double]")))
         .validation
   }
 

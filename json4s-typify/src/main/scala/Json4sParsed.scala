@@ -1,6 +1,6 @@
 package org.json4s.typify
 
-import org.json4s.{JValue, JObject, JArray, JBool, JString, JInt, JLong, JNothing, JNull}
+import org.json4s.{JValue, JObject, JArray, JBool, JDecimal, JDouble, JString, JInt, JLong, JNothing, JNull}
 import typify.{CanParse, Parsed, ParseError}
 import scala.reflect.ClassTag
 import scalaz.std.list._
@@ -85,6 +85,22 @@ object parsedinstances {
       as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Long").wrapNel)
   }
 
+  lazy implicit val cpjd = new CanParse[Double, JValue] {
+    def as(jv: JValue)(implicit ct: ClassTag[Double]) = jv match {
+      case JDouble(d) => d.toDouble.successNel[ParseError]
+      case JDecimal(bd) => bd.toDouble.successNel[ParseError]
+      case JLong(l) => l.toDouble.successNel[ParseError]
+      case JInt(i) => i.toDouble.successNel[ParseError]
+      case JString(s) =>
+        s.parseDouble.leftMap(_ =>
+          ParseError("_root_", "Could not be interpreted as Double").wrapNel)
+      case _ => ParseError("_root_", "Could not be interpreted as Double").failureNel[Double]
+    }
+
+    def parse(k: String, jv: JValue)(implicit ct: ClassTag[Double]) =
+      as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Double").wrapNel)
+  }
+
   lazy implicit val cpjb = new CanParse[Boolean, JValue] {
     def as(jv: JValue)(implicit ct: ClassTag[Boolean]) = jv match {
       case JBool(b) => b.successNel[ParseError]
@@ -153,6 +169,22 @@ object parsedinstances {
 
     def parse(k: String, jv: JValue)(implicit ct: ClassTag[Option[Long]]) =
       as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Option[Long]").wrapNel)
+  }
+
+  lazy implicit val cpjod = new CanParse[Option[Double], JValue] {
+    def as(jv: JValue)(implicit ct: ClassTag[Option[Double]]) = jv match {
+      case JDouble(d) => Some(d.toDouble).successNel[ParseError]
+      case JDecimal(bd) => Some(bd.toDouble).successNel[ParseError]
+      case JString(s) =>
+        s.parseDouble.map(Some(_))
+          .leftMap(_ =>
+            ParseError("_root_", "Could not be interpreted as Option[Double]").wrapNel)
+      case JNothing | JNull => None.successNel[ParseError]
+      case _ => ParseError("_root_", "Could not be interpreted as Option[Double]").failureNel[Option[Double]]
+    }
+
+    def parse(k: String, jv: JValue)(implicit ct: ClassTag[Option[Double]]) =
+      as(jv \ k).leftMap(_ => ParseError(k, "Could not be parsed as Option[Double]").wrapNel)
   }
 
   lazy implicit val cpjob = new CanParse[Option[Boolean], JValue] {
