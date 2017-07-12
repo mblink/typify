@@ -24,6 +24,8 @@ object MakeJsDynamic extends MakeParsed[js.Dynamic] {
       case MPOI => MPOI(v).map(x => literal(k -> x)).getOrElse(none)
       case MPL => literal(k -> v)
       case MPOL => MPOL(v).map(x => literal(k -> x)).getOrElse(none)
+      case MPD => literal(k -> v)
+      case MPOD => MPOD(v).map(x => literal(k -> x)).getOrElse(none)
       case MPB => literal(k -> v)
       case MPOB => MPOB(v).map(x => literal(k -> x)).getOrElse(none)
       case MPLI => literal(k -> v.toSeq.toJSArray)
@@ -43,6 +45,8 @@ object MakeJsDynamic extends MakeParsed[js.Dynamic] {
       case MPOI => MPOI(v).map(_.asInstanceOf[js.Dynamic]).getOrElse(none)
       case MPL => v.asInstanceOf[js.Dynamic]
       case MPOL => MPOL(v).map(_.asInstanceOf[js.Dynamic]).getOrElse(none)
+      case MPD => v.asInstanceOf[js.Dynamic]
+      case MPOD => MPOD(v).map(_.asInstanceOf[js.Dynamic]).getOrElse(none)
       case MPB => v.asInstanceOf[js.Dynamic]
       case MPOB => MPOB(v).map(_.asInstanceOf[js.Dynamic]).getOrElse(none)
       case MPLI => MPLI(v).toSeq.toJSArray.asInstanceOf[js.Dynamic]

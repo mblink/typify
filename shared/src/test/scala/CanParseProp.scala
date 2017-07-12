@@ -20,6 +20,8 @@ trait MakeParsed[P] {
     implicit case object MPOI extends MustParse[Option[Int]]
     implicit case object MPL extends MustParse[Long]
     implicit case object MPOL extends MustParse[Option[Long]]
+    implicit case object MPD extends MustParse[Double]
+    implicit case object MPOD extends MustParse[Option[Double]]
     implicit case object MPB extends MustParse[Boolean]
     implicit case object MPOB extends MustParse[Option[Boolean]]
     implicit case object MPLI extends MustParse[List[Int]]
@@ -40,9 +42,11 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
    cpi: CanParse[Int, P], cpoi: CanParse[Option[Int], P],
    cps: CanParse[String, P], cpos: CanParse[Option[String], P],
    cpl: CanParse[Long, P], cpol: CanParse[Option[Long], P],
+   cpd: CanParse[Double, P], cpod: CanParse[Option[Double], P],
    cpb: CanParse[Boolean, P], cpob: CanParse[Option[Boolean], P],
    cti: ClassTag[Int], ctoi: ClassTag[Option[Int]], cts: ClassTag[String],
    ctos: ClassTag[Option[String]], ctl: ClassTag[Long], ctol: ClassTag[Option[Long]],
+   ctd: ClassTag[Double], ctod: ClassTag[Option[Double]],
    ctb: ClassTag[Boolean], ctob: ClassTag[Option[Boolean]],
    cpli: CanParse[List[Int], P], cpoli: CanParse[Option[List[Int]], P],
    cplp: CanParse[List[P], P], ctp: ClassTag[P], ctop: ClassTag[Option[P]]) {
@@ -125,6 +129,22 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
        "some[Long] represents stringified")
     }
 
+  def double =
+    forAllNoShrink { (k: NEString, i: Int, s: String, d: Double) =>
+      // Double
+      assert("Double", k, cpd, d, s) &&
+      ((cpd.parse(k, mp.make(k, d.toString)).toOption == some(d)) :|
+       "Double parses stringified") &&
+      ((cpd.as(mp.to(d.toString)).toOption == some(d)) :|
+       "Double represents stringified") &&
+      // Option[Double]
+      assertO("Double", k, cpod, d, s) &&
+      ((cpod.parse(k, mp.make(k, some(d.toString))).toOption == some(some(d))) :|
+       "some[Double] parses stringified") &&
+      ((cpod.as(mp.to(some(d.toString))).toOption == some(some(d))) :|
+       "some[Double] represents stringified")
+    }
+
   def boolean =
     forAllNoShrink { (k: NEString, i: Int, b: Boolean) =>
       // Boolean
@@ -169,5 +189,5 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
       assertO("P", k, cpop, nested, bnested, true)
     }
 
-  def apply = int && string && long && boolean && list && recursive
+  def apply = int && string && long && double && boolean && list && recursive
 }
