@@ -27,7 +27,7 @@ lazy val scalacF = Seq(
 lazy val typify = crossProject.in(file(".")).
   settings(
     name := "typify",
-    version := "2.3.0",
+    version := "2.3.1",
     scalaVersion := "2.11.11",
     libraryDependencies ++= Seq(
       "com.chuusai" %%% "shapeless" % "2.3.2",
@@ -55,7 +55,7 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
   .dependsOn(typifyJVM % "test->test;compile->compile")
   .settings(
     name := "json4s-typify",
-    version := "1.3.0",
+    version := "1.3.1",
     scalaVersion := "2.11.11",
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
@@ -72,7 +72,7 @@ lazy val sjsTypify = project.in(file("jsdynamic-typify"))
   .dependsOn(typifyJS % "test->test;compile->compile")
   .settings(
     name := "jsdynamic-typify",
-    version := "1.3.0",
+    version := "1.3.1",
     scalaVersion := "2.11.11",
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
@@ -91,7 +91,7 @@ lazy val playjsonTypify = project.in(file("play-json-typify"))
   .dependsOn(typifyJVM % "test->test;compile->compile")
   .settings(
     name := "play-json-typify",
-    version := "1.3.0",
+    version := "1.3.1",
     scalaVersion := "2.11.11",
     scalacOptions ++= scalacF,
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
