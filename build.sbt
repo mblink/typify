@@ -1,5 +1,5 @@
-scalaVersion in ThisBuild := "2.12.3"
-crossScalaVersions in ThisBuild := Seq("2.11.11", "2.12.3")
+scalaVersion in ThisBuild := "2.12.4"
+crossScalaVersions in ThisBuild := Seq("2.11.11", "2.12.4")
 wartremoverErrors ++= Warts.unsafe
 
 lazy val root = project.in(file(".")).
@@ -46,7 +46,7 @@ lazy val typify = crossProject.in(file(".")).
     version := "2.3.2",
     libraryDependencies ++= Seq(
       "com.chuusai" %%% "shapeless" % "2.3.2",
-      "org.scalaz" %%% "scalaz-core" % "7.2.14",
+      "org.scalaz" %%% "scalaz-core" % "7.2.17",
       "org.scalacheck" %%% "scalacheck" % "1.12.6" % "test"
     ),
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
@@ -73,8 +73,8 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
     version := "1.3.2",
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
-      "org.json4s" %% "json4s-jackson" % "3.5.0",
-      "org.scalaz" %% "scalaz-core" % "7.2.14",
+      "org.json4s" %% "json4s-jackson" % "3.5.3",
+      "org.scalaz" %% "scalaz-core" % "7.2.17",
       "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
     ),
     bintrayOrganization := Some("bondlink"),
@@ -88,7 +88,7 @@ lazy val sjsTypify = project.in(file("jsdynamic-typify"))
     version := "1.3.2",
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
-      "org.scalaz" %%% "scalaz-core" % "7.2.14",
+      "org.scalaz" %%% "scalaz-core" % "7.2.17",
       "org.scalacheck" %%% "scalacheck" % "1.12.6" % "test"
     ),
     scalaJSSemantics ~= { _.withAsInstanceOfs(
@@ -105,8 +105,8 @@ lazy val playjsonTypify = project.in(file("play-json-typify"))
     version := "1.3.2",
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.6.2",
-      "org.scalaz" %% "scalaz-core" % "7.2.14",
+      "com.typesafe.play" %% "play-json" % "2.6.6",
+      "org.scalaz" %% "scalaz-core" % "7.2.17",
       "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
     ),
     bintrayOrganization := Some("bondlink"),
