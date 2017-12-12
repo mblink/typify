@@ -57,11 +57,11 @@ lazy val typify = crossProject.in(file(".")).
   ).
   jvmSettings(
     // Add JVM-specific settings here
-    tutSettings
   ).
   jsSettings(
     // Add JS-specific settings here
-  )
+  ).
+  enablePlugins(TutPlugin)
 
 lazy val typifyJVM = typify.jvm
 lazy val typifyJS = typify.js.enablePlugins(ScalaJSPlugin)
