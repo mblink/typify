@@ -45,7 +45,7 @@ lazy val typify = crossProject.in(file(".")).
     name := "typify",
     version := "2.4.1",
     libraryDependencies ++= Seq(
-      "com.chuusai" %%% "shapeless" % "2.3.2",
+      "com.chuusai" %%% "shapeless" % "2.3.3",
       "org.scalaz" %%% "scalaz-core" % "7.2.17",
       "org.scalacheck" %%% "scalacheck" % "1.12.6" % "test"
     ),
