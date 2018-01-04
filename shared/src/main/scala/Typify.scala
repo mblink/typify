@@ -91,39 +91,39 @@ object Typify {
 class Typify[L, P] { typify =>
 
   object foldPV extends Poly2 {
-    implicit def hnil[A] =
+    implicit def hnil[A]: Case.Aux[PV[HNil], PV[A], PV[A :: HNil]] =
       at[PV[HNil], PV[A]] {
-        (acc, t) => (((p: P) => (t(p) |@| acc(p))(_ :: _)): PV[A :: HNil])
+        (acc, t) => (p: P) => (t(p) |@| acc(p))(_ :: _)
       }
 
-    implicit def khnil[A, K] =
+    implicit def khnil[A, K]: Case.Aux[PV[HNil], FieldType[K, PV[A]], PV[FieldType[K, A] :: HNil]] =
       at[PV[HNil], FieldType[K, PV[A]]] {
-        (acc, t) => (((p: P) => (t(p) |@| acc(p))((x, y) =>
-          field[K](x) :: y)): PV[FieldType[K, A] :: HNil])
+        (acc, t) => (p: P) => (t(p) |@| acc(p))((x, y) =>
+          field[K](x) :: y)
       }
 
     implicit def default[A, R <: HList, RA <: HList](
-        implicit pp: Prepend.Aux[R, A :: HNil, RA]) =
+        implicit pp: Prepend.Aux[R, A :: HNil, RA]): Case.Aux[PV[R], PV[A], PV[RA]] =
       at[PV[R], PV[A]] {
-        (acc, t) => (((p: P) => (acc(p) |@| t(p).map(_ :: HNil))(pp.apply _)): PV[RA])
+        (acc, t) => (p: P) => (acc(p) |@| t(p).map(_ :: HNil))(pp.apply _)
       }
 
     def tagConcat[K, A](f: PV[A], p: P): ValidationNel[L, FieldType[K, A] :: HNil] =
       f(p).map(x => field[K](x) :: HNil)
 
     implicit def kdefault[K, A, R <: HList, RA <: HList](
-        implicit pp: Prepend.Aux[R, FieldType[K, A] :: HNil, RA]) =
+        implicit pp: Prepend.Aux[R, FieldType[K, A] :: HNil, RA]): Case.Aux[PV[R], FieldType[K, PV[A]], PV[RA]] =
       at[PV[R], FieldType[K, PV[A]]] {
-        (acc, t) => (((p: P) => (acc(p) |@| tagConcat[K, A](t, p))((x, y) =>
-          pp.apply(x, y))): PV[RA])
+        (acc, t) => (p: P) => (acc(p) |@| tagConcat[K, A](t, p))((x, y) =>
+          pp.apply(x, y))
       }
 
     implicit def pkdefault[K <: Symbol, A, R <: HList, RA <: HList](
         implicit pp: Prepend.Aux[R, FieldType[K, A] :: HNil, RA],
-                 k: Witness.Aux[K]) =
+                 k: Witness.Aux[K]): Case.Aux[PV[R], FieldType[K, KPV[A]], PV[RA]] =
       at[PV[R], FieldType[K, KPV[A]]] {
-        (acc, t) => (((p: P) => (acc(p) |@| tagConcat[K, A](t(k.value.name), p))(
-                      (x, y) => pp.apply(x, y))): PV[RA])
+        (acc, t) => (p: P) => (acc(p) |@| tagConcat[K, A](t(k.value.name), p))(
+                      (x, y) => pp.apply(x, y))
       }
   }
 
@@ -133,20 +133,22 @@ class Typify[L, P] { typify =>
   object syntax {
 
     implicit class HLOps(p: P) {
-      def parse[I <: HList, R <: HList](in: I)(implicit
-        lf: LeftFolder.Aux[I, PV[HNil], foldPV.type, PV[R]]): ValidationNel[L, R] =
+      def parse[I <: HList, A, R <: HList](in: I)(implicit
+        lf: LeftFolder.Aux[I, PV[HNil], foldPV.type, A],
+        pvaEv: A <:< PV[R]): ValidationNel[L, R] =
           in.foldLeft(((_: P) => HNil.successNel[L]): PV[HNil])(foldPV).apply(p)
 
-      def parseOption[I <: HList, R <: HList, B](in: I)(implicit
+      def parseOption[I <: HList, A, R <: HList, B](in: I)(implicit
         ev: P <:< Parsed[B], rev: Parsed[B] === P, ct: ClassTag[B],
-        lf: LeftFolder.Aux[I, PV[HNil], foldPV.type, PV[R]],
+        lf: LeftFolder.Aux[I, PV[HNil], foldPV.type, A],
+        pvaEv: A <:< PV[R],
         e2l: Typify.E2L[L, B], cp: CanParse[Option[B], B],
         cpb: CanParse[B, B]): ValidationNel[L, Option[R]] =
           p.root.foldLeft(cp.as(p.run).disjunction)(
               (r, k) => r.flatMap(_.map(cp.parse(k, _).disjunction)
                                    .getOrElse(none[B].successNel[ParseError].disjunction)))
            .leftMap(_.map(e2l(p, _)))
-           .flatMap(_.map(x => new HLOps(rev(Parsed(x))).parse(in)).sequenceU.disjunction)
+           .flatMap(_.traverseU(x => new HLOps(rev(Parsed(x))).parse(in)).disjunction)
            .validation
     }
   }

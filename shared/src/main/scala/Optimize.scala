@@ -43,10 +43,10 @@ object Optimize {
 class Optimize[L, P](val tp: Typify[L, P]) {
 
 
-  def folder[G <: HList, R <: HList](in: G)(implicit
-    lf: LeftFolder.Aux[G, tp.PV[HNil], tp.foldPV.type, tp.PV[R]]) = lf
+  def folder[G <: HList, A, R <: HList](in: G)(implicit
+    lf: LeftFolder.Aux[G, tp.PV[HNil], tp.foldPV.type, A], pvEv: A <:< tp.PV[R]) = lf
 
-  def success[G <: HList, R <: HList](in: G)(implicit
-    lf: LeftFolder.Aux[G, tp.PV[HNil], tp.foldPV.type, tp.PV[R]]): TWitness[R] =
+  def success[G <: HList, A, R <: HList](in: G)(implicit
+    lf: LeftFolder.Aux[G, tp.PV[HNil], tp.foldPV.type, A], pvEv: A <:< tp.PV[R]): TWitness[R] =
       new TWitness[R] {}
 }
