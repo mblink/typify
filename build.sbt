@@ -1,5 +1,7 @@
-scalaVersion in ThisBuild := "2.12.4"
-crossScalaVersions in ThisBuild := Seq("2.11.11", "2.12.4")
+import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
+
+scalaVersion in ThisBuild := "2.12.6"
+crossScalaVersions in ThisBuild := Seq("2.11.12", "2.12.5", "2.12.6")
 wartremoverErrors ++= Warts.unsafe
 
 lazy val root = project.in(file(".")).
@@ -40,10 +42,10 @@ scalacOptions in ThisBuild := {
   }
 }
 
-lazy val typify = crossProject.in(file(".")).
+lazy val typify = crossProject(JSPlatform, JVMPlatform).in(file(".")).
   settings(
     name := "typify",
-    version := "2.5.0",
+    version := "2.5.1",
     libraryDependencies ++= Seq(
       "com.chuusai" %%% "shapeless" % "2.3.3",
       "org.scalaz" %%% "scalaz-core" % "7.2.17",
@@ -70,10 +72,10 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
   .dependsOn(typifyJVM % "test->test;compile->compile")
   .settings(
     name := "json4s-typify",
-    version := "1.5.0",
+    version := "1.5.1",
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
-      "org.json4s" %% "json4s-jackson" % "3.5.3",
+      "org.json4s" %% "json4s-jackson" % "3.6.0",
       "org.scalaz" %% "scalaz-core" % "7.2.17",
       "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
     ),
@@ -85,7 +87,7 @@ lazy val sjsTypify = project.in(file("jsdynamic-typify"))
   .dependsOn(typifyJS % "test->test;compile->compile")
   .settings(
     name := "jsdynamic-typify",
-    version := "1.5.0",
+    version := "1.5.1",
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
       "org.scalaz" %%% "scalaz-core" % "7.2.17",
@@ -102,10 +104,10 @@ lazy val playjsonTypify = project.in(file("play-json-typify"))
   .dependsOn(typifyJVM % "test->test;compile->compile")
   .settings(
     name := "play-json-typify",
-    version := "1.5.0",
+    version := "1.5.1",
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.6.6",
+      "com.typesafe.play" %% "play-json" % "2.6.10",
       "org.scalaz" %% "scalaz-core" % "7.2.17",
       "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
     ),
