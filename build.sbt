@@ -73,7 +73,7 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
     version := "1.5.0",
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
-      "org.json4s" %% "json4s-jackson" % "3.5.3",
+      "org.json4s" %% "json4s-jackson" % "3.6.0",
       "org.scalaz" %% "scalaz-core" % "7.2.17",
       "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
     ),
@@ -105,7 +105,7 @@ lazy val playjsonTypify = project.in(file("play-json-typify"))
     version := "1.5.0",
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.6.6",
+      "com.typesafe.play" %% "play-json" % "2.6.10",
       "org.scalaz" %% "scalaz-core" % "7.2.17",
       "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
     ),
