@@ -1,5 +1,7 @@
-scalaVersion in ThisBuild := "2.12.4"
-crossScalaVersions in ThisBuild := Seq("2.11.11", "2.12.4")
+import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
+
+scalaVersion in ThisBuild := "2.12.6"
+crossScalaVersions in ThisBuild := Seq("2.11.12", "2.12.5", "2.12.6")
 wartremoverErrors ++= Warts.unsafe
 
 lazy val root = project.in(file(".")).
@@ -40,7 +42,7 @@ scalacOptions in ThisBuild := {
   }
 }
 
-lazy val typify = crossProject.in(file(".")).
+lazy val typify = crossProject(JSPlatform, JVMPlatform).in(file(".")).
   settings(
     name := "typify",
     version := "2.5.0",
