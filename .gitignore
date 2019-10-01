@@ -29,4 +29,9 @@ play-json-typify/project/*-shim.sbt
 play-json-typify/project/project/
 play-json-typify/project/target/
 play-json-typify/target/
+circe-typify/logs/
+circe-typify/project/*-shim.sbt
+circe-typify/project/project/
+circe-typify/project/target/
+circe-typify/target/
 .idea/

@@ -5,7 +5,7 @@ crossScalaVersions in ThisBuild := Seq("2.11.12", "2.12.5", "2.12.6")
 wartremoverErrors ++= Warts.unsafe
 
 lazy val root = project.in(file(".")).
-  aggregate(typifyJS, typifyJVM, json4sTypify, sjsTypify, playjsonTypify).
+  aggregate(typifyJS, typifyJVM, json4sTypify, sjsTypify, playjsonTypify, circeTypify).
   settings(
     publish := {},
     publishLocal := {},
@@ -45,7 +45,7 @@ scalacOptions in ThisBuild := {
 lazy val typify = crossProject(JSPlatform, JVMPlatform).in(file(".")).
   settings(
     name := "typify",
-    version := "2.5.1",
+    version := "2.5.2",
     libraryDependencies ++= Seq(
       "com.chuusai" %%% "shapeless" % "2.3.3",
       "org.scalaz" %%% "scalaz-core" % "7.2.17",
@@ -72,7 +72,7 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
   .dependsOn(typifyJVM % "test->test;compile->compile")
   .settings(
     name := "json4s-typify",
-    version := "1.5.1",
+    version := "1.5.2",
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
       "org.json4s" %% "json4s-jackson" % "3.6.0",
@@ -87,7 +87,7 @@ lazy val sjsTypify = project.in(file("jsdynamic-typify"))
   .dependsOn(typifyJS % "test->test;compile->compile")
   .settings(
     name := "jsdynamic-typify",
-    version := "1.5.1",
+    version := "1.5.2",
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
       "org.scalaz" %%% "scalaz-core" % "7.2.17",
@@ -104,10 +104,25 @@ lazy val playjsonTypify = project.in(file("play-json-typify"))
   .dependsOn(typifyJVM % "test->test;compile->compile")
   .settings(
     name := "play-json-typify",
-    version := "1.5.1",
+    version := "1.5.2",
     licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
     libraryDependencies ++= Seq(
       "com.typesafe.play" %% "play-json" % "2.6.10",
+      "org.scalaz" %% "scalaz-core" % "7.2.17",
+      "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
+    ),
+    bintrayOrganization := Some("bondlink"),
+    bintrayRepository := "Typify",
+    bintrayReleaseOnPublish in ThisBuild := false)
+
+lazy val circeTypify = project.in(file("circe-typify"))
+  .dependsOn(typifyJVM % "test->test;compile->compile")
+  .settings(
+    name := "circe-typify",
+    version := "1.5.2",
+    licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
+    libraryDependencies ++= Seq(
+      "io.circe" %% "circe-core" % "0.11.1",
       "org.scalaz" %% "scalaz-core" % "7.2.17",
       "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
     ),
