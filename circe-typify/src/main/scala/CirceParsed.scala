@@ -21,7 +21,7 @@ private[this] object helper {
     case Left(err) => ParseError(kO.getOrElse("_root_"), s"Could not be ${kO.map(_ => "parsed").getOrElse("interpreted")} as $ct:\n\t$err").failureNel[T]
     case Right(t) => t.successNel[ParseError]
   }
-  def mk[T: ClassTag](ct: String)(implicit D: Decoder[T]) = new CanParse[T, Json] {
+  def mk[T](ct: String)(implicit D: Decoder[T]) = new CanParse[T, Json] {
     def parse(k: String, jv: Json)(implicit T: ClassTag[T]): ValidationNel[ParseError, T] =
       tpv[T](ct)(jv.hcursor.downField(k).as[T], Some(k))
 
