@@ -2,7 +2,7 @@
 
 Typify is a library for parsing and validating poorly-typed data into well-typed data.
 
-While it currently provides support for json4s, play-json, scalajs, and the Any type,
+While it currently provides support for circe, json4s, play-json, scalajs, and the Any type,
 new source types can be added easily by implementing a type class for your source type.
 
 Typify also does not prescribe a failure type, so you are able to accumulate parse/validation
@@ -30,7 +30,7 @@ import typify.convert.syntax._
 Now we can create an instance of Typify  by specifying the failure type we will use and
 the type we will parse from.
 
-Typify currently includes support for parsing from Any, play json, json4s, and scalajs Dynamic.
+Typify currently includes support for parsing from Any, circe, play json, json4s, and scalajs Dynamic.
 New types can be added by implementing the CanParse typeclass for your desired source type.
 
 Let's use Any for this example.
