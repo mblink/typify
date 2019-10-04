@@ -153,6 +153,19 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
       assertO("Boolean", k, cpob, b, i)
     }
 
+  def stringify[A: ClassTag](l: String, cp: CanParse[A, P])(implicit A: Arbitrary[A]) =
+    forAllNoShrink { (k: NEString, a: A) =>
+      (((cp.parse(k, mp.make(k, a.toString)).toOption == some(a)) :|
+        s"Cannot parse value of type $l from string") &&
+      ((cp.as(mp.to(a.toString)).toOption == some(a)) :|
+        s"Cannot cast string to type $l"))
+    }
+
+  def boolString = stringify[Boolean]("Boolean", cpb)
+  def intString = stringify[Int]("Int", cpi)
+  def longString = stringify[Long]("Long", cpl)
+  def doubleString = stringify[Double]("Double", cpd)
+
   type NEList[A] = List[A]
   implicit def arbNEL[A](implicit aa: Arbitrary[A]) =
     Arbitrary { Arbitrary.arbitrary[List[A]].suchThat(_.nonEmpty) }
@@ -189,5 +202,7 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
       assertO("P", k, cpop, nested, bnested, true)
     }
 
-  def apply = int && string && long && double && boolean && list && recursive
+  def apply = int && string && long && double &&
+              boolean && list && recursive &&
+              boolString && intString && longString && doubleString
 }
