@@ -1,13 +1,10 @@
 package play.api.libs.json.typify
 
-import play.api.libs.json.{JsValue, JsObject, JsString, JsDefined}
-import play.api.libs.json.{JsNumber, JsUndefined, JsNull, Reads}
-import typify.{CanParse, Parsed, ParseError}
+import play.api.libs.json.{JsDefined, JsNull, JsUndefined, JsValue, Reads}
+import typify.{CanParse, ParseError}
 import scala.reflect.ClassTag
 import scalaz.std.list._
 import scalaz.std.option._
-import scalaz.std.string._
-import scalaz.syntax.nel._
 import scalaz.syntax.std.option._
 import scalaz.syntax.std.string._
 import scalaz.syntax.traverse._

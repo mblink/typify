@@ -6,13 +6,12 @@ import scala.reflect.ClassTag
 import scalaz.Leibniz.===
 import scalaz.std.option._
 import scalaz.syntax.applicative._
-import scalaz.syntax.std.option._
 import scalaz.syntax.traverse._
 import scalaz.syntax.validation._
-import scalaz.{NonEmptyList, ValidationNel}
+import scalaz.ValidationNel
 import shapeless.{::, HList, HNil, Poly2, Witness}
 import shapeless.labelled.{field, FieldType}
-import shapeless.ops.hlist.{Prepend, LeftFolder}
+import shapeless.ops.hlist.RightFolder
 
 @implicitNotFound(msg = "Cannot find CanParse from ${P} to ${T}")
 trait CanParse[T, P] {
@@ -89,42 +88,24 @@ object Typify {
 }
 
 class Typify[L, P] { typify =>
+  lazy val pvHNil: PV[HNil] = (_: P) => HNil.successNel[L]
 
   object foldPV extends Poly2 {
-    implicit def hnil[A]: Case.Aux[PV[HNil], PV[A], PV[A :: HNil]] =
-      at[PV[HNil], PV[A]] {
-        (acc, t) => (p: P) => (t(p) |@| acc(p))(_ :: _)
-      }
+    implicit def PV[O <: HList, A]: Case.Aux[PV[A], PV[O], PV[A :: O]] =
+      at((a, acc) => (p: P) => (a(p) |@| acc(p))(_ :: _))
 
-    implicit def khnil[A, K]: Case.Aux[PV[HNil], FieldType[K, PV[A]], PV[FieldType[K, A] :: HNil]] =
-      at[PV[HNil], FieldType[K, PV[A]]] {
-        (acc, t) => (p: P) => (t(p) |@| acc(p))((x, y) =>
-          field[K](x) :: y)
-      }
+    implicit def labelledPV[O <: HList, K <: Symbol, A]: Case.Aux[FieldType[K, PV[A]], PV[O], PV[FieldType[K, A] :: O]] =
+      at((a, acc) => (p: P) => (a(p) |@| acc(p))((x, y) => field[K](x) :: y))
 
-    implicit def default[A, R <: HList, RA <: HList](
-        implicit pp: Prepend.Aux[R, A :: HNil, RA]): Case.Aux[PV[R], PV[A], PV[RA]] =
-      at[PV[R], PV[A]] {
-        (acc, t) => (p: P) => (acc(p) |@| t(p).map(_ :: HNil))(pp.apply _)
-      }
+    implicit def labelledKPV[O <: HList, K <: Symbol, A](implicit k: Witness.Aux[K]): Case.Aux[FieldType[K, KPV[A]], PV[O], PV[FieldType[K, A] :: O]] =
+      at((a, acc) => (p: P) => (a(k.value.name)(p) |@| acc(p))((x, y) => field[K](x) :: y))
 
-    def tagConcat[K, A](f: PV[A], p: P): ValidationNel[L, FieldType[K, A] :: HNil] =
-      f(p).map(x => field[K](x) :: HNil)
-
-    implicit def kdefault[K, A, R <: HList, RA <: HList](
-        implicit pp: Prepend.Aux[R, FieldType[K, A] :: HNil, RA]): Case.Aux[PV[R], FieldType[K, PV[A]], PV[RA]] =
-      at[PV[R], FieldType[K, PV[A]]] {
-        (acc, t) => (p: P) => (acc(p) |@| tagConcat[K, A](t, p))((x, y) =>
-          pp.apply(x, y))
-      }
-
-    implicit def pkdefault[K <: Symbol, A, R <: HList, RA <: HList](
-        implicit pp: Prepend.Aux[R, FieldType[K, A] :: HNil, RA],
-                 k: Witness.Aux[K]): Case.Aux[PV[R], FieldType[K, KPV[A]], PV[RA]] =
-      at[PV[R], FieldType[K, KPV[A]]] {
-        (acc, t) => (p: P) => (acc(p) |@| tagConcat[K, A](t(k.value.name), p))(
-                      (x, y) => pp.apply(x, y))
-      }
+    implicit def nested[O <: HList, K <: Symbol, I <: HList, FR, IR <: HList](
+      implicit rf: RightFolder.Aux[I, PV[HNil], foldPV.type, FR],
+      ev: FR <:< PV[IR]
+    ): Case.Aux[FieldType[K, I], PV[O], PV[FieldType[K, IR] :: O]] =
+      at[FieldType[K, I], PV[O]]((in, acc) => (p: P) =>
+        (rf(in, pvHNil).apply(p) |@| acc(p))((x, y) => field[K](x) :: y))
   }
 
   type PV[A] = P => ValidationNel[L, A]
@@ -133,17 +114,17 @@ class Typify[L, P] { typify =>
   object syntax {
 
     implicit class HLOps(p: P) {
-      def parse[I <: HList, A, R <: HList](in: I)(implicit
-        lf: LeftFolder.Aux[I, PV[HNil], foldPV.type, A],
-        pvaEv: A <:< PV[R]): ValidationNel[L, R] =
-          in.foldLeft(((_: P) => HNil.successNel[L]): PV[HNil])(foldPV).apply(p)
+      def parse[I <: HList, A, R <: HList](in: I)(
+        implicit lf: RightFolder.Aux[I, PV[HNil], foldPV.type, A],
+        pvaEv: A <:< PV[R]
+      ): ValidationNel[L, R] = lf(in, pvHNil)(p)
 
-      def parseOption[I <: HList, A, R <: HList, B](in: I)(implicit
-        ev: P <:< Parsed[B], rev: Parsed[B] === P, ct: ClassTag[B],
-        lf: LeftFolder.Aux[I, PV[HNil], foldPV.type, A],
+      def parseOption[I <: HList, A, R <: HList, B](in: I)(
+        implicit ev: P <:< Parsed[B], rev: Parsed[B] === P, ct: ClassTag[B],
+        lf: RightFolder.Aux[I, PV[HNil], foldPV.type, A],
         pvaEv: A <:< PV[R],
-        e2l: Typify.E2L[L, B], cp: CanParse[Option[B], B],
-        cpb: CanParse[B, B]): ValidationNel[L, Option[R]] =
+        e2l: Typify.E2L[L, B], cp: CanParse[Option[B], B]
+      ): ValidationNel[L, Option[R]] =
           p.root.foldLeft(cp.as(p.run).disjunction)(
               (r, k) => r.flatMap(_.map(cp.parse(k, _).disjunction)
                                    .getOrElse(none[B].successNel[ParseError].disjunction)))

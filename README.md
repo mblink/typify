@@ -2,7 +2,7 @@
 
 Typify is a library for parsing and validating poorly-typed data into well-typed data.
 
-While it currently provides support for circe, json4s, play-json, scalajs, and the Any type,
+While it currently provides support for circe, play-json, and the Any type,
 new source types can be added easily by implementing a type class for your source type.
 
 Typify also does not prescribe a failure type, so you are able to accumulate parse/validation
@@ -20,7 +20,7 @@ and an optional session id.
 First some imports.
 
 ```scala
-import shapeless.{::, HNil}
+import shapeless.HNil
 import shapeless.syntax.singleton._
 import typify.{Typify, Parsed, ParseError}
 import typify.convert._
@@ -30,7 +30,7 @@ import typify.convert.syntax._
 Now we can create an instance of Typify  by specifying the failure type we will use and
 the type we will parse from.
 
-Typify currently includes support for parsing from Any, circe, play json, json4s, and scalajs Dynamic.
+Typify currently includes support for parsing from Any, circe, and play json.
 New types can be added by implementing the CanParse typeclass for your desired source type.
 
 Let's use Any for this example.
@@ -43,7 +43,7 @@ scala> case class Fail(reason: String)
 defined class Fail
 
 scala> val tp = new Typify[Fail, Parsed[Any]]
-tp: typify.Typify[Fail,typify.Parsed[Any]] = typify.Typify@414fe88f
+tp: typify.Typify[Fail,typify.Parsed[Any]] = typify.Typify@7e2a26ce
 ```
 
 We also need to define an implicit function to convert a typify.ParseError to our failure type.
@@ -56,7 +56,7 @@ case class ParseError(key: String, error: String)
 
 ```scala
 scala> implicit val parse2Error = (p: Parsed[Any], pe: ParseError) => Fail(s"${pe.key} - ${pe.error}")
-parse2Error: (typify.Parsed[Any], typify.ParseError) => Fail = <function2>
+parse2Error: (typify.Parsed[Any], typify.ParseError) => Fail = $$Lambda$12530/693167586@61d340b6
 ```
 
 Now we can define some validation functions.
@@ -79,26 +79,26 @@ scala> val checkEmail = Typify.validate((s: String) =>
      |   s.right[NonEmptyList[Fail]]
      |    .ensure(Fail("Email is invalid").wrapNel)(_.contains("@"))
      |    .validation)
-checkEmail: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,String]) = <function1>
+checkEmail: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,String]) = typify.Typify$$$Lambda$12631/613240154@9d3e539
 
 scala> val checkAge = Typify.validate((i: Int) =>
      |   i.right[NonEmptyList[Fail]]
      |    .ensure(Fail("Too young").wrapNel)(_ > 21)
      |    .validation)
-checkAge: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Int]) = <function1>
+checkAge: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Int]) = typify.Typify$$$Lambda$12631/613240154@67cc9f21
 
 scala> val checkSessId = Typify.optional((i: Int) =>
      |   i.right[NonEmptyList[Fail]]
      |    .ensure(Fail("Invalid session id").wrapNel)(_ > 3000)
      |    .validation)
-checkSessId: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Option[Int]]) = <function1>
+checkSessId: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Option[Int]]) = typify.Typify$$$Lambda$12642/378126178@273db922
 ```
 
 Now we can define in which fields to look for these values under our source value as follows.
 
 ```scala
 scala> val checkPerson = 'email ->> checkEmail :: 'age ->> checkAge :: 'session ->> checkSessId :: HNil
-checkPerson: shapeless.::[String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,String]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,String])],shapeless.::[String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Int]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Int])],shapeless.::[String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Option[Int]]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Option[Int]])],shapeless.HNil]]] = <function1> :: <function1> :: <function1> :: HNil
+checkPerson: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,String]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,String])] :: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Int]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Int])] :: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Option[Int]]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Option[Int]])] :: shapeless.HNil = typify.Typify$$$Lambda$12631/613240154@9d3e539 :: typify.Typify$$$Lambda$1...
 ```
 
 From here we are able to parse a person out of Any using our Typify instance.
@@ -120,16 +120,16 @@ scala> val failsAtValidation: Any = Map("email" -> "foo", "session" -> 77777)
 failsAtValidation: Any = Map(email -> foo, session -> 77777)
 
 scala> val passed = Parsed(passes).parse(checkPerson)
-passed: scalaz.ValidationNel[Fail,shapeless.::[String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String],shapeless.::[Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int],shapeless.::[Option[Int] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],Option[Int]],shapeless.HNil]]]] = Success(foo@bar :: 22 :: Some(77777) :: HNil)
+passed: scalaz.ValidationNel[Fail,String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String] :: Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int] :: Option[Int] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],Option[Int]] :: shapeless.HNil] = Success(foo@bar :: 22 :: Some(77777) :: HNil)
 
 scala> val passedNoSess = Parsed(passesNoSess).parse(checkPerson)
-passedNoSess: scalaz.ValidationNel[Fail,shapeless.::[String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String],shapeless.::[Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int],shapeless.::[Option[Int] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],Option[Int]],shapeless.HNil]]]] = Success(foo@bar :: 22 :: None :: HNil)
+passedNoSess: scalaz.ValidationNel[Fail,String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String] :: Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int] :: Option[Int] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],Option[Int]] :: shapeless.HNil] = Success(foo@bar :: 22 :: None :: HNil)
 
 scala> val failedAtParse = Parsed(failsAtParse).parse(checkPerson)
-failedAtParse: scalaz.ValidationNel[Fail,shapeless.::[String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String],shapeless.::[Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int],shapeless.::[Option[Int] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],Option[Int]],shapeless.HNil]]]] = Failure(NonEmpty[Fail(email - Could not be parsed as java.lang.String),Fail(age - Could not be parsed as Int)])
+failedAtParse: scalaz.ValidationNel[Fail,String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String] :: Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int] :: Option[Int] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],Option[Int]] :: shapeless.HNil] = Failure(NonEmpty[Fail(email - Could not be parsed as java.lang.String),Fail(age - Could not be parsed as Int)])
 
 scala> val failedAtValidation = Parsed(failsAtValidation).parse(checkPerson)
-failedAtValidation: scalaz.ValidationNel[Fail,shapeless.::[String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String],shapeless.::[Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int],shapeless.::[Option[Int] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],Option[Int]],shapeless.HNil]]]] = Failure(NonEmpty[Fail(Email is invalid),Fail(age - Could not be parsed as Int)])
+failedAtValidation: scalaz.ValidationNel[Fail,String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String] :: Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int] :: Option[Int] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],Option[Int]] :: shapeless.HNil] = Failure(NonEmpty[Fail(Email is invalid),Fail(age - Could not be parsed as Int)])
 ```
 
 Note that a successful validation returns an HList. We can easily convert it to a compatible case
@@ -169,28 +169,28 @@ scala> val checkSessId = ((i: Int) =>
      |   i.right[NonEmptyList[Fail]]
      |    .ensure(Fail("Invalid session id").wrapNel)(_ > 3000)
      |    .validation)
-checkSessId: Int => scalaz.Validation[scalaz.NonEmptyList[Fail],Int] = <function1>
+checkSessId: Int => scalaz.Validation[scalaz.NonEmptyList[Fail],Int] = $$Lambda$12909/1360350538@4d2ce22b
 
 scala> val checkSessM = Typify.validate(checkSessId)
-checkSessM: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Int]) = <function1>
+checkSessM: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Int]) = typify.Typify$$$Lambda$12631/613240154@daf659d
 
 scala> val checkSessO = Typify.optional(checkSessId)
-checkSessO: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Option[Int]]) = <function1>
+checkSessO: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Option[Int]]) = typify.Typify$$$Lambda$12642/378126178@35a23d3f
 
 scala> val checkPerson = 'email ->> checkEmail :: 'age ->> checkAge :: 'session ->> checkSessO :: HNil
-checkPerson: shapeless.::[String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,String]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,String])],shapeless.::[String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Int]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Int])],shapeless.::[String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Option[Int]]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Option[Int]])],shapeless.HNil]]] = <function1> :: <function1> :: <function1> :: HNil
+checkPerson: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,String]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,String])] :: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Int]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Int])] :: String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Option[Int]]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],String => (typify.Parsed[Any] => scalaz.ValidationNel[Fail,Option[Int]])] :: shapeless.HNil = typify.Typify$$$Lambda$12631/613240154@9d3e539 :: typify.Typify$$$Lambda$1...
 
 scala> val checkPersonWithSession = (checkPerson - 'session) + ('session ->> checkSessM)
-checkPersonWithSession: shapeless.::[String => (typify.Parsed[Any] => scalaz.Validation[scalaz.NonEmptyList[Fail],String]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String => (typify.Parsed[Any] => scalaz.Validation[scalaz.NonEmptyList[Fail],String])],shapeless.::[String => (typify.Parsed[Any] => scalaz.Validation[scalaz.NonEmptyList[Fail],Int]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],String => (typify.Parsed[Any] => scalaz.Validation[scalaz.NonEmptyList[Fail],Int])],shapeless.::[String => (typify.Parsed[Any] => scalaz.Validation[scalaz.NonEmptyList[Fail],Int]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],String => (typify.Parsed[Any] => scalaz.Validation[scalaz.NonEmptyLi...
+checkPersonWithSession: String => (typify.Parsed[Any] => scalaz.Validation[scalaz.NonEmptyList[Fail],String]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String => (typify.Parsed[Any] => scalaz.Validation[scalaz.NonEmptyList[Fail],String])] :: String => (typify.Parsed[Any] => scalaz.Validation[scalaz.NonEmptyList[Fail],Int]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],String => (typify.Parsed[Any] => scalaz.Validation[scalaz.NonEmptyList[Fail],Int])] :: String => (typify.Parsed[Any] => scalaz.Validation[scalaz.NonEmptyList[Fail],Int]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],String => (typify.Parsed[Any] => scalaz.Validation[scalaz.NonEmptyList[Fail],In...
 
 scala> val passed = Parsed(passes).parse(checkPersonWithSession)
-passed: scalaz.ValidationNel[Fail,shapeless.::[String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String],shapeless.::[Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int],shapeless.::[Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],Int],shapeless.HNil]]]] = Success(foo@bar :: 22 :: 77777 :: HNil)
+passed: scalaz.ValidationNel[Fail,String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String] :: Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int] :: Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],Int] :: shapeless.HNil] = Success(foo@bar :: 22 :: 77777 :: HNil)
 
 scala> val failedNoSession = Parsed(passesNoSess).parse(checkPersonWithSession)
-failedNoSession: scalaz.ValidationNel[Fail,shapeless.::[String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String],shapeless.::[Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int],shapeless.::[Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],Int],shapeless.HNil]]]] = Failure(NonEmpty[Fail(session - Could not be parsed as Int)])
+failedNoSession: scalaz.ValidationNel[Fail,String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String] :: Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int] :: Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],Int] :: shapeless.HNil] = Failure(NonEmpty[Fail(session - Could not be parsed as Int)])
 
 scala> val passedPartialSession = Parsed(passesNoSess).parse(checkPersonWithSession - 'session)
-passedPartialSession: scalaz.ValidationNel[Fail,shapeless.::[String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String],shapeless.::[Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int],shapeless.HNil]]] = Success(foo@bar :: 22 :: HNil)
+passedPartialSession: scalaz.ValidationNel[Fail,String with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String] :: Int with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],Int] :: shapeless.HNil] = Success(foo@bar :: 22 :: HNil)
 
 scala> case class PersonRequireSession(session: Int, email: String, age: Int)
 defined class PersonRequireSession

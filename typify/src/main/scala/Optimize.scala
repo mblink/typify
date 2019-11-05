@@ -1,10 +1,8 @@
 package typify
 
-import scala.language.existentials
-import shapeless.{::, HList, HNil, Witness}
+import shapeless.{::, HList, HNil}
 import shapeless.labelled.FieldType
-import shapeless.ops.hlist.{LeftFolder, Prepend}
-import typify.convert._
+import shapeless.ops.hlist.{RightFolder, Prepend}
 import typify.Optimize._
 
 object Optimize {
@@ -41,12 +39,13 @@ object Optimize {
 }
 
 class Optimize[L, P](val tp: Typify[L, P]) {
+  def folder[G <: HList, A, R <: HList](@scalaz.unused in: G)(
+    implicit rf: RightFolder.Aux[G, tp.PV[HNil], tp.foldPV.type, A],
+    @scalaz.unused pvEv: A <:< tp.PV[R]
+  ): RightFolder.Aux[G, tp.PV[HNil], tp.foldPV.type, A] = rf
 
-
-  def folder[G <: HList, A, R <: HList](in: G)(implicit
-    lf: LeftFolder.Aux[G, tp.PV[HNil], tp.foldPV.type, A], pvEv: A <:< tp.PV[R]) = lf
-
-  def success[G <: HList, A, R <: HList](in: G)(implicit
-    lf: LeftFolder.Aux[G, tp.PV[HNil], tp.foldPV.type, A], pvEv: A <:< tp.PV[R]): TWitness[R] =
-      new TWitness[R] {}
+  def success[G <: HList, A, R <: HList](@scalaz.unused in: G)(
+    implicit @scalaz.unused rf: RightFolder.Aux[G, tp.PV[HNil], tp.foldPV.type, A],
+    @scalaz.unused pvEv: A <:< tp.PV[R]
+  ): TWitness[R] = new TWitness[R] {}
 }

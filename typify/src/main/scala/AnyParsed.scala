@@ -1,12 +1,9 @@
 package typify
 
 import scala.reflect.ClassTag
-import scalaz.syntax.id._
 import scalaz.syntax.nel._
 import scalaz.syntax.std.option._
-import scalaz.syntax.std.string._
 import scalaz.syntax.validation._
-import scalaz.ValidationNel
 
 trait CatchAllInstance {
 
@@ -88,4 +85,3 @@ object parsedany extends CatchOptionInstance {
     }
   }
 }
-

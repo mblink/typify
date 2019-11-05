@@ -1,23 +1,10 @@
 package circe.api.libs.json.typify
 
-import io.circe.Json.{JArray, JBoolean, JNull, JNumber, JObject, JString}
-import io.circe.syntax._
-import io.circe.{Decoder, DecodingFailure, HCursor, Json, ParsingFailure}
-import scala.language.higherKinds
+import io.circe.{Decoder, DecodingFailure, Json}
 import scala.reflect.ClassTag
-import scalaz.Id.Id
-import scalaz.std.list._
-import scalaz.std.option._
-import scalaz.std.string._
-import scalaz.syntax.id._
-import scalaz.syntax.monad._
-import scalaz.syntax.nel._
-import scalaz.syntax.std.option._
-import scalaz.syntax.std.string._
-import scalaz.syntax.traverse._
 import scalaz.syntax.validation._
-import scalaz.{\/, NonEmptyList, ValidationNel}
-import typify.{CanParse, Parsed, ParseError}
+import scalaz.ValidationNel
+import typify.{CanParse, ParseError}
 
 private[this] object helper {
   val bs = (kO: Option[String], ct: String, err: String) =>
