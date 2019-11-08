@@ -96,10 +96,10 @@ val passesNoSess: Any = Map("email" -> "foo@bar", "age" -> 22, 500L -> "extra do
 val failsAtParse: Any = 33
 val failsAtValidation: Any = Map("email" -> "foo", "session" -> 77777)
 
-val passed = Parsed(passes).parse(checkPerson)
-val passedNoSess = Parsed(passesNoSess).parse(checkPerson)
-val failedAtParse = Parsed(failsAtParse).parse(checkPerson)
-val failedAtValidation = Parsed(failsAtValidation).parse(checkPerson)
+val passed = Parsed.init(passes).parse(checkPerson)
+val passedNoSess = Parsed.init(passesNoSess).parse(checkPerson)
+val failedAtParse = Parsed.init(failsAtParse).parse(checkPerson)
+val failedAtValidation = Parsed.init(failsAtValidation).parse(checkPerson)
 ```
 
 Note that a successful validation returns an HList. We can easily convert it to a compatible case
@@ -135,9 +135,9 @@ val checkSessO = Typify.optional(checkSessId)
 val checkPerson = 'email ->> checkEmail :: 'age ->> checkAge :: 'session ->> checkSessO :: HNil
 val checkPersonWithSession = (checkPerson - 'session) + ('session ->> checkSessM)
 
-val passed = Parsed(passes).parse(checkPersonWithSession)
-val failedNoSession = Parsed(passesNoSess).parse(checkPersonWithSession)
-val passedPartialSession = Parsed(passesNoSess).parse(checkPersonWithSession - 'session)
+val passed = Parsed.init(passes).parse(checkPersonWithSession)
+val failedNoSession = Parsed.init(passesNoSess).parse(checkPersonWithSession)
+val passedPartialSession = Parsed.init(passesNoSess).parse(checkPersonWithSession - 'session)
 
 case class PersonRequireSession(session: Int, email: String, age: Int)
 

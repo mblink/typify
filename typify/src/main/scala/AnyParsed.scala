@@ -1,87 +1,53 @@
 package typify
 
 import scala.reflect.ClassTag
-import scalaz.syntax.nel._
-import scalaz.syntax.std.option._
+import scalaz.std.option._
 import scalaz.syntax.validation._
 
 trait CatchAllInstance {
+  protected def parseMap(p: Parsed[Any]): Option[Map[Any, Any]] =
+    Some(p.value).collect { case m: Map[_, _] => m.asInstanceOf[Map[Any, Any]] }
 
-  implicit def cpt[T] = new CanParse[T, Any] {
-    def as(jv: Any)(implicit ct: ClassTag[T]) = jv match {
-      case s: T => s.successNel[ParseError]
-      case _ => ParseError("_root_", s"Could not be interpreted as ${ct.toString}")
-                  .failureNel[T]
-    }
+  implicit def cpt[T](implicit ct: ClassTag[T]) = new CanParse[T, Any] {
+    def as(p: Parsed[Any]) =
+      p.value match {
+        case t: T => p.next(Op.TypeValue(t)).successNel[ParseError[Any]]
+        case _ => ParseError(p, "_root_", s"Could not be interpreted as $ct").failureNel[Parsed[T]]
+      }
 
-    def parse(k: String, a: Any)(implicit ct: ClassTag[T]) = a match {
-      case m: Map[_, _] =>
-        (m.asInstanceOf[Map[Any, Any]].get(k) \/>
-          (ParseError(k, s"Could not be parsed as ${ct.toString}").wrapNel))
-          .flatMap(as(_).disjunction).validation
-      case _ => ParseError(k, s"Could not be parsed as ${ct.toString}").failureNel[T]
+    def parse(k: String, p: Parsed[Any]) = {
+      val err = ParseError(p, k, s"Could not be parsed as $ct").failureNel[Parsed[T]]
+      parseMap(p).fold(err)(_.get(k).fold(err)(x =>
+        as(p.next(x, Op.DownField(k))).leftMap(_.map(_.copy(key = k)))))
     }
   }
-
 }
 
 trait CatchOptionInstance extends CatchAllInstance {
-
   implicit def cpot[T: ClassTag] = new CanParse[Option[T], Any] {
-    def as(a: Any)(implicit ct: ClassTag[Option[T]]) = a match {
-      case Some(s) => s match {
-        case t: T => Option(t).successNel[ParseError]
-        case _ => None.successNel[ParseError]
-      }
-      case _ => None.successNel[ParseError]
-    }
+    def as(p: Parsed[Any]) =
+      (p.value match {
+        case o@Some(_) => p.next(Op.TypeValue(o.collect { case t: T => t }))
+        case t: T => p.next(Op.TypeValue(Option(t)))
+        case _ => p.next(Op.TypeValue(none[T]))
+      }).successNel[ParseError[Any]]
 
-    def parse(k: String, a: Any)(implicit ct: ClassTag[Option[T]]) = a match {
-      case m: Map[_, _] => m.asInstanceOf[Map[Any, Any]].get(k) match {
-        case Some(x) => x match {
-          case t: T => Some(t).successNel[ParseError]
-          case _ => None.successNel[ParseError]
-        }
-        case _ => None.successNel[ParseError]
-      }
-      case _ => None.successNel[ParseError]
-    }
-  }
-}
-
-trait CatchAnyInstance extends CatchOptionInstance {
-
-  lazy implicit val cpa = new CanParse[Any, Any] {
-    def parse(k: String, a: Any)(implicit ct: ClassTag[Any]) = a match {
-      case m: Map[_, _] =>
-        m.asInstanceOf[Map[Any, Any]]
-         .get(k).toSuccessNel(ParseError(k, "Could not be parsed as Any"))
-      case _ => ParseError(k, "Could not be parsed as Any").failureNel[Any]
-    }
-
-    def as(a: Any)(implicit ct: ClassTag[Any]) = a.successNel[ParseError]
+    def parse(k: String, p: Parsed[Any]) =
+      parseMap(p).flatMap(_.get(k)).fold(p.next(Op.TypeValue(none[T])).successNel[ParseError[Any]])(x =>
+        as(p.next(x, Op.DownField(k))).leftMap(_.map(_.copy(key = k))))
   }
 }
 
 object parsedany extends CatchOptionInstance {
+  lazy implicit val cpoany = new CanParse[Option[Any], Any] {
+    def as(p: Parsed[Any]) =
+      p.next(Op.TypeValue(p.value match {
+        case o: Option[Any] => o
+        case x => Option(x)
+      })).successNel[ParseError[Any]]
 
-  lazy implicit val cpojv = new CanParse[Option[Any], Any] {
-    def as(a: Any)(implicit ct: ClassTag[Option[Any]]) = a match {
-      case o: Option[Any] => o.successNel[ParseError]
-      case x => Option(x).successNel[ParseError]
-    }
-
-    def parse(k: String, a: Any)(implicit ct: ClassTag[Option[Any]]) = a match {
-      case m: Map[_, _] => {
-        m.asInstanceOf[Map[Any, Any]].get(k) match {
-          case Some(s) => s match {
-            case o: Option[Any] => o.successNel[ParseError]
-            case _ => None.successNel[ParseError]
-          }
-          case _ => None.successNel[ParseError]
-        }
-      }
-      case _ => None.successNel[ParseError]
-    }
+    def parse(k: String, p: Parsed[Any]) =
+      parseMap(p).flatMap(_.get(k)).fold(p.next(Op.TypeValue(none[Any])).successNel[ParseError[Any]])(x =>
+        as(p.next(x, Op.DownField(k))).leftMap(_.map(_.copy(key = k))))
   }
 }

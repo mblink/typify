@@ -6,7 +6,6 @@ import io.circe.syntax._
 import org.scalacheck.Properties
 
 object MakeJson extends MakeParsed[Json] {
-
   import implicits._
 
   def make[A](k: String, v: A)(implicit mp: MustParse[A]): Json =
@@ -29,6 +28,7 @@ object MakeJson extends MakeParsed[Json] {
       case MPOP => Map[String, Option[A]](k -> Some(v)).asJson
       case MPLP => Map[String, List[A]](k -> List(v)).asJson
     }
+
   def to[A](v: A)(implicit mp: MustParse[A]): Json =
     mp match {
       case MPS => v.asJson
@@ -51,8 +51,6 @@ object MakeJson extends MakeParsed[Json] {
     }
 }
 
-object CirceCanParse extends Properties("circe CanParse") {
-
-  property("parses required types correctly") = new CanParseProp(MakeJson).apply
+object CirceCanParse extends Properties("CanParse") {
+  include(new CanParseProp(MakeJson).props("circe"))
 }
-
