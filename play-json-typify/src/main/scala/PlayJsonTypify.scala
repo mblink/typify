@@ -2,41 +2,47 @@ package play.api.libs.json.typify
 
 import play.api.libs.json.{JsDefined, JsNull, JsReadable, JsUndefined, JsValue, Reads}
 import scala.reflect.ClassTag
-import scalaz.{NonEmptyList, ValidationNel}
 import scalaz.std.list._
 import scalaz.std.option._
+import scalaz.std.vector._
 import scalaz.syntax.std.option._
 import scalaz.syntax.std.string._
 import scalaz.syntax.traverse._
 import scalaz.syntax.validation._
-import typify.{CanParse, Op, ParseError}
+import typify.{CanParse, Op, ParseError, Validated, ValidatedHelper}
 
-trait CatchAllInstance {
+trait CatchAllInstance extends ValidatedHelper {
+
   private def gen0[A: Reads](retry: JsReadable => Option[A])(implicit ct: ClassTag[A]): (CanParse[A, JsValue], CanParse[Option[A], JsValue]) =
     (new CanParse[A, JsValue] {
-      def as(jv: JsValue): ValidationNel[ParseError, (A, NonEmptyList[Op])] =
-        jv.asOpt[A].orElse(retry(jv)).map(Op.typedValue(_))
-          .toSuccessNel(ParseError("_root_", s"Could not be interpreted as $ct"))
+      def as(jv: JsValue): Validated[A] =
+        Validated(ops => jv.asOpt[A].orElse(retry(jv)).map(Op.typedValue(_))
+          .toSuccessNel(ParseError(ops, Op.TypeValue(none[A]), s"Could not be interpreted as $ct")))
 
-      def parse(k: String, jv: JsValue): ValidationNel[ParseError, (A, NonEmptyList[Op])] =
-        (jv \ k).asOpt[A].orElse(retry(jv \ k)).map(Op.typedValue(_))
-          .toSuccessNel(ParseError(k, s"Could not be parsed as $ct"))
+      def parse(k: String, jv: JsValue): Validated[A] =
+        for {
+          v <- Validated(ops => (jv \ k) match {
+            case JsDefined(r) => Op.downField(r, k).successNel[ParseError]
+            case _: JsUndefined => ParseError(ops, Op.DownField(k), s"Could not be parsed as $ct").failureNel[(Vector[Op], JsValue)]
+          })
+          r <- as(v)
+        } yield r
     },
     new CanParse[Option[A], JsValue] {
-      def as(jv: JsValue): ValidationNel[ParseError, (Option[A], NonEmptyList[Op])] =
-        jv match {
+      def as(jv: JsValue): Validated[Option[A]] =
+        Validated(ops => jv match {
           case JsNull => Op.typedValue(none[A]).successNel[ParseError]
           case v: JsValue => v.asOpt[A]
                               .orElse(retry(v))
                               .map(a => Op.typedValue(Option(a)))
-                              .toSuccessNel(ParseError("_root_", s"Could not be interpreted as Option[$ct]"))
-        }
+                              .toSuccessNel(ParseError(ops, Op.TypeValue(none[A]), s"Could not be interpreted as Option[$ct]"))
+        })
 
-      def parse(k: String, jv: JsValue): ValidationNel[ParseError, (Option[A], NonEmptyList[Op])] =
-        (jv \ k) match {
-          case JsDefined(r) => as(r).bimap(_.map(_.copy(key = k)), t => (t._1, t._2.append(NonEmptyList(Op.DownField(k)))))
-          case _: JsUndefined => Op.typedValue(none[A]).successNel[ParseError]
-        }
+      def parse(k: String, jv: JsValue): Validated[Option[A]] =
+        for {
+          v <- Validated(_ => Op.downField((jv \ k).getOrElse(JsNull), k).successNel[ParseError])
+          r <- as(v)
+        } yield r
     })
 
   protected def gen[A: ClassTag: Reads](fromStr: String => Option[A]): (CanParse[A, JsValue], CanParse[Option[A], JsValue], CanParse[List[A], JsValue], CanParse[Option[List[A]], JsValue]) = {
