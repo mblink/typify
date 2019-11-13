@@ -1,41 +1,41 @@
 package play.api.libs.json.typify
 
 import play.api.libs.json.{JsDefined, JsNull, JsReadable, JsUndefined, JsValue, Reads}
-import typify.{CanParse, Op, Parsed, ParseError}
 import scala.reflect.ClassTag
+import scalaz.{NonEmptyList, ValidationNel}
 import scalaz.std.list._
 import scalaz.std.option._
 import scalaz.syntax.std.option._
 import scalaz.syntax.std.string._
 import scalaz.syntax.traverse._
 import scalaz.syntax.validation._
-import scalaz.ValidationNel
+import typify.{CanParse, Op, ParseError}
 
 trait CatchAllInstance {
   private def gen0[A: Reads](retry: JsReadable => Option[A])(implicit ct: ClassTag[A]): (CanParse[A, JsValue], CanParse[Option[A], JsValue]) =
     (new CanParse[A, JsValue] {
-      def as(p: Parsed[JsValue]): ValidationNel[ParseError[JsValue], Parsed[A]] =
-        p.value.asOpt[A].orElse(retry(p.value)).map(x => p.next(Op.TypeValue(x)))
-          .toSuccessNel(ParseError(p, "_root_", s"Could not be interpreted as $ct"))
+      def as(jv: JsValue): ValidationNel[ParseError, (A, NonEmptyList[Op])] =
+        jv.asOpt[A].orElse(retry(jv)).map(Op.typedValue(_))
+          .toSuccessNel(ParseError("_root_", s"Could not be interpreted as $ct"))
 
-      def parse(k: String, p: Parsed[JsValue]): ValidationNel[ParseError[JsValue], Parsed[A]] =
-        (p.value \ k).asOpt[A].orElse(retry(p.value \ k)).map(x => p.next(Op.TypeValue(x)))
-          .toSuccessNel(ParseError(p, k, s"Could not be parsed as $ct"))
+      def parse(k: String, jv: JsValue): ValidationNel[ParseError, (A, NonEmptyList[Op])] =
+        (jv \ k).asOpt[A].orElse(retry(jv \ k)).map(Op.typedValue(_))
+          .toSuccessNel(ParseError(k, s"Could not be parsed as $ct"))
     },
     new CanParse[Option[A], JsValue] {
-      def as(p: Parsed[JsValue]): ValidationNel[ParseError[JsValue], Parsed[Option[A]]] =
-        p.value match {
-          case JsNull => p.next(Op.TypeValue(none[A])).successNel[ParseError[JsValue]]
+      def as(jv: JsValue): ValidationNel[ParseError, (Option[A], NonEmptyList[Op])] =
+        jv match {
+          case JsNull => Op.typedValue(none[A]).successNel[ParseError]
           case v: JsValue => v.asOpt[A]
                               .orElse(retry(v))
-                              .map(a => p.next(Op.TypeValue(Option(a))))
-                              .toSuccessNel(ParseError(p, "_root_", s"Could not be interpreted as Option[$ct]"))
+                              .map(a => Op.typedValue(Option(a)))
+                              .toSuccessNel(ParseError("_root_", s"Could not be interpreted as Option[$ct]"))
         }
 
-      def parse(k: String, p: Parsed[JsValue]): ValidationNel[ParseError[JsValue], Parsed[Option[A]]] =
-        (p.value \ k) match {
-          case JsDefined(r) => as(p.next(r, Op.DownField(k))).leftMap(_.map(_.copy(key = k)))
-          case _: JsUndefined => p.next(Op.TypeValue(none[A])).successNel[ParseError[JsValue]]
+      def parse(k: String, jv: JsValue): ValidationNel[ParseError, (Option[A], NonEmptyList[Op])] =
+        (jv \ k) match {
+          case JsDefined(r) => as(r).bimap(_.map(_.copy(key = k)), t => (t._1, t._2.append(NonEmptyList(Op.DownField(k)))))
+          case _: JsUndefined => Op.typedValue(none[A]).successNel[ParseError]
         }
     })
 
