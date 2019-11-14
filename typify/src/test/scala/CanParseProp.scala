@@ -2,7 +2,6 @@ package typify
 
 import org.scalacheck.{Arbitrary, Gen, Prop, Properties}
 import org.scalacheck.Prop.{forAllNoShrink, propBoolean}
-import scalaz.Validation.FlatMap._
 import scalaz.std.list._
 import scalaz.std.option._
 import scalaz.syntax.std.boolean._
@@ -48,38 +47,42 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
    cplp: CanParse[List[P], P]) {
   import mp.implicits._
 
+  implicit class ValidatedOptionOps[L, A](v: Validated[L, A]) {
+    def toOption: Option[A] = v.run(Vector()).toOption.map(_._2)
+  }
+
   def assert[A, B](l: String, k: String, cp: CanParse[A, P],
                                        g: A, b: B, rc: Boolean = false)(implicit
     mpa: MustParse[A], mpb: MustParse[B]): Prop = {
-    (((cp.parse(k, Parsed.init(mp.make(k, g))).toOption.map(_.value) == some(g)) :|
+    (((cp.parse(k, mp.make(k, g)).toOption == some(g)) :|
       s"$l parses valid") &&
-     ((cp.parse(k + "a", Parsed.init(mp.make(k, g))).toOption.map(_.value) == none[A]) :|
+     ((cp.parse(k + "a", mp.make(k, g)).toOption == none[A]) :|
       s"$l missed key") &&
-     ((cp.parse(k, Parsed.init(mp.make(k, b))).toOption.map(_.value) == rc.fold(some(b), none[A])) :|
+     ((cp.parse(k, mp.make(k, b)).toOption == rc.fold(some(b), none[A])) :|
       s"$l wrong type") &&
-     ((cp.as(Parsed.init(mp.to(g))).toOption.map(_.value) == some(g)) :|
+     ((cp.as(mp.to(g)).toOption == some(g)) :|
       s"$l represents valid") &&
-     ((cp.as(Parsed.init(mp.to(b))).toOption.map(_.value) == rc.fold(some(b), none[A])) :|
+     ((cp.as(mp.to(b)).toOption == rc.fold(some(b), none[A])) :|
       s"$l repesented wrong type"))
   }
 
   def assertO[A, B](l: String, k: String, cp: CanParse[Option[A], P],
                    g: A, b: B, rc: Boolean = false)(implicit
     mpoa: MustParse[Option[A]], mpob: MustParse[Option[B]]): Prop =
-    ({ val a = cp.parse(k, Parsed.init(mp.make(k, some(g))))
-    ((cp.parse(k, Parsed.init(mp.make(k, some(g)))).toOption.map(_.value) == some(some(g))) :|
+    ({ val a = cp.parse(k, mp.make(k, some(g)))
+    ((cp.parse(k, mp.make(k, some(g))).toOption == some(some(g))) :|
       s"some[$l] parses valid: get ${a} ex ${some(some(g))}") } &&
-     ((cp.parse(k, Parsed.init(mp.make(k, none[A]))).toOption.map(_.value) == some(none[A])) :|
+     ((cp.parse(k, mp.make(k, none[A])).toOption == some(none[A])) :|
       s"none[$l] parses valid") &&
-     ((cp.parse(k + "a", Parsed.init(mp.make(k, some(g)))).toOption.map(_.value) == some(none[A])) :|
+     ((cp.parse(k + "a", mp.make(k, some(g))).toOption == some(none[A])) :|
       s"some[$l] missed key") &&
-     ((cp.parse(k, Parsed.init(mp.make(k, some(b)))).toOption.map(_.value) == rc.fold(some(some(b)), none[Option[A]])) :|
+     ((cp.parse(k, mp.make(k, some(b))).toOption == rc.fold(some(some(b)), none[Option[A]])) :|
       s"some[$l] wrong type") &&
-     ((cp.as(Parsed.init(mp.to(some(g)))).toOption.map(_.value) == some(some(g))) :|
+     ((cp.as(mp.to(some(g))).toOption == some(some(g))) :|
       s"$l represents valid") &&
-     ((cp.as(Parsed.init(mp.to(none[A]))).toOption.map(_.value) == some(none[A])) :|
+     ((cp.as(mp.to(none[A])).toOption == some(none[A])) :|
       s"none[$l] represents valid") &&
-     ((cp.as(Parsed.init(mp.to(some(b)))).toOption.map(_.value) == rc.fold(some(some(b)), none[Option[A]])) :|
+     ((cp.as(mp.to(some(b))).toOption == rc.fold(some(some(b)), none[Option[A]])) :|
       s"$l repesented wrong type"))
 
   type NEString = String
@@ -89,15 +92,15 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
     forAllNoShrink { (k: NEString, i: Int, s: String) =>
       // Int
       assert("Int", k, cpi, i, s) &&
-      ((cpi.parse(k, Parsed.init(mp.make(k, i.toString))).toOption.map(_.value) == some(i)) :|
+      ((cpi.parse(k, mp.make(k, i.toString)).toOption == some(i)) :|
        s"Int parses stringified") &&
-      ((cpi.as(Parsed.init(mp.to(i.toString))).toOption.map(_.value) == some(i)) :|
+      ((cpi.as(mp.to(i.toString)).toOption == some(i)) :|
        "Int represents stringified") &&
       // Option[Int]
       assertO("Int", k, cpoi, i, s) &&
-      ((cpoi.parse(k, Parsed.init(mp.make(k, some(i.toString)))).toOption.map(_.value) == some(some(i))) :|
+      ((cpoi.parse(k, mp.make(k, some(i.toString))).toOption == some(some(i))) :|
        "some[Int] parses stringified") &&
-      ((cpoi.as(Parsed.init(mp.to(some(i.toString)))).toOption.map(_.value) == some(some(i))) :|
+      ((cpoi.as(mp.to(some(i.toString))).toOption == some(some(i))) :|
        "some[Int] represents stringified")
     }
 
@@ -113,15 +116,15 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
     forAllNoShrink { (k: NEString, s: String, l: Long) =>
       // Long
       assert("Long", k, cpl, l, s) &&
-      ((cpl.parse(k, Parsed.init(mp.make(k, l.toString))).toOption.map(_.value) == some(l)) :|
+      ((cpl.parse(k, mp.make(k, l.toString)).toOption == some(l)) :|
        "Long parses stringified") &&
-      ((cpl.as(Parsed.init(mp.to(l.toString))).toOption.map(_.value) == some(l)) :|
+      ((cpl.as(mp.to(l.toString)).toOption == some(l)) :|
        "Long represents stringified") &&
       // Option[Long]
       assertO("Long", k, cpol, l, s) &&
-      ((cpol.parse(k, Parsed.init(mp.make(k, some(l.toString)))).toOption.map(_.value) == some(some(l))) :|
+      ((cpol.parse(k, mp.make(k, some(l.toString))).toOption == some(some(l))) :|
        "some[Long] parses stringified") &&
-      ((cpol.as(Parsed.init(mp.to(some(l.toString)))).toOption.map(_.value) == some(some(l))) :|
+      ((cpol.as(mp.to(some(l.toString))).toOption == some(some(l))) :|
        "some[Long] represents stringified")
     }
 
@@ -129,15 +132,15 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
     forAllNoShrink { (k: NEString, s: String, d: Double) =>
       // Double
       assert("Double", k, cpd, d, s) &&
-      ((cpd.parse(k, Parsed.init(mp.make(k, d.toString))).toOption.map(_.value) == some(d)) :|
+      ((cpd.parse(k, mp.make(k, d.toString)).toOption == some(d)) :|
        "Double parses stringified") &&
-      ((cpd.as(Parsed.init(mp.to(d.toString))).toOption.map(_.value) == some(d)) :|
+      ((cpd.as(mp.to(d.toString)).toOption == some(d)) :|
        "Double represents stringified") &&
       // Option[Double]
       assertO("Double", k, cpod, d, s) &&
-      ((cpod.parse(k, Parsed.init(mp.make(k, some(d.toString)))).toOption.map(_.value) == some(some(d))) :|
+      ((cpod.parse(k, mp.make(k, some(d.toString))).toOption == some(some(d))) :|
        "some[Double] parses stringified") &&
-      ((cpod.as(Parsed.init(mp.to(some(d.toString)))).toOption.map(_.value) == some(some(d))) :|
+      ((cpod.as(mp.to(some(d.toString))).toOption == some(some(d))) :|
        "some[Double] represents stringified")
     }
 
@@ -145,23 +148,23 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
     forAllNoShrink { (k: NEString, i: Int, b: Boolean) =>
       // Boolean
       assert("Boolean", k, cpb, b, i) &&
-      ((cpb.parse(k, Parsed.init(mp.make(k, b.toString))).toOption.map(_.value) == some(b)) :|
+      ((cpb.parse(k, mp.make(k, b.toString)).toOption == some(b)) :|
        "Boolean parses stringified") &&
-      ((cpb.as(Parsed.init(mp.to(b.toString))).toOption.map(_.value) == some(b)) :|
+      ((cpb.as(mp.to(b.toString)).toOption == some(b)) :|
        "Boolean represents stringified") &&
       // Option[Boolean]
       assertO("Boolean", k, cpob, b, i) &&
-      ((cpob.parse(k, Parsed.init(mp.make(k, some(b.toString)))).toOption.map(_.value) == some(some(b))) :|
+      ((cpob.parse(k, mp.make(k, some(b.toString))).toOption == some(some(b))) :|
        "Boolean parses stringified") &&
-      ((cpob.as(Parsed.init(mp.to(some(b.toString)))).toOption.map(_.value) == some(some(b))) :|
+      ((cpob.as(mp.to(some(b.toString))).toOption == some(some(b))) :|
        "Boolean represents stringified")
     }
 
   def stringify[A](l: String, cp: CanParse[A, P])(implicit A: Arbitrary[A]) =
     forAllNoShrink { (k: NEString, a: A) =>
-      (((cp.parse(k, Parsed.init(mp.make(k, a.toString))).toOption.map(_.value) == some(a)) :|
+      (((cp.parse(k, mp.make(k, a.toString)).toOption == some(a)) :|
         s"Cannot parse value of type $l from string") &&
-      ((cp.as(Parsed.init(mp.to(a.toString))).toOption.map(_.value) == some(a)) :|
+      ((cp.as(mp.to(a.toString)).toOption == some(a)) :|
         s"Cannot cast string to type $l"))
     }
 
@@ -178,20 +181,20 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
     forAllNoShrink { (k: NEString, li: NEList[Int], ls: NEList[String]) =>
       // List[Int]
       assert("List[Int]", k, cpli, li, ls) &&
-      ((cpli.parse(k, Parsed.init(mp.make(k, li.map(_.toString)))).toOption.map(_.value) == some(li)) :|
+      ((cpli.parse(k, mp.make(k, li.map(_.toString))).toOption == some(li)) :|
        "List[Int] parses stringified") &&
-      ((cpli.as(Parsed.init(mp.to(li.map(_.toString)))).toOption.map(_.value) == some(li)) :|
+      ((cpli.as(mp.to(li.map(_.toString))).toOption == some(li)) :|
        "List[Int] represents stringified") &&
       // Option[List[Int]]
       assertO("List[Int]", k, cpoli, li, ls) &&
-      ((cpoli.parse(k, Parsed.init(mp.make(k, some(li.map(_.toString))))).toOption.map(_.value) == some(some(li))) :|
+      ((cpoli.parse(k, mp.make(k, some(li.map(_.toString)))).toOption == some(some(li))) :|
        "some[List[Int]] parses stringified") &&
-      ((cpoli.as(Parsed.init(mp.to(some(li.map(_.toString))))).toOption.map(_.value) == some(some(li))) :|
+      ((cpoli.as(mp.to(some(li.map(_.toString)))).toOption == some(some(li))) :|
        "some[List[Int]] represents stringified") &&
       // List[P]
-      ((cplp.as(Parsed.init(mp.to(li.map(i => mp.make(k, i)))))
-        .flatMap(p => p.value.traverse(x => cpi.parse(k, p.next(x))))
-        .toOption.map(_.map(_.value)) == some(li)) :|
+      ((cplp.as(mp.to(li.map(i => mp.make(k, i))))
+        .flatMap(_.traverse(cpi.parse(k, _)))
+        .toOption == some(li)) :|
        "List[Int] parses via List[P]")
     }
 

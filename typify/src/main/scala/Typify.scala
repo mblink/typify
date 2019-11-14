@@ -49,18 +49,18 @@ object Op {
   case class DownField(key: String) extends Op
   case class TypeValue[A](value: A) extends Op
 
-  def downField[A](ops: Vector[Op], a: A, k: String): ValidationNel[ParseError, (Vector[Op], A)] =
-    (ops :+ DownField(k), a).successNel[ParseError]
+  def downField[A](a: A, k: String): ParsedValidated[A] =
+    Validated(ops => (ops ++ Vector[Op](DownField(k)), a).successNel[ParseError])
 
-  def downFieldError[A](ops: Vector[Op], k: String)(implicit ct: ClassTag[A]): ValidationNel[ParseError, (Vector[Op], A)] =
-    ParseError(ops, DownField(k), s"Could not be parsed as $ct").failureNel[(Vector[Op], A)]
+  def downFieldError[A](k: String)(implicit ct: ClassTag[A]): ParsedValidated[A] =
+    Validated(ops => ParseError(ops, DownField(k), s"Could not be parsed as $ct").failureNel[(Vector[Op], A)])
 
-  def typeValue[A](ops: Vector[Op], a: A): ValidationNel[ParseError, (Vector[Op], A)] =
-    (ops :+ TypeValue(a), a).successNel[ParseError]
+  def typeValue[A](a: A): ParsedValidated[A] =
+    Validated(ops => (ops ++ Vector[Op](TypeValue(a)), a).successNel[ParseError])
 
   trait MkTVE[A] {
-    def apply[B](ops: Vector[Op], b: B)(implicit ct: ClassTag[A]): ValidationNel[ParseError, (Vector[Op], A)] =
-      ParseError(ops, TypeValue(b), s"Could not be interpreted as $ct").failureNel[(Vector[Op], A)]
+    def apply[B](b: B)(implicit ct: ClassTag[A]): ParsedValidated[A] =
+      Validated(ops => ParseError(ops, TypeValue(b), s"Could not be interpreted as $ct").failureNel[(Vector[Op], A)])
   }
 
   def typeValueError[A]: MkTVE[A] = new MkTVE[A] {}
@@ -164,7 +164,7 @@ class Typify[L, P] {
         cpop: CanParse[Option[P], P]
       ): Validated[L, Option[R]] =
         p.root.foldLeft(cpop.as(p.run))(
-            (r, k) => r.flatMap(_.fold(Validated(Op.downField(_, none[P], k)))(cpop.parse(k, _))))
+            (r, k) => r.flatMap(_.fold(Op.downField(none[P], k))(cpop.parse(k, _))))
           .leftMapNel(e2l(p, _))
           .flatMap(_.traverse(x => Validated(_ => Parsed(x).parse(in))))
     }

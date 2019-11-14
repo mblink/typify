@@ -14,24 +14,22 @@ trait CatchAllInstance {
   private def gen0[A: Reads](retry: JsReadable => Option[A])(implicit ct: ClassTag[A]): (CanParse[A, JsValue], CanParse[Option[A], JsValue]) =
     (new CanParse[A, JsValue] {
       def as(jv: JsValue): ParsedValidated[A] =
-        ParsedValidated(ops => jv.asOpt[A].orElse(retry(jv))
-          .fold(Op.typeValueError[A](ops, none[A]))(Op.typeValue(ops, _)))
+        jv.asOpt[A].orElse(retry(jv)).fold(Op.typeValueError[A](none[A]))(Op.typeValue(_))
 
       def parse(k: String, jv: JsValue): ParsedValidated[A] =
-        ParsedValidated(ops => (jv \ k).toOption
-          .fold(Op.downFieldError[JsValue](ops, k))(Op.downField(ops, _, k))).flatMap(as(_))
+        (jv \ k).toOption.fold(Op.downFieldError[JsValue](k))(Op.downField(_, k)).flatMap(as(_))
     },
     new CanParse[Option[A], JsValue] {
       def as(jv: JsValue): ParsedValidated[Option[A]] =
-        ParsedValidated(ops => jv match {
-          case JsNull => Op.typeValue(ops, none[A])
+        jv match {
+          case JsNull => Op.typeValue(none[A])
           case v: JsValue => v.asOpt[A]
                               .orElse(retry(v))
-                              .fold(Op.typeValueError[Option[A]](ops, none[A]))(a => Op.typeValue(ops, some(a)))
-        })
+                              .fold(Op.typeValueError[Option[A]](none[A]))(a => Op.typeValue(some(a)))
+        }
 
       def parse(k: String, jv: JsValue): ParsedValidated[Option[A]] =
-        ParsedValidated(Op.downField(_, (jv \ k).getOrElse(JsNull), k)).flatMap(as(_))
+        Op.downField((jv \ k).getOrElse(JsNull), k).flatMap(as(_))
     })
 
   protected def gen[A: ClassTag: Reads](fromStr: String => Option[A]): (CanParse[A, JsValue], CanParse[Option[A], JsValue], CanParse[List[A], JsValue], CanParse[Option[List[A]], JsValue]) = {

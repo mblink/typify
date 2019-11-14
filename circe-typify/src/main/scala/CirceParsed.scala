@@ -12,26 +12,23 @@ trait CatchAllInstance {
   private def gen0[A: ClassTag: Decoder](retry: ACursor => Option[A]): (CanParse[A, Json], CanParse[Option[A], Json]) =
     (new CanParse[A, Json] {
       def as(j: Json): ParsedValidated[A] =
-        ParsedValidated(ops => j.as[A].fold(_ => retry(j.hcursor), some(_))
-          .fold(Op.typeValueError[A](ops, none[A]))(Op.typeValue(ops, _)))
+        j.as[A].fold(_ => retry(j.hcursor), some(_)).fold(Op.typeValueError[A](none[A]))(Op.typeValue(_))
 
       def parse(k: String, j: Json): ParsedValidated[A] =
-        ParsedValidated(ops => j.hcursor.downField(k).focus
-          .fold(Op.downFieldError[Json](ops, k))(Op.downField(ops, _, k))).flatMap(as(_))
+        j.hcursor.downField(k).focus.fold(Op.downFieldError[Json](k))(Op.downField(_, k)).flatMap(as(_))
     },
     new CanParse[Option[A], Json] {
       def as(j: Json): ParsedValidated[Option[A]] =
-        ParsedValidated(ops => j match {
-          case Json.Null => Op.typeValue(ops, none[A])
+        j match {
+          case Json.Null => Op.typeValue(none[A])
           case v: Json => v.as[Option[A]]
                            .fold(_ => retry(v.hcursor), identity)
-                           .fold(Op.typeValueError[Option[A]](ops, none[A]))(
-                            a => Op.typeValue(ops, some(a)))
-        })
+                           .fold(Op.typeValueError[Option[A]](none[A]))(
+                            a => Op.typeValue(some(a)))
+        }
 
       def parse(k: String, j: Json): ParsedValidated[Option[A]] =
-        ParsedValidated(Op.downField(_, j.hcursor.get[Json](k).toOption
-          .getOrElse(Json.Null), k)).flatMap(as(_))
+        Op.downField(j.hcursor.get[Json](k).toOption.getOrElse(Json.Null), k).flatMap(as(_))
     })
 
   protected def gen[A: ClassTag: Decoder](fromStr: String => Option[A]): (CanParse[A, Json], CanParse[Option[A], Json], CanParse[List[A], Json], CanParse[Option[List[A]], Json]) = {
