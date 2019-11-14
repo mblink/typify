@@ -12,20 +12,16 @@ trait CatchAllInstance extends ValidatedHelper {
   implicit def cpt[T](implicit ct: ClassTag[T]) = new CanParse[T, Any] {
     def as(x: Any): Validated[T] =
       Validated(ops => x match {
-        case t: T => Op.typedValue(t).successNel[ParseError]
-        case _ => ParseError(ops, Op.TypeValue(none[T]), s"Could not be interpreted as $ct").failureNel
+        case t: T => Op.typedValue(t)
+        case _ => Op.typedValueError[T](ops, none[T])
       })
 
-    def parse(k: String, x: Any): Validated[T] = {
-      def err[A] = ParseError(_: Vector[Op], _: Op, s"Could not be parsed as $ct").failureNel[(Vector[Op], A)]
-
+    def parse(k: String, x: Any): Validated[T] =
       for {
-        m <- Validated(ops => parseMap(x).fold(
-          err[Map[Any, Any]](ops, Op.TypeValue(none[Map[Any, Any]])))(Op.typedValue(_).successNel[ParseError]))
-        v <- Validated(ops => m.get(k).fold(err[Any](ops, Op.DownField(k)))(Op.downField(_, k).successNel[ParseError]))
+        m <- Validated(ops => parseMap(x).fold(Op.typedValueError[Map[Any, Any]](ops, none[Map[Any, Any]]))(Op.typedValue(_)))
+        v <- Validated(ops => m.get(k).fold(Op.downFieldError[Any](ops, k))(Op.downField(_, k)))
         t <- as(v)
       } yield t
-    }
   }
 }
 
@@ -36,13 +32,13 @@ trait CatchOptionInstance extends CatchAllInstance {
         case o@Some(_) => o.collect { case t: T => t }
         case t: T => Option(t)
         case _ => none[T]
-      }).successNel[ParseError])
+      }))
 
     def parse(k: String, x: Any): Validated[Option[T]] =
       for {
-        m <- Validated(_ => Op.typedValue(parseMap(x).getOrElse(Map())).successNel[ParseError])
-        vo <- Validated(_ => Op.downField(m.get(k), k).successNel[ParseError])
-        t <- vo.fold(Validated(_ => Op.typedValue(none[T]).successNel[ParseError]))(as(_))
+        m <- Validated(_ => Op.typedValue(parseMap(x).getOrElse(Map())))
+        vo <- Validated(_ => Op.downField(m.get(k), k))
+        t <- vo.fold(Validated(_ => Op.typedValue(none[T])))(as(_))
       } yield t
   }
 }
@@ -53,7 +49,7 @@ object parsedany extends CatchOptionInstance {
       Validated(_ => Op.typedValue(x match {
         case o: Option[Any] => o
         case y => Option(y)
-      }).successNel[ParseError])
+      }))
 
     def parse(k: String, x: Any): Validated[Option[Any]] =
       Validated(ops => ParseError(ops, Op.DownField("foo"), "").failureNel[(Vector[Op], Option[Any])])

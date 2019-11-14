@@ -2,45 +2,37 @@ package circe.api.libs.json.typify
 
 import io.circe.{ACursor, Decoder, Json}
 import scala.reflect.ClassTag
-import scalaz.{NonEmptyList, ValidationNel}
 import scalaz.std.list._
 import scalaz.std.option._
-import scalaz.syntax.std.option._
+import scalaz.std.vector._
 import scalaz.syntax.std.string._
 import scalaz.syntax.traverse._
-import scalaz.syntax.validation._
-import typify.{CanParse, Op, ParseError}
+import typify.{CanParse, Op, Validated, ValidatedHelper}
 
-trait CatchAllInstance {
-  private def iErr[A](implicit ct: ClassTag[A]): String = s"Could not be interpreted as $ct"
-  private def pErr[A](implicit ct: ClassTag[A]): String = s"Could not be parsed as $ct"
-
+trait CatchAllInstance extends ValidatedHelper {
   private def gen0[A: ClassTag: Decoder](retry: ACursor => Option[A]): (CanParse[A, Json], CanParse[Option[A], Json]) =
     (new CanParse[A, Json] {
-      def as(j: Json): ValidationNel[ParseError, (A, NonEmptyList[Op])] =
-        j.as[A].fold(_ => retry(j.hcursor), some(_))
-          .map(Op.typedValue(_))
-          .toSuccessNel(ParseError("_root_", iErr[A]))
+      def as(j: Json): Validated[A] =
+        Validated(ops => j.as[A].fold(_ => retry(j.hcursor), some(_))
+          .fold(Op.typedValueError[A](ops, none[A]))(Op.typedValue(_)))
 
-      def parse(k: String, j: Json): ValidationNel[ParseError, (A, NonEmptyList[Op])] =
-        j.hcursor.get[A](k).fold(_ => retry(j.hcursor.downField(k)), some(_))
-          .map(Op.typedValue(_))
-          .toSuccessNel(ParseError(k, pErr[A]))
+      def parse(k: String, j: Json): Validated[A] =
+        Validated(ops => j.hcursor.downField(k).focus.fold(
+          Op.downFieldError[Json](ops, k))(Op.downField(_, k))).flatMap(as(_))
     },
     new CanParse[Option[A], Json] {
-      def as(j: Json): ValidationNel[ParseError, (Option[A], NonEmptyList[Op])] =
-        j match {
-          case Json.Null => Op.typedValue(none[A]).successNel[ParseError]
+      def as(j: Json): Validated[Option[A]] =
+        Validated(ops => j match {
+          case Json.Null => Op.typedValue(none[A])
           case v: Json => v.as[Option[A]]
                            .fold(_ => retry(v.hcursor), identity)
-                           .map(a => Op.typedValue(some(a)))
-                           .toSuccessNel(ParseError("_root_", iErr[A]))
-        }
+                           .fold(Op.typedValueError[Option[A]](ops, none[A]))(
+                            a => Op.typedValue(some(a)))
+        })
 
-      def parse(k: String, j: Json): ValidationNel[ParseError, (Option[A], NonEmptyList[Op])] =
-        j.hcursor.get[Json](k).fold(
-          _ => Op.typedValue(none[A]).successNel[ParseError],
-          as(_).bimap(_.map(_.copy(key = k, error = pErr[A])), t => (t._1, t._2.append(NonEmptyList(Op.DownField(k))))))
+      def parse(k: String, j: Json): Validated[Option[A]] =
+        Validated(_ => Op.downField(j.hcursor.get[Json](k).toOption
+          .getOrElse(Json.Null), k)).flatMap(as(_))
     })
 
   protected def gen[A: ClassTag: Decoder](fromStr: String => Option[A]): (CanParse[A, Json], CanParse[Option[A], Json], CanParse[List[A], Json], CanParse[Option[List[A]], Json]) = {

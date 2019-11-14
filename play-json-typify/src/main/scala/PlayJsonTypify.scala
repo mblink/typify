@@ -5,42 +5,34 @@ import scala.reflect.ClassTag
 import scalaz.std.list._
 import scalaz.std.option._
 import scalaz.std.vector._
-import scalaz.syntax.std.option._
 import scalaz.syntax.std.string._
 import scalaz.syntax.traverse._
-import scalaz.syntax.validation._
-import typify.{CanParse, Op, ParseError, Validated, ValidatedHelper}
+import typify.{CanParse, Op, Validated, ValidatedHelper}
 
 trait CatchAllInstance extends ValidatedHelper {
-
   private def gen0[A: Reads](retry: JsReadable => Option[A])(implicit ct: ClassTag[A]): (CanParse[A, JsValue], CanParse[Option[A], JsValue]) =
     (new CanParse[A, JsValue] {
       def as(jv: JsValue): Validated[A] =
-        Validated(ops => jv.asOpt[A].orElse(retry(jv)).map(Op.typedValue(_))
-          .toSuccessNel(ParseError(ops, Op.TypeValue(none[A]), s"Could not be interpreted as $ct")))
+        Validated(ops => jv.asOpt[A].orElse(retry(jv)).fold(Op.typedValueError[A](ops, none[A]))(Op.typedValue(_)))
 
       def parse(k: String, jv: JsValue): Validated[A] =
-        for {
-          v <- Validated(ops => (jv \ k) match {
-            case JsDefined(r) => Op.downField(r, k).successNel[ParseError]
-            case _: JsUndefined => ParseError(ops, Op.DownField(k), s"Could not be parsed as $ct").failureNel[(Vector[Op], JsValue)]
-          })
-          r <- as(v)
-        } yield r
+        Validated(ops => (jv \ k) match {
+          case JsDefined(r) => Op.downField(r, k)
+          case _: JsUndefined => Op.downFieldError[JsValue](ops, k)
+        }).flatMap(as(_))
     },
     new CanParse[Option[A], JsValue] {
       def as(jv: JsValue): Validated[Option[A]] =
         Validated(ops => jv match {
-          case JsNull => Op.typedValue(none[A]).successNel[ParseError]
+          case JsNull => Op.typedValue(none[A])
           case v: JsValue => v.asOpt[A]
                               .orElse(retry(v))
-                              .map(a => Op.typedValue(Option(a)))
-                              .toSuccessNel(ParseError(ops, Op.TypeValue(none[A]), s"Could not be interpreted as Option[$ct]"))
+                              .fold(Op.typedValueError[Option[A]](ops, none[A]))(a => Op.typedValue(some(a)))
         })
 
       def parse(k: String, jv: JsValue): Validated[Option[A]] =
         for {
-          v <- Validated(_ => Op.downField((jv \ k).getOrElse(JsNull), k).successNel[ParseError])
+          v <- Validated(_ => Op.downField((jv \ k).getOrElse(JsNull), k))
           r <- as(v)
         } yield r
     })

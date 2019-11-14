@@ -1,6 +1,7 @@
 package typify
 
 import scala.annotation.implicitNotFound
+import scala.reflect.ClassTag
 import scalaz.{Monad, ReaderWriterStateT, ValidationNel}
 import scalaz.Validation.FlatMap._
 import scalaz.std.option._
@@ -20,8 +21,21 @@ object Op {
   case class DownField(key: String) extends Op
   case class TypeValue[A](value: A) extends Op
 
-  def downField[A](a: A, k: String): (Vector[Op], A) = (Vector(Op.DownField(k)), a)
-  def typedValue[A](a: A): (Vector[Op], A) = (Vector(Op.TypeValue(a)), a)
+  def downField[A](a: A, k: String): ValidationNel[ParseError, (Vector[Op], A)] =
+    (Vector(DownField(k)), a).successNel[ParseError]
+
+  def downFieldError[A](ops: Vector[Op], k: String)(implicit ct: ClassTag[A]): ValidationNel[ParseError, (Vector[Op], A)] =
+    ParseError(ops, DownField(k), s"Could not be parsed as $ct").failureNel[(Vector[Op], A)]
+
+  def typedValue[A](a: A): ValidationNel[ParseError, (Vector[Op], A)] =
+    (Vector(TypeValue(a)), a).successNel[ParseError]
+
+  trait MkTVE[A] {
+    def apply[B](ops: Vector[Op], b: B)(implicit ct: ClassTag[A]): ValidationNel[ParseError, (Vector[Op], A)] =
+      ParseError(ops, TypeValue(b), s"Could not be interpreted as $ct").failureNel[(Vector[Op], A)]
+  }
+
+  def typedValueError[A]: MkTVE[A] = new MkTVE[A] {}
 }
 
 trait MkValidated[L] {
