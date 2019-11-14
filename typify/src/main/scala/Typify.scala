@@ -16,23 +16,20 @@ import shapeless.ops.hlist.RightFolder
 
 case class Validated[L, A](run: Vector[Op] => ValidationNel[L, (Vector[Op], A)]) {
   def map[B](f: A => B): Validated[L, B] =
-    Validated(run(_).map(_.rightMap(f)))
+    Validated(ops => run(ops).map(_.bimap(ops ++ _, f)))
 
   def flatMap[B](f: A => Validated[L, B]): Validated[L, B] =
-    Validated(ops => run(ops).flatMap { case (ops2, a) => f(a).run(ops2) })
+    Validated(ops => run(ops).flatMap { case (ops2, a) => f(a).run(ops ++ ops2) })
 }
 
 object Validated {
-  def debug(msg: String, vars: Any*): Unit =
-    println(s"*************************************\n$msg\n\n${vars.mkString("\n\n")}\n\n${""/*(new Throwable).getStackTrace.mkString("\n")*/}\n*************************************")
-
   implicit def applicative[L]: Applicative[Validated[L, ?]] = new Applicative[Validated[L, ?]] {
     def point[A](a: => A): Validated[L, A] =
       Validated(_ => (Vector[Op](), a).successNel[L])
 
     def ap[A, B](fa: => Validated[L, A])(fab: => Validated[L, A => B]): Validated[L, B] =
       Validated(ops => (fab.run(ops) |@| fa.run(ops)) { case ((os1, f), (os2, a)) =>
-        (ops ++ os1.drop(ops.length) ++ os2.drop(ops.length), f(a))
+        (ops ++ os1 ++ os2, f(a))
       })
   }
 
@@ -50,13 +47,13 @@ object Op {
   case class TypeValue[A](value: A) extends Op
 
   def downField[A](a: A, k: String): ParsedValidated[A] =
-    Validated(ops => (ops ++ Vector[Op](DownField(k)), a).successNel[ParseError])
+    Validated(_ => (Vector[Op](DownField(k)), a).successNel[ParseError])
 
   def downFieldError[A](k: String)(implicit ct: ClassTag[A]): ParsedValidated[A] =
     Validated(ops => ParseError(ops, DownField(k), s"Could not be parsed as $ct").failureNel[(Vector[Op], A)])
 
   def typeValue[A](a: A): ParsedValidated[A] =
-    Validated(ops => (ops ++ Vector[Op](TypeValue(a)), a).successNel[ParseError])
+    Validated(_ => (Vector[Op](TypeValue(a)), a).successNel[ParseError])
 
   trait MkTVE[A] {
     def apply[B](b: B)(implicit ct: ClassTag[A]): ParsedValidated[A] =

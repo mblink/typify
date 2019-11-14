@@ -2,7 +2,6 @@ package typify
 
 import scala.reflect.ClassTag
 import scalaz.std.option._
-// import scalaz.syntax.validation._
 
 trait CatchAllInstance {
   protected def parseMap(x: Any): Option[Map[Any, Any]] =
