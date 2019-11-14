@@ -4,34 +4,33 @@ import io.circe.{ACursor, Decoder, Json}
 import scala.reflect.ClassTag
 import scalaz.std.list._
 import scalaz.std.option._
-import scalaz.std.vector._
 import scalaz.syntax.std.string._
 import scalaz.syntax.traverse._
-import typify.{CanParse, Op, Validated, ValidatedHelper}
+import typify.{CanParse, Op, ParsedValidated}
 
-trait CatchAllInstance extends ValidatedHelper {
+trait CatchAllInstance {
   private def gen0[A: ClassTag: Decoder](retry: ACursor => Option[A]): (CanParse[A, Json], CanParse[Option[A], Json]) =
     (new CanParse[A, Json] {
-      def as(j: Json): Validated[A] =
-        Validated(ops => j.as[A].fold(_ => retry(j.hcursor), some(_))
-          .fold(Op.typedValueError[A](ops, none[A]))(Op.typedValue(_)))
+      def as(j: Json): ParsedValidated[A] =
+        ParsedValidated(ops => j.as[A].fold(_ => retry(j.hcursor), some(_))
+          .fold(Op.typeValueError[A](ops, none[A]))(Op.typeValue(ops, _)))
 
-      def parse(k: String, j: Json): Validated[A] =
-        Validated(ops => j.hcursor.downField(k).focus.fold(
-          Op.downFieldError[Json](ops, k))(Op.downField(_, k))).flatMap(as(_))
+      def parse(k: String, j: Json): ParsedValidated[A] =
+        ParsedValidated(ops => j.hcursor.downField(k).focus
+          .fold(Op.downFieldError[Json](ops, k))(Op.downField(ops, _, k))).flatMap(as(_))
     },
     new CanParse[Option[A], Json] {
-      def as(j: Json): Validated[Option[A]] =
-        Validated(ops => j match {
-          case Json.Null => Op.typedValue(none[A])
+      def as(j: Json): ParsedValidated[Option[A]] =
+        ParsedValidated(ops => j match {
+          case Json.Null => Op.typeValue(ops, none[A])
           case v: Json => v.as[Option[A]]
                            .fold(_ => retry(v.hcursor), identity)
-                           .fold(Op.typedValueError[Option[A]](ops, none[A]))(
-                            a => Op.typedValue(some(a)))
+                           .fold(Op.typeValueError[Option[A]](ops, none[A]))(
+                            a => Op.typeValue(ops, some(a)))
         })
 
-      def parse(k: String, j: Json): Validated[Option[A]] =
-        Validated(_ => Op.downField(j.hcursor.get[Json](k).toOption
+      def parse(k: String, j: Json): ParsedValidated[Option[A]] =
+        ParsedValidated(Op.downField(_, j.hcursor.get[Json](k).toOption
           .getOrElse(Json.Null), k)).flatMap(as(_))
     })
 

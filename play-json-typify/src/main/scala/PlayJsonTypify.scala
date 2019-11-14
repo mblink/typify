@@ -1,40 +1,37 @@
 package play.api.libs.json.typify
 
-import play.api.libs.json.{JsDefined, JsNull, JsReadable, JsUndefined, JsValue, Reads}
+import play.api.libs.json.{JsNull, JsReadable, JsValue, Reads}
 import scala.reflect.ClassTag
 import scalaz.std.list._
 import scalaz.std.option._
-import scalaz.std.vector._
 import scalaz.syntax.std.string._
 import scalaz.syntax.traverse._
-import typify.{CanParse, Op, Validated, ValidatedHelper}
+import typify.{CanParse, Op, ParsedValidated}
 
-trait CatchAllInstance extends ValidatedHelper {
+trait CatchAllInstance {
+  implicit val M = typify.vmonad[typify.ParseError]
+
   private def gen0[A: Reads](retry: JsReadable => Option[A])(implicit ct: ClassTag[A]): (CanParse[A, JsValue], CanParse[Option[A], JsValue]) =
     (new CanParse[A, JsValue] {
-      def as(jv: JsValue): Validated[A] =
-        Validated(ops => jv.asOpt[A].orElse(retry(jv)).fold(Op.typedValueError[A](ops, none[A]))(Op.typedValue(_)))
+      def as(jv: JsValue): ParsedValidated[A] =
+        ParsedValidated(ops => jv.asOpt[A].orElse(retry(jv))
+          .fold(Op.typeValueError[A](ops, none[A]))(Op.typeValue(ops, _)))
 
-      def parse(k: String, jv: JsValue): Validated[A] =
-        Validated(ops => (jv \ k) match {
-          case JsDefined(r) => Op.downField(r, k)
-          case _: JsUndefined => Op.downFieldError[JsValue](ops, k)
-        }).flatMap(as(_))
+      def parse(k: String, jv: JsValue): ParsedValidated[A] =
+        ParsedValidated(ops => (jv \ k).toOption
+          .fold(Op.downFieldError[JsValue](ops, k))(Op.downField(ops, _, k))).flatMap(as(_))
     },
     new CanParse[Option[A], JsValue] {
-      def as(jv: JsValue): Validated[Option[A]] =
-        Validated(ops => jv match {
-          case JsNull => Op.typedValue(none[A])
+      def as(jv: JsValue): ParsedValidated[Option[A]] =
+        ParsedValidated(ops => jv match {
+          case JsNull => Op.typeValue(ops, none[A])
           case v: JsValue => v.asOpt[A]
                               .orElse(retry(v))
-                              .fold(Op.typedValueError[Option[A]](ops, none[A]))(a => Op.typedValue(some(a)))
+                              .fold(Op.typeValueError[Option[A]](ops, none[A]))(a => Op.typeValue(ops, some(a)))
         })
 
-      def parse(k: String, jv: JsValue): Validated[Option[A]] =
-        for {
-          v <- Validated(_ => Op.downField((jv \ k).getOrElse(JsNull), k))
-          r <- as(v)
-        } yield r
+      def parse(k: String, jv: JsValue): ParsedValidated[Option[A]] =
+        ParsedValidated(Op.downField(_, (jv \ k).getOrElse(JsNull), k)).flatMap(as(_))
     })
 
   protected def gen[A: ClassTag: Reads](fromStr: String => Option[A]): (CanParse[A, JsValue], CanParse[Option[A], JsValue], CanParse[List[A], JsValue], CanParse[Option[List[A]], JsValue]) = {
