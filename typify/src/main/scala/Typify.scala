@@ -2,40 +2,39 @@ package typify
 
 import scala.annotation.implicitNotFound
 import scala.reflect.ClassTag
-import scalaz.{/*Applicative,*/ ValidationNel}
-// import scalaz.Validation.FlatMap._
+import scalaz.{Applicative, ValidationNel}
+import scalaz.Validation.FlatMap._
 import scalaz.std.option._
-// import scalaz.std.tuple._
+import scalaz.std.tuple._
 import scalaz.syntax.applicative._
-// import scalaz.syntax.bifunctor._
+import scalaz.syntax.bifunctor._
 import scalaz.syntax.traverse._
 import scalaz.syntax.validation._
 import shapeless.{::, HList, HNil, Poly2, Witness}
 import shapeless.labelled.{field, FieldType}
 import shapeless.ops.hlist.RightFolder
 
-// case class Validated[L, A](run: Vector[Op] => ValidationNel[L, (Vector[Op], A)]) {
-//   def map[B](f: A => B): Validated[L, B] =
-//     Validated(run(_).map(_.rightMap(f)))
+case class Validated[L, A](run: Vector[Op] => ValidationNel[L, (Vector[Op], A)]) {
+  def map[B](f: A => B): Validated[L, B] =
+    Validated(run(_).map(_.rightMap(f)))
 
-//   private [typify] def flatMap[B](f: A => Validated[L, B]): Validated[L, B] =
-//     Validated(ops => run(ops).flatMap { case (ops2, a) => f(a).run(ops ++ ops2) })
-// }
+  def flatMap[B](f: A => Validated[L, B]): Validated[L, B] =
+    Validated(ops => run(ops).flatMap { case (ops2, a) => f(a).run(ops2) })
+}
 
-object Validated2 {
+object Validated {
   def debug(msg: String, vars: Any*): Unit =
     println(s"*************************************\n$msg\n\n${vars.mkString("\n\n")}\n\n${""/*(new Throwable).getStackTrace.mkString("\n")*/}\n*************************************")
 
-  // implicit def applicative[L]: Applicative[Validated[L, ?]] = new Applicative[Validated[L, ?]] {
-  //   def point[A](a: => A): Validated[L, A] =
-  //     Validated(_ => (Vector[Op](), a).successNel[L])
+  implicit def applicative[L]: Applicative[Validated[L, ?]] = new Applicative[Validated[L, ?]] {
+    def point[A](a: => A): Validated[L, A] =
+      Validated(_ => (Vector[Op](), a).successNel[L])
 
-  //   def ap[A, B](fa: => Validated[L, A])(fab: => Validated[L, A => B]): Validated[L, B] =
-  //     Validated(ops => fa.run(ops).flatMap { case (os1, a) =>
-  //       fab.run(ops ++ os1).map { case (os2, f) => (os1 ++ os2, f(a)) } })
-
-  //     // Validated(ops => (fa.run(ops) |@| fab.run(ops)) { case ((os1, a), (os2, f)) => (os1 ++ os2, f(a)) })
-  // }
+    def ap[A, B](fa: => Validated[L, A])(fab: => Validated[L, A => B]): Validated[L, B] =
+      Validated(ops => (fab.run(ops) |@| fa.run(ops)) { case ((os1, f), (os2, a)) =>
+        (ops ++ os1.drop(ops.length) ++ os2.drop(ops.length), f(a))
+      })
+  }
 
   object syntax {
     implicit class ValidatedOps[L, A](val v: Validated[L, A]) extends AnyVal {
@@ -87,7 +86,7 @@ trait CanParse[T, P] {
 
 
 object Typify {
-  import Validated2.syntax._
+  import Validated.syntax._
 
   def validate[L, P, A, B](v: (String, A, Parsed[P]) => Validated[L, B])(
     implicit e2l: E2L[L, P], cpa: CanParse[A, P], cpp: CanParse[P, P]
@@ -149,7 +148,7 @@ class Typify[L, P] {
   }
 
   object syntax {
-    import Validated2.syntax._
+    import Validated.syntax._
 
     implicit class HLOps(p: Parsed[P]) {
       def parse[I <: HList, A, R <: HList](in: I)(

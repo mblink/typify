@@ -9,7 +9,7 @@ import scalaz.syntax.traverse._
 import typify.{CanParse, Op, ParsedValidated}
 
 trait CatchAllInstance {
-  implicit val M = typify.vmonad[typify.ParseError]
+  // implicit val M = typify.vmonad[typify.ParseError]
 
   private def gen0[A: Reads](retry: JsReadable => Option[A])(implicit ct: ClassTag[A]): (CanParse[A, JsValue], CanParse[Option[A], JsValue]) =
     (new CanParse[A, JsValue] {
