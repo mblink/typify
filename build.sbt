@@ -26,14 +26,20 @@ lazy val root = project.in(file("."))
   )
 
 lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.3"
-lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.2.26"
-lazy val scalacheck = "org.scalacheck" %% "scalacheck" % "1.14.2" % "test"
+lazy val scalazVersion = "7.2.26"
+lazy val scalaz = "org.scalaz" %% "scalaz-core" % scalazVersion
+lazy val scalacheckVersion = "1.14.2"
+lazy val scalacheck = "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test"
+lazy val scalazScalacheck = "org.scalaz" %%
+                            "scalaz-scalacheck-binding" %
+                            s"$scalazVersion-scalacheck-${scalacheckVersion.split('.').dropRight(1).mkString(".")}" %
+                            "test"
 
 lazy val typify = project.in(file("typify"))
   .settings(baseSettings)
   .settings(
     name := "typify",
-    libraryDependencies ++= Seq(shapeless, scalaz, scalacheck),
+    libraryDependencies ++= Seq(shapeless, scalaz, scalacheck, scalazScalacheck),
     tutTargetDirectory := file("."),
     scalacOptions in Tut := (scalacOptions in (Compile, console)).value
   )

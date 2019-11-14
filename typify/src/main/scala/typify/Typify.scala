@@ -44,7 +44,7 @@ sealed trait Op
 object Op {
   case class ArrayIndex(index: Int) extends Op
   case class DownField(key: String) extends Op
-  case class TypeValue[A](value: A) extends Op
+  case class TypeValue[A](value: A)(implicit val classTag: ClassTag[A]) extends Op
 
   def downField[A](a: A, k: String): ParsedValidated[A] =
     Validated(_ => (Vector[Op](DownField(k)), a).successNel[ParseError])
@@ -52,12 +52,12 @@ object Op {
   def downFieldError[A](k: String)(implicit ct: ClassTag[A]): ParsedValidated[A] =
     Validated(ops => ParseError(ops, DownField(k), s"Could not be parsed as $ct").failureNel[(Vector[Op], A)])
 
-  def typeValue[A](a: A): ParsedValidated[A] =
+  def typeValue[A](a: A)(implicit ct: ClassTag[A]): ParsedValidated[A] =
     Validated(_ => (Vector[Op](TypeValue(a)), a).successNel[ParseError])
 
   trait MkTVE[A] {
-    def apply[B](b: B)(implicit ct: ClassTag[A]): ParsedValidated[A] =
-      Validated(ops => ParseError(ops, TypeValue(b), s"Could not be interpreted as $ct").failureNel[(Vector[Op], A)])
+    def apply[B](b: B)(implicit cta: ClassTag[A], ctb: ClassTag[B]): ParsedValidated[A] =
+      Validated(ops => ParseError(ops, TypeValue(b), s"Could not be interpreted as $cta").failureNel[(Vector[Op], A)])
   }
 
   def typeValueError[A]: MkTVE[A] = new MkTVE[A] {}
