@@ -1,6 +1,6 @@
 package play.api.libs.json.typify
 
-import play.api.libs.json.{JsNull, JsReadable, JsValue, Reads}
+import play.api.libs.json.{JsArray, JsNull, JsValue, Reads}
 import scala.reflect.ClassTag
 import scalaz.std.list._
 import scalaz.std.option._
@@ -9,10 +9,14 @@ import scalaz.syntax.traverse._
 import typify.{CanParse, Op, ParsedValidated}
 
 trait CatchAllInstance {
-  private def gen0[A: Reads](retry: JsReadable => Option[A])(implicit ct: ClassTag[A]): (CanParse[A, JsValue], CanParse[Option[A], JsValue]) =
+  implicit class JsValueOps(jv: JsValue) {
+    def asO[A: Reads](f: String => Option[A]): Option[A] = jv.asOpt[A].orElse(jv.asOpt[String].flatMap(f))
+  }
+
+  protected def gen[A: Reads](retry: String => Option[A])(implicit ct: ClassTag[A]): (CanParse[A, JsValue], CanParse[Option[A], JsValue], CanParse[List[A], JsValue], CanParse[Option[List[A]], JsValue]) =
     (new CanParse[A, JsValue] {
       def as(jv: JsValue): ParsedValidated[A] =
-        jv.asOpt[A].orElse(retry(jv)).fold(Op.typeValueError[A](none[A]))(Op.typeValue(_))
+        jv.asO(retry).fold(Op.typeValueError(none[A]))(Op.typeValue(_))
 
       def parse(k: String, jv: JsValue): ParsedValidated[A] =
         (jv \ k).toOption.fold(Op.downFieldError[JsValue](k))(Op.downField(_, k)).flatMap(as(_))
@@ -21,25 +25,39 @@ trait CatchAllInstance {
       def as(jv: JsValue): ParsedValidated[Option[A]] =
         jv match {
           case JsNull => Op.typeValue(none[A])
-          case v: JsValue => v.asOpt[A]
-                              .orElse(retry(v))
-                              .fold(Op.typeValueError[Option[A]](none[A]))(a => Op.typeValue(some(a)))
+          case v => v.asO(retry).fold(Op.typeValueError[Option[A]](None))(a => Op.typeValue(some(a)))
         }
 
       def parse(k: String, jv: JsValue): ParsedValidated[Option[A]] =
         Op.downField((jv \ k).getOrElse(JsNull), k).flatMap(as(_))
+    },
+    new CanParse[List[A], JsValue] {
+      def as(jv: JsValue): ParsedValidated[List[A]] =
+        for {
+          jvs <- Some(jv).collect { case JsArray(vs) => Op.typeValue(vs.toList) }.getOrElse(Op.typeValueError(none[List[JsValue]]))
+          res <- jvs.zipWithIndex.traverse(t => Op.arrayIndex(t._1, t._2).flatMap(
+            v => v.asO(retry).fold(Op.typeValueError(none[A]))(Op.typeValue(_))))
+        } yield res
+
+      def parse(k: String, jv: JsValue): ParsedValidated[List[A]] =
+        (jv \ k).toOption.fold(Op.downFieldError[JsValue](k))(Op.downField(_, k)).flatMap(as(_))
+    },
+    new CanParse[Option[List[A]], JsValue] {
+      def as(jv: JsValue): ParsedValidated[Option[List[A]]] =
+        jv match {
+          case JsArray(vs) => vs.zipWithIndex.toList.traverse(t => Op.arrayIndex(t._1, t._2).flatMap(
+            v => v.asO(retry).fold(Op.typeValueError(none[A]))(Op.typeValue(_)))).map(some(_))
+          case _ => Op.typeValue(none[List[A]])
+        }
+
+      def parse(k: String, jv: JsValue): ParsedValidated[Option[List[A]]] =
+        Op.downField((jv \ k).getOrElse(JsNull), k).flatMap(as(_))
     })
 
-  protected def gen[A: ClassTag: Reads](fromStr: String => Option[A]): (CanParse[A, JsValue], CanParse[Option[A], JsValue], CanParse[List[A], JsValue], CanParse[Option[List[A]], JsValue]) = {
-    val (a, oa) = gen0(_.asOpt[String].flatMap(fromStr))
-    val (la, loa) = gen0(_.asOpt[List[String]].flatMap(_.traverse(fromStr)))
-    (a, oa, la, loa)
-  }
-
-  implicit def cp[A: ClassTag: Reads]: CanParse[A, JsValue] = gen0(_ => none[A])._1
-  implicit def cpo[A: ClassTag: Reads]: CanParse[Option[A], JsValue] = gen0(_ => none[A])._2
-  implicit def cplo[A: ClassTag: Reads]: CanParse[List[A], JsValue] = gen0(_ => none[List[A]])._1
-  implicit def cpolo[A: ClassTag: Reads]: CanParse[Option[List[A]], JsValue] = gen0(_ => none[List[A]])._2
+  implicit def cp[A: ClassTag: Reads]: CanParse[A, JsValue] = gen(_ => none[A])._1
+  implicit def cpo[A: ClassTag: Reads]: CanParse[Option[A], JsValue] = gen(_ => none[A])._2
+  implicit def cplo[A: ClassTag: Reads]: CanParse[List[A], JsValue] = gen(_ => none[A])._3
+  implicit def cpolo[A: ClassTag: Reads]: CanParse[Option[List[A]], JsValue] = gen(_ => none[A])._4
 }
 
 object parsedinstances extends CatchAllInstance {

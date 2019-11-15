@@ -48,7 +48,7 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
   import mp.implicits._
 
   implicit class ValidatedOptionOps[L, A](v: Validated[L, A]) {
-    def toOption: Option[A] = v.run(Vector()).toOption.map(_._2)
+    def toOption: Option[A] = v.run(Vector())._2.toOption
   }
 
   def assert[A, B](l: String, k: String, cp: CanParse[A, P],
