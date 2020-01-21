@@ -8,8 +8,8 @@ import org.scalacheck.Properties
 object MakeJson extends MakeParsed[Json] {
   import implicits._
 
-  def make[A](k: String, v: A)(implicit mp: MustParse[A]): Json =
-    mp match {
+  def make[A](k: String, v: A)(implicit mp: MustParse[A]): Cursor[Json] =
+    Cursor.top(mp match {
       case MPS => Map[String, String](k -> v).asJson
       case MPOS => Map[String, Option[String]](k -> v).asJson
       case MPI => Map[String, Int](k -> v).asJson
@@ -27,10 +27,10 @@ object MakeJson extends MakeParsed[Json] {
       case MPP => Map[String, A](k -> v).asJson
       case MPOP => Map[String, Option[A]](k -> Some(v)).asJson
       case MPLP => Map[String, List[A]](k -> List(v)).asJson
-    }
+    })
 
-  def to[A](v: A)(implicit mp: MustParse[A]): Json =
-    mp match {
+  def to[A](v: A)(implicit mp: MustParse[A]): Cursor[Json] =
+    Cursor.top(mp match {
       case MPS => v.asJson
       case MPOS => v.asJson
       case MPI => v.asJson
@@ -48,7 +48,7 @@ object MakeJson extends MakeParsed[Json] {
       case MPP => v.asJson
       case MPOP => v.asJson
       case MPLP => v.asJson
-    }
+    })
 }
 
 object CirceCanParse extends Properties("CanParse") {

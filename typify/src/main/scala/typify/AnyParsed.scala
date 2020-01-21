@@ -1,92 +1,91 @@
 package typify
 
+import cats.data.{NonEmptyList, ValidatedNel}
+import cats.syntax.apply._
+import cats.syntax.validated._
+import scala.annotation.tailrec
+import scala.collection.immutable.ListMap
 import scala.reflect.ClassTag
-import scalaz.std.list._
-import scalaz.std.option._
-import scalaz.syntax.traverse._
 
 trait CatchAllInstance {
-  protected def parseMap(x: Any): Option[Map[Any, Any]] =
-    Some(x).collect { case m: Map[_, _] => m.asInstanceOf[Map[Any, Any]] }
-
-  protected trait ParseRequired[T] extends CanParse[T, Any] {
-    def parse(k: String, x: Any): ParsedValidated[T] =
-      for {
-        m <- parseMap(x).fold(Op.typeValueError(none[Map[Any, Any]]))(Op.typeValue(_))
-        v <- m.get(k).fold(Op.downFieldError[Any](k))(Op.downField(_, k))
-        t <- as(v)
-      } yield t
-  }
-
-  protected trait ParseOptional[T] extends CanParse[Option[T], Any] {
-    def parse(k: String, x: Any): ParsedValidated[Option[T]] =
-      for {
-        m <- Op.typeValue(parseMap(x).getOrElse(Map()))
-        vo <- Op.downField(m.get(k), k)
-        t <- vo.fold(Op.typeValue(none[T]))(as(_))
-      } yield t
-  }
-
-  implicit def cpt[T](implicit ct: ClassTag[T]) = new ParseRequired[T] {
-    def as(x: Any): ParsedValidated[T] =
-      x match {
-        case t: T => Op.typeValue(t)
-        case _ => Op.typeValueError[T](none[T])
+  implicit def cpt[T](implicit ct: ClassTag[T]) = new CanParse[T, Any] {
+    def apply(x: Cursor[Any]): ValidatedNel[ParseError, T] =
+      x.focus match {
+        case Some(t: T) => t.validNel[ParseError]
+        case _ => ParseError(s"Could not be interpreted as $ct").invalidNel[T]
       }
   }
 }
 
 trait CatchOptionInstance extends CatchAllInstance {
-  implicit def cpot[T: ClassTag] = new ParseOptional[T] {
-    def as(x: Any): ParsedValidated[Option[T]] =
-      Op.typeValue(x match {
-        case o@Some(_) => o.collect { case t: T => t }
-        case t: T => Option(t)
-        case _ => none[T]
-      })
+  implicit def cpot[T: ClassTag] = new CanParse[Option[T], Any] {
+    def apply(x: Cursor[Any]): ValidatedNel[ParseError, Option[T]] =
+      (x.focus match {
+        case Some(Some(t: T)) => Option(t)
+        case _ => Option.empty[T]
+      }).validNel[ParseError]
   }
 
-  implicit def cplt[T: ClassTag](implicit cpt: CanParse[T, Any]) = new ParseRequired[List[T]] {
-    def as(x: Any): ParsedValidated[List[T]] =
-      x match {
-        case l: List[Any] => l.zipWithIndex.traverse(t => Op.arrayIndex(t._1, t._2).flatMap(cpt.as(_)))
-        case _ => Op.typeValueError(none[List[T]])
+  implicit def cplt[T](implicit ct: ClassTag[T], cpt: CanParse[T, Any]) = new CanParse[List[T], Any] {
+    @tailrec def go(c: Cursor[Any], res: ValidatedNel[ParseError, List[T]]): ValidatedNel[ParseError, List[T]] =
+      c match {
+        case Cursor.Failed(_, _) => res
+        case _ => go(c.right, (res, cpt(c)).mapN(_ :+ _))
       }
+
+    def apply(x: Cursor[Any]): ValidatedNel[ParseError, List[T]] = x.downArray match {
+      case Cursor.Failed(_, _) => ParseError(s"Could not be interpreted as List[$ct]").invalidNel[List[T]]
+      case c => go(c, List[T]().validNel[ParseError])
+    }
   }
 }
 
 object parsedany extends CatchOptionInstance {
-  lazy implicit val cpoany = new ParseOptional[Any] {
-    def as(x: Any): ParsedValidated[Option[Any]] =
-      Op.typeValue(x match {
-        case o: Option[Any] => o
-        case y => Option(y)
-      })
+  implicit val genericAny: Generic[Any] = new Generic[Any] {
+    def toValues(value: Any): Option[Vector[Any]] =
+      Some(value).collect { case i: Iterable[_] => i.toVector }
+
+    def fromValues(values: Vector[Any]): Any =
+      values
+
+    def toFields(value: Any): Option[ListMap[String, Any]] =
+      Some(value).collect { case m: Map[String, _] @unchecked => ListMap(m.toSeq:_*) }
+
+    def fromFields(fields: ListMap[String, Any]): Any =
+      fields
   }
 
-  import scalaz.syntax.std.boolean._
-  import scalaz.syntax.validation._
+  lazy implicit val cpoany = new CanParse[Option[Any], Any] {
+    def apply(x: Cursor[Any]): ValidatedNel[ParseError, Option[Any]] =
+      (x.focus match {
+        case Some(o: Option[Any]) => o
+        case Some(x) => Option(x)
+        case _ => None
+      }).validNel[ParseError]
+  }
+
+  import cats.instances.list._
+  import cats.syntax.traverse._
   import shapeless.HNil
   import shapeless.syntax.singleton._
-  import typify.Validated.syntax._
 
-  case class Fail(reason: String, ops: Vector[Op])
+  case class Fail(reason: String, ops: Vector[CursorOp])
 
   val tp = new Typify[Fail, Any]
 
-  implicit val parse2Error = (_: Parsed[Any], pe: ParseError) => Fail(pe.error, pe.ops :+ pe.failedOp)
+  implicit val parse2Error = (c: Cursor[Any], pe: ParseError) => Fail(pe.message, c.history)
 
-  val checkEmail = Typify.validate((_: String).successNel[Fail].ensureV(Fail("Email is invalid", _))(_.contains("@")))
+  val checkEmail = Typify.validate((_: String, s: String, c: Cursor[Any]) =>
+    s.validNel[Fail].ensure(NonEmptyList.of(Fail("Email is invalid", c.history)))(_.contains("@")))
 
-  val checkAge = Typify.validate((_: Int).successNel[Fail].ensureV(Fail("Too young", _))(_ > 21))
+  val checkAge = Typify.validate((_: String, i: Int, c: Cursor[Any]) =>
+    i.validNel[Fail].ensure(NonEmptyList.of(Fail("Too young", c.history)))(_ > 21))
 
-  val checkSessId = Typify.optional((_: Int).successNel[Fail].ensureV(Fail("Invalid session id", _))(_ > 3000))
+  val checkSessId = Typify.optional((_: String, i: Int, c: Cursor[Any]) =>
+    i.validNel[Fail].ensure(NonEmptyList.of(Fail("Invalid session id", c.history)))(_ > 3000))
 
-  val checkStrs = Typify.validate((_: List[String]).zipWithIndex.traverse { case (s, i) =>
-    (s.length > 0).fold[Validated[Fail, String]](
-      Op.arrayIndexL[Fail](s, i),
-      Validated(ops => Fail("Empty string", ops).failureNel[(Vector[Op], String)]))
-  })
+  val checkStrs = Typify.validate((_: String, l: List[String], c: Cursor[Any]) =>
+    l.traverse(_.validNel[Fail].ensure(NonEmptyList.of(Fail("Empty string", c.history)))(_.nonEmpty)))
 
   val checkPerson = 'email ->> checkEmail :: 'age ->> checkAge :: 'session ->> checkSessId :: 'strings ->> checkStrs :: HNil
 
@@ -99,6 +98,6 @@ object parsedany extends CatchOptionInstance {
 
   import tp.syntax._
 
-  val passed = Parsed(passes, Vector("thing", "other")).parse(checkPerson)
-  val failed = Parsed(fails, Vector("thing", "other")).parse(checkPerson)
+  val passed = Parsed.top(passes, Vector("thing", "other")).parse(checkPerson)
+  val failed = Parsed.top(fails, Vector("thing", "other")).parse(checkPerson)
 }

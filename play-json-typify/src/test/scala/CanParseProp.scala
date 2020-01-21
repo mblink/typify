@@ -7,8 +7,8 @@ import org.scalacheck.Properties
 object MakeJsValue extends MakeParsed[JsValue] {
   import implicits._
 
-  def make[A](k: String, v: A)(implicit mp: MustParse[A]): JsValue =
-    mp match {
+  def make[A](k: String, v: A)(implicit mp: MustParse[A]): Cursor[JsValue] =
+    Cursor.top(mp match {
       case MPS => JsObject(Seq(k -> JsString(v)))
       case MPOS => MPOS(v).map(x => JsObject(Seq(k -> JsString(x)))).getOrElse(JsNull)
       case MPI => JsObject(Seq(k -> JsNumber(v)))
@@ -26,10 +26,10 @@ object MakeJsValue extends MakeParsed[JsValue] {
       case MPP => JsObject(Seq(k -> v))
       case MPOP => MPOP(v).map(x => JsObject(Seq(k -> x))).getOrElse(JsNull)
       case MPLP => JsObject(Seq(k -> Json.toJson(v)))
-    }
+    })
 
-  def to[A](v: A)(implicit mp: MustParse[A]): JsValue =
-    mp match {
+  def to[A](v: A)(implicit mp: MustParse[A]): Cursor[JsValue] =
+    Cursor.top(mp match {
       case MPS => JsString(v)
       case MPOS => MPOS(v).map(JsString(_)).getOrElse(JsNull)
       case MPI => JsNumber(v)
@@ -47,7 +47,7 @@ object MakeJsValue extends MakeParsed[JsValue] {
       case MPP => MPP(v)
       case MPOP => MPOP(v).getOrElse(JsNull)
       case MPLP => Json.toJson(v)
-    }
+    })
 }
 
 object PlayJsonCanParse extends Properties("CanParse") {

@@ -1,13 +1,10 @@
-import scalaz.{NonEmptyList, State, ValidationNel}
+import cats.data.ValidatedNel
 
-package object typify {
-  type Validated[L, A] = ValidationT[State[Vector[Op], ?], NonEmptyList[L], A]
-  type ParsedValidated[A] = Validated[ParseError, A]
-
-  type E2L[L, P] = (Parsed[P], ParseError) => L
-
-  type PV[P, L, A] = Parsed[P] => (Vector[Op], ValidationNel[L, A])
-  type PVWithoutOps[P, L, A] = Parsed[P] => ValidationNel[L, A]
-
+package object typify extends typify.StringOps {
+  type PV[P, L, A] = Cursor[P] => ValidatedNel[L, A]
   type KPV[P, L, A] = String => PV[P, L, A]
+
+  type E2L[L, P] = (Cursor[P], ParseError) => L
+
+  private[typify] def ap[A, B](a: A)(f: A => B): B = f(a)
 }

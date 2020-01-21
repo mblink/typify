@@ -1,6 +1,8 @@
+Global / onChangedBuildSource := ReloadOnSourceChanges
+
 lazy val baseSettings = Seq(
   scalaVersion := "2.12.10",
-  version := "3.0.0-LOCAL15",
+  version := "3.0.0-LOCAL17",
   addCompilerPlugin("io.tryp" %% "splain" % "0.5.0" cross CrossVersion.patch),
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.patch),
   scalacOptions ++= Seq("-P:splain:all"),
@@ -25,21 +27,17 @@ lazy val root = project.in(file("."))
     bintrayReleaseOnPublish in ThisBuild := false
   )
 
+lazy val cats = "org.typelevel" %% "cats-core" % "2.1.0"
+lazy val circe = "io.circe" %% "circe-core" % "0.12.3"
+lazy val playJson = "com.typesafe.play" %% "play-json" % "2.6.10"
 lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.3"
-lazy val scalazVersion = "7.2.26"
-lazy val scalaz = "org.scalaz" %% "scalaz-core" % scalazVersion
-lazy val scalacheckVersion = "1.14.2"
-lazy val scalacheck = "org.scalacheck" %% "scalacheck" % scalacheckVersion % "test"
-lazy val scalazScalacheck = "org.scalaz" %%
-                            "scalaz-scalacheck-binding" %
-                            s"$scalazVersion-scalacheck-${scalacheckVersion.split('.').dropRight(1).mkString(".")}" %
-                            "test"
+lazy val scalacheck = "org.scalacheck" %% "scalacheck" % "1.14.2" % "test"
 
 lazy val typify = project.in(file("typify"))
   .settings(baseSettings)
   .settings(
     name := "typify",
-    libraryDependencies ++= Seq(shapeless, scalaz, scalacheck, scalazScalacheck),
+    libraryDependencies ++= Seq(cats, shapeless, scalacheck),
     tutTargetDirectory := file("."),
     scalacOptions in Tut := (scalacOptions in (Compile, console)).value
   )
@@ -49,7 +47,7 @@ lazy val playjsonTypify = project.in(file("play-json-typify"))
   .settings(baseSettings)
   .settings(
     name := "play-json-typify",
-    libraryDependencies ++= Seq(scalaz, scalacheck, "com.typesafe.play" %% "play-json" % "2.6.10")
+    libraryDependencies ++= Seq(cats, playJson, scalacheck)
   )
   .dependsOn(typify % "test->test;compile->compile")
 
@@ -57,6 +55,6 @@ lazy val circeTypify = project.in(file("circe-typify"))
   .settings(baseSettings)
   .settings(
     name := "circe-typify",
-    libraryDependencies ++= Seq(scalaz, scalacheck, "io.circe" %% "circe-core" % "0.11.1"),
+    libraryDependencies ++= Seq(circe, scalacheck),
   )
   .dependsOn(typify % "test->test;compile->compile")
