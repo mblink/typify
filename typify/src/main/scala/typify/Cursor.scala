@@ -165,7 +165,7 @@ sealed abstract class Cursor[A](private val lastCursor: Option[Cursor[A]], priva
    */
   final def replay(history: List[CursorOp]): Cursor[A] = history.foldRight(this)((op, c) => c.replayOne(op))
 
-  private[typify] final def fail(op: CursorOp): Cursor[A] = new Cursor.Failed[A](Some(this), Some(op))
+  private[typify] final def fail(op: CursorOp): Cursor[A] = Cursor.Failed[A](Some(this), Some(op))
 }
 
 final object Cursor {

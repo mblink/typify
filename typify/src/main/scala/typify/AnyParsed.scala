@@ -100,4 +100,6 @@ object parsedany extends CatchOptionInstance {
 
   val passed = Parsed.top(passes, Vector("thing", "other")).parse(checkPerson)
   val failed = Parsed.top(fails, Vector("thing", "other")).parse(checkPerson)
+
+  val passedO = Parsed.top(Map("thing" -> Map("other" -> Map())): Any, Vector("thing", "other", "foo")).parseOption(checkPerson)
 }

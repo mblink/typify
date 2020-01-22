@@ -82,6 +82,15 @@ class Typify[L, P] {
         pvaEv: A <:< PV[R]
       ): ValidatedNel[L, R] =
         rf(in, pvHNil)(c)
+
+      def parseOption[I <: HList, A, R <: HList](in: I)(
+        implicit rf: RightFolder.Aux[I, PV[HNil], foldPV.type, A],
+        pvaEv: A <:< PV[R]
+      ): ValidatedNel[L, Option[R]] =
+        c match {
+          case f @ Cursor.Failed(_, _) if f.history.forall(CursorOp.isDownField) => None.validNel[L]
+          case _ => parse(in).map(Some(_))
+        }
     }
   }
 }

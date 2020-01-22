@@ -92,4 +92,10 @@ final object CursorOp {
       case (str, Op(op))         => s"{${Show[CursorOp].show(op)}}$str"
     }
   }
+
+  def isDownField(op: CursorOp): Boolean =
+    op match {
+      case DownField(_) => true
+      case _ => false
+    }
 }
