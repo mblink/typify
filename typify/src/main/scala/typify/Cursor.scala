@@ -17,6 +17,8 @@ import scala.collection.immutable.ListMap
  */
 sealed abstract class Cursor[A](private val lastCursor: Option[Cursor[A]], private val lastOp: Option[CursorOp]) extends Serializable {
 
+  def show: String
+
   /**
    * The current location in the document.
    */
@@ -171,6 +173,9 @@ sealed abstract class Cursor[A](private val lastCursor: Option[Cursor[A]], priva
 final object Cursor {
   def top[A: Generic](value: A): Cursor[A] = new Top[A](value)(None, None)
 
+  def at[A: Generic](value: A, root: Vector[String]): Cursor[A] =
+    root.foldLeft(top(value))(_.downField(_))
+
   implicit def eqCursor[A: Eq]: Eq[Cursor[A]] =
     Eq.instance((a, b) => a.focus === b.focus && a.history === b.history)
 
@@ -238,6 +243,8 @@ final object Cursor {
     lastCursor: Option[Cursor[A]],
     lastOp: Option[CursorOp]
   )(implicit val gen: Generic[A]) extends Cursor[A](lastCursor, lastOp) with WithValue[A] {
+    override def show: String = s"Array($values, $index, $parent, $changed)($lastCursor, $lastOp)"
+
     def value: A = values(index)
 
     private[this] def valuesExcept: Vector[A] = values.take(index) ++ values.drop(index + 1)
@@ -254,13 +261,17 @@ final object Cursor {
 
     def delete: Cursor[A] = parent.replace(gen.fromValues(valuesExcept), Some(this), Some(CursorOp.DeleteGoParent))
 
+    def hasLeft: Boolean = index != 0
+
     def left: Cursor[A] =
-      if (index == 0) fail(CursorOp.MoveLeft)
-      else new Array(values, index - 1, parent, changed)(Some(this), Some(CursorOp.MoveLeft))
+      if (hasLeft) new Array(values, index - 1, parent, changed)(Some(this), Some(CursorOp.MoveLeft))
+      else fail(CursorOp.MoveLeft)
+
+    def hasRight: Boolean = index != values.size - 1
 
     def right: Cursor[A] =
-      if (index == values.size - 1) fail(CursorOp.MoveRight)
-      else new Array(values, index + 1, parent, changed)(Some(this), Some(CursorOp.MoveRight))
+      if (hasRight) new Array(values, index + 1, parent, changed)(Some(this), Some(CursorOp.MoveRight))
+      else fail(CursorOp.MoveRight)
 
     def first: Cursor[A] = new Array(values, 0, parent, changed)(Some(this), Some(CursorOp.MoveFirst))
     def field(k: String): Cursor[A] = fail(CursorOp.Field(k))
@@ -270,6 +281,8 @@ final object Cursor {
     lastCursor: Option[Cursor[A]],
     lastOp: Option[CursorOp]
   )(implicit val gen: Generic[A]) extends Cursor[A](lastCursor, lastOp) with WithValue[A] {
+    override def show: String = s"Object($fields, $key, $parent, $changed)($lastCursor, $lastOp)"
+
     def value: A = fields(key)
 
     def replace(newValue: A, cursor: Option[Cursor[A]], op: Option[CursorOp]): Cursor[A] =
@@ -298,6 +311,8 @@ final object Cursor {
     lastCursor: Option[Cursor[A]],
     lastOp: Option[CursorOp]
   ) extends Cursor[A](lastCursor, lastOp) {
+    override def show: String = s"Failed($lastCursor, $lastOp)"
+
     def succeeded: Boolean = false
     def success: Option[Cursor[A]] = None
 
@@ -334,6 +349,8 @@ final object Cursor {
     lastCursor: Option[Cursor[A]],
     lastOp: Option[CursorOp]
   )(implicit val gen: Generic[A]) extends Cursor[A](lastCursor, lastOp) with WithValue[A] {
+    override def show: String = s"Top($lastCursor, $lastOp)"
+
     def replace(newValue: A, cursor: Option[Cursor[A]], op: Option[CursorOp]): Cursor[A] =
       new Top(newValue)(cursor, op)
 

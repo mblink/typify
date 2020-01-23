@@ -1,11 +1,8 @@
 package play.api.libs.json.typify
 
-import cats.data.ValidatedNel
-import cats.syntax.apply._
 import cats.syntax.option._
 import cats.syntax.validated._
 import play.api.libs.json.{JsArray, JsNull, JsObject, JsValue, Reads}
-import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.reflect.ClassTag
 import typify._
@@ -14,25 +11,17 @@ trait CatchAllInstance {
   protected def gen[A: Reads](retry: String => Option[A])(implicit ct: ClassTag[A]): (CanParse[A, JsValue], CanParse[Option[A], JsValue], CanParse[List[A], JsValue], CanParse[Option[List[A]], JsValue]) = {
     val cpa: CanParse[A, JsValue] = c =>
       c.focus.flatMap(jv => jv.asOpt[A].orElse(jv.asOpt[String].flatMap(retry)))
-        .toValidNel(ParseError(s"Could not be interpreted as $ct"))
+        .toValidNel(ParseError(c, s"Could not be interpreted as $ct"))
 
-    val cpla: CanParse[List[A], JsValue] = x => x.downArray match {
-      case Cursor.Failed(_, _) => ParseError(s"Could not be interpreted as List[$ct]").invalidNel[List[A]]
-      case c =>
-        @tailrec def go(c: Cursor[JsValue], res: ValidatedNel[ParseError, List[A]]): ValidatedNel[ParseError, List[A]] =
-          c match {
-            case Cursor.Failed(_, _) => res
-            case _ => go(c.right, (res, cpa(c)).mapN(_ :+ _))
-          }
-
-        go(c, List[A]().validNel[ParseError])
-    }
+    val cpla: CanParse[List[A], JsValue] = parseList(_: Cursor[JsValue])(
+      ParseError(_, s"Could not be interpreted as List[$ct]").invalidNel[List[A]],
+      cpa(_))
 
     def opt[B](cp: CanParse[B, JsValue]): CanParse[Option[B], JsValue] =
       c => c.focus match {
-        case Some(JsNull) => None.validNel[ParseError]
+        case Some(JsNull) => None.validNel[ParseError[JsValue]]
         case Some(_) => cp(c).map(Some(_))
-        case None => None.validNel[ParseError]
+        case None => None.validNel[ParseError[JsValue]]
       }
 
     (cpa, opt(cpa), cpla, opt(cpla))

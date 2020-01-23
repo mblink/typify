@@ -1,11 +1,8 @@
 package circe.api.libs.json.typify
 
-import cats.data.ValidatedNel
-import cats.syntax.apply._
 import cats.syntax.option._
 import cats.syntax.validated._
 import io.circe.{Decoder, Json}
-import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.reflect.ClassTag
 import typify._
@@ -14,25 +11,17 @@ trait CatchAllInstance {
   protected def gen[A: Decoder](retry: String => Option[A])(implicit ct: ClassTag[A]): (CanParse[A, Json], CanParse[Option[A], Json], CanParse[List[A], Json], CanParse[Option[List[A]], Json]) = {
     val cpa: CanParse[A, Json] = c =>
       c.focus.flatMap(j => j.as[Option[A]].toOption.flatten.orElse(j.as[String].toOption.flatMap(retry)))
-        .toValidNel(ParseError(s"Could not be interpreted as $ct"))
+        .toValidNel(ParseError(c, s"Could not be interpreted as $ct"))
 
-    val cpla: CanParse[List[A], Json] = x => x.downArray match {
-      case Cursor.Failed(_, _) => ParseError(s"Could not be interpreted as List[$ct]").invalidNel[List[A]]
-      case c =>
-        @tailrec def go(c: Cursor[Json], res: ValidatedNel[ParseError, List[A]]): ValidatedNel[ParseError, List[A]] =
-          c match {
-            case Cursor.Failed(_, _) => res
-            case _ => go(c.right, (res, cpa(c)).mapN(_ :+ _))
-          }
-
-        go(c, List[A]().validNel[ParseError])
-    }
+    val cpla: CanParse[List[A], Json] = parseList(_: Cursor[Json])(
+      ParseError(_, s"Could not be interpreted as List[$ct]").invalidNel[List[A]],
+      cpa(_))
 
     def opt[B](cp: CanParse[B, Json]): CanParse[Option[B], Json] =
       c => c.focus match {
-        case Some(Json.Null) => None.validNel[ParseError]
+        case Some(Json.Null) => None.validNel[ParseError[Json]]
         case Some(_) => cp(c).map(Some(_))
-        case None => None.validNel[ParseError]
+        case None => None.validNel[ParseError[Json]]
       }
 
     (cpa, opt(cpa), cpla, opt(cpla))
