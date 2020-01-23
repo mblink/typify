@@ -14,9 +14,14 @@ package object typify extends typify.StringOps {
   def parseList[A, L, O](cursor: Cursor[A])(
     fail: Cursor.Failed[A] => ValidatedNel[L, List[O]],
     proc: Cursor[A] => ValidatedNel[L, O]
-  ): ValidatedNel[L, List[O]] =
+  ): ValidatedNel[L, List[O]] = {
+    lazy val empty = List[O]().validNel[L]
+
     cursor.downArray match {
-      case f @ Cursor.Failed(_, _) => fail(f)
+      case f @ Cursor.Failed(_, _) => f.history match {
+        case CursorOp.DownArray(true) +: _ => empty
+        case _ => fail(f)
+      }
       case a =>
         @tailrec def go(c: Cursor[A], res: ValidatedNel[L, List[O]]): ValidatedNel[L, List[O]] =
           c match {
@@ -26,4 +31,5 @@ package object typify extends typify.StringOps {
 
         go(a, List[O]().validNel[L])
     }
+  }
 }

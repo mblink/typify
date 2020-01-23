@@ -1,9 +1,7 @@
 package typify
 
 import cats.data.ValidatedNel
-import cats.syntax.apply._
 import cats.syntax.validated._
-import scala.annotation.tailrec
 import scala.collection.immutable.ListMap
 import scala.reflect.ClassTag
 
@@ -26,18 +24,9 @@ trait CatchOptionInstance extends CatchAllInstance {
       }).validNel[ParseError[Any]]
   }
 
-  implicit def cplt[T](implicit ct: ClassTag[T], cpt: CanParse[T, Any]) = new CanParse[List[T], Any] {
-    @tailrec def go(c: Cursor[Any], res: ValidatedNel[ParseError[Any], List[T]]): ValidatedNel[ParseError[Any], List[T]] =
-      c match {
-        case Cursor.Failed(_, _) => res
-        case _ => go(c.right, (res, cpt(c)).mapN(_ :+ _))
-      }
-
-    def apply(x: Cursor[Any]): ValidatedNel[ParseError[Any], List[T]] = x.downArray match {
-      case f @ Cursor.Failed(_, _) => ParseError(f, s"Could not be interpreted as List[$ct]").invalidNel[List[T]]
-      case c => go(c, List[T]().validNel[ParseError[Any]])
-    }
-  }
+  implicit def cplt[T](implicit ct: ClassTag[T], cpt: CanParse[T, Any]): CanParse[List[T], Any] = parseList(_: Cursor[Any])(
+    f => ParseError(f, s"Could not be interpreted as List[$ct]").invalidNel[List[T]],
+    cpt(_))
 }
 
 object parsedany extends CatchOptionInstance {

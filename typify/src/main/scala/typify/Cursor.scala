@@ -157,8 +157,8 @@ sealed abstract class Cursor[A](private val lastCursor: Option[Cursor[A]], priva
     case CursorOp.RightN(n)      => rightN(n)
     case CursorOp.Field(k)       => field(k)
     case CursorOp.DownField(k)   => downField(k)
-    case CursorOp.DownArray      => downArray
-    case CursorOp.DownN(n)       => downN(n)
+    case CursorOp.DownArray(_)   => downArray
+    case CursorOp.DownN(n, _)    => downN(n)
     case CursorOp.DeleteGoParent => delete
   }
 
@@ -207,11 +207,13 @@ final object Cursor {
       go(this)
     }
 
-    private def withOp[O](op: CursorOp)(f: (CursorOp, Cursor[A]) => O): O = f(op, fail(op))
+    private def withOp[Op <: CursorOp, O](op: Op)(f: (Op, Cursor[A]) => O): O = f(op, fail(op))
 
-    final def downArray: Cursor[A] = withOp(CursorOp.DownArray) { case (o, f) =>
-      gen.toValues(value).fold(f)(
-        Some(_).filter(_.nonEmpty).fold(f)(new Array(_, 0, this, false)(Some(this), Some(o))))
+    final def downArray: Cursor[A] = withOp(CursorOp.DownArray(false)) { case (o, f) =>
+      gen.toValues(value).fold(f)(_ match {
+        case Vector() => fail(o.copy(empty = true))
+        case v => new Array(v, 0, this, false)(Some(this), Some(o))
+      })
     }
 
     final def downField(k: String): Cursor[A] = withOp(CursorOp.DownField(k)) { case (o, f) =>
@@ -219,9 +221,11 @@ final object Cursor {
         fs.toMap.get(k).fold(f)(_ => new Object(fs, k, this, false)(Some(this), Some(o))))
     }
 
-    final def downN(n: Int): Cursor[A] = withOp(CursorOp.DownN(n)) { case (o, f) =>
-      gen.toValues(value).fold(f)(
-        Some(_).filter(x => n >= 0 && x.size > n).fold(f)(new Array(_, n, this, false)(Some(this), Some(o))))
+    final def downN(n: Int): Cursor[A] = withOp(CursorOp.DownN(n, false)) { case (o, f) =>
+      gen.toValues(value).fold(f)(_ match {
+        case v if n >= 0 && v.size > n => new Array(v, n, this, false)(Some(this), Some(o))
+        case _ => fail(o.copy(outOfRange = true))
+      })
     }
 
     final def leftN(n: Int): Cursor[A] =
