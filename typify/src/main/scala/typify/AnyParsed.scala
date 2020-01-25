@@ -48,7 +48,6 @@ object parsedany extends CatchOptionInstance {
     def apply(x: Cursor[Any]): ValidatedNel[ParseError[Any], Option[Any]] =
       (x.focus match {
         case Some(o: Option[Any]) => o
-        case Some(x) => Option(x)
         case _ => None
       }).validNel[ParseError[Any]]
   }

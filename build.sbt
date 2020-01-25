@@ -2,7 +2,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val baseSettings = Seq(
   scalaVersion := "2.12.10",
-  version := "3.0.0-LOCAL30",
+  version := "3.0.0-LOCAL31",
   addCompilerPlugin("io.tryp" %% "splain" % "0.5.0" cross CrossVersion.patch),
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.patch),
   scalacOptions ++= Seq("-P:splain:all"),
