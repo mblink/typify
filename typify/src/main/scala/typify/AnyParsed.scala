@@ -29,7 +29,7 @@ trait CatchOptionInstance extends CatchAllInstance {
     cpt(_))
 }
 
-object parsedany extends CatchOptionInstance {
+trait GenericAnyInstance {
   implicit val genericAny: Generic[Any] = new Generic[Any] {
     def toValues(value: Any): Option[Vector[Any]] =
       Some(value).collect { case i: Iterable[_] => i.toVector }
@@ -43,7 +43,9 @@ object parsedany extends CatchOptionInstance {
     def fromFields(fields: ListMap[String, Any]): Any =
       fields
   }
+}
 
+object parsedany extends CatchOptionInstance {
   lazy implicit val cpoany = new CanParse[Option[Any], Any] {
     def apply(x: Cursor[Any]): ValidatedNel[ParseError[Any], Option[Any]] =
       (x.focus match {

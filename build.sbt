@@ -1,8 +1,12 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
+lazy val scala212 = "2.12.10"
+lazy val scala213 = "2.13.1"
+
 lazy val baseSettings = Seq(
-  scalaVersion := "2.12.10",
-  version := "3.0.0-LOCAL31",
+  scalaVersion := scala212,
+  crossScalaVersions := Seq(scala212/*, scala213*/),
+  version := "3.0.0-LOCAL33",
   addCompilerPlugin("io.tryp" %% "splain" % "0.5.0" cross CrossVersion.patch),
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.patch),
   scalacOptions ++= Seq("-P:splain:all"),

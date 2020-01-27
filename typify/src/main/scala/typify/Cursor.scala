@@ -176,6 +176,14 @@ final object Cursor {
   def at[A: Generic](value: A, root: Vector[String]): Cursor[A] =
     root.foldLeft(top(value))(_.downField(_))
 
+  def failed[A: Generic](history: Vector[CursorOp]): Failed[A] =
+    history.reverse match {
+      case h +: t => t.foldLeft(Failed[A](None, Some(h)))((c, o) => Failed[A](Some(c), Some(o)))
+      case Vector() => Failed[A](None, None)
+    }
+
+  def failed[A: Generic](history: CursorOp*): Failed[A] = failed[A](history.toVector)
+
   implicit def eqCursor[A: Eq]: Eq[Cursor[A]] =
     Eq.instance((a, b) => a.focus === b.focus && a.history === b.history)
 
