@@ -76,9 +76,6 @@ lazy val playjsonTypify = project.in(file("play-json-typify"))
 
 lazy val sjsTypify = project.in(file("jsdynamic-typify"))
   .settings(baseSettings)
-  .settings(
-    name := "jsdynamic-typify",
-    scalaJSUseMainModuleInitializer := true
-  )
+  .settings(name := "jsdynamic-typify")
   .dependsOn(typifyJS % "test->test;compile->compile")
   .enablePlugins(ScalaJSPlugin)
