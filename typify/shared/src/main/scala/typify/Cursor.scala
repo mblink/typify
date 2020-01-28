@@ -226,7 +226,7 @@ final object Cursor {
 
     final def downField(k: String): Cursor[A] = withOp(CursorOp.DownField(k)) { case (o, f) =>
       gen.toFields(value).fold(f)(fs =>
-        fs.toMap.get(k).fold(f)(_ => new Object(fs, k, this, false)(Some(this), Some(o))))
+        fs.get(k).fold(f)(_ => new Object(fs, k, this, false)(Some(this), Some(o))))
     }
 
     final def downN(n: Int): Cursor[A] = withOp(CursorOp.DownN(n, false)) { case (o, f) =>

@@ -1,6 +1,7 @@
 package typify
 
 import cats.syntax.option._
+import cats.syntax.validated._
 import org.scalacheck.{Arbitrary, Gen, Prop, Properties}
 import org.scalacheck.Prop.{forAllNoShrink, propBoolean}
 
@@ -40,41 +41,29 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
    cpl: CanParse[Long, P], cpol: CanParse[Option[Long], P],
    cpd: CanParse[Double, P], cpod: CanParse[Option[Double], P],
    cpb: CanParse[Boolean, P], cpob: CanParse[Option[Boolean], P],
-   cpli: CanParse[List[Int], P], cpoli: CanParse[Option[List[Int]], P],
-   @deprecated("unused", "") cplp: CanParse[List[P], P]) {
+   cpli: CanParse[List[Int], P], cpoli: CanParse[Option[List[Int]], P]) {
   import mp.implicits._
 
+  def matches[A](msg: String)(actual: A, expected: A): Prop =
+    (expected == actual) :| s"$msg\n\nEXPECTED:\n  ${expected}\n\nACTUAL:\n  ${actual}"
+
   def assert[A, B](l: String, k: String, cp: CanParse[A, P], g: A, b: B, rc: Boolean = false)(
-      implicit mpa: MustParse[A], mpb: MustParse[B]): Prop = {
-    (((cp.parse(k, mp.make(k, g)).toOption == g.some) :|
-      s"$l parses valid") &&
-     ((cp.parse(k + "a", mp.make(k, g)).toOption == none[A]) :|
-      s"$l missed key") &&
-     ((cp.parse(k, mp.make(k, b)).toOption == (if (rc) b.some else none[A])) :|
-      s"$l wrong type") &&
-     ((cp(mp.to(g)).toOption == g.some) :|
-      s"$l represents valid") &&
-     ((cp(mp.to(b)).toOption == (if (rc) b.some else none[A])) :|
-      s"$l repesented wrong type"))
-  }
+      implicit mpa: MustParse[A], mpb: MustParse[B]): Prop =
+    matches(s"$l parses valid")(cp.parse(k, mp.make(k, g)).toOption, g.some) &&
+    matches(s"$l missed key")(cp.parse(k + "a", mp.make(k, g)).toOption, none[A]) &&
+    matches(s"$l wrong type")(cp.parse(k, mp.make(k, b)).toOption, if (rc) b.some else none[A]) &&
+    matches(s"$l represents valid")(cp(mp.to(g)).toOption, g.some) &&
+    matches(s"$l represented wrong type")(cp(mp.to(b)).toOption, if (rc) b.some else none[A])
 
   def assertO[A, B](l: String, k: String, cp: CanParse[Option[A], P], g: A, b: B, rc: Boolean = false)(
-      implicit mpoa: MustParse[Option[A]], mpob: MustParse[Option[B]]): Prop = {
-    ((cp.parse(k, mp.make(k, g.some)).toOption == g.some.some) :|
-      s"some[$l] parses valid: get ${cp.parse(k, mp.make(k, g.some)).toOption} ex ${g.some.some}") &&
-     ((cp.parse(k, mp.make(k, none[A])).toOption == none[A].some) :|
-      s"none[$l] parses valid") &&
-     ((cp.parse(k + "a", mp.make(k, g.some)).toOption == none[A].some) :|
-      s"some[$l] missed key") &&
-     ((cp.parse(k, mp.make(k, b.some)).toOption == (if (rc) b.some.some else none[Option[A]])) :|
-      s"some[$l] wrong type, got ${cp.parse(k, mp.make(k, b.some)).toOption} ex ${(if (rc) b.some.some else none[Option[A]])}") &&
-     ((cp(mp.to(g.some)).toOption == g.some.some) :|
-      s"$l represents valid") &&
-     ((cp(mp.to(none[A])).toOption == none[A].some) :|
-      s"none[$l] represents valid") &&
-     ((cp(mp.to(b.some)).toOption == (if (rc) b.some.some else none[Option[A]])) :|
-      s"$l repesented wrong type")
-   }
+      implicit mpoa: MustParse[Option[A]], mpob: MustParse[Option[B]]): Prop =
+    matches(s"some[$l] parses valid")(cp.parse(k, mp.make(k, g.some)).toOption, g.some.some) &&
+    matches(s"none[$l] parses valid")(cp.parse(k + "a", mp.make(k, g.some)).toOption, none[A].some) &&
+    matches(s"some[$l] missed key")(cp.parse(k, mp.make(k, b.some)).toOption, if (rc) b.some.some else none[Option[A]]) &&
+    matches(s"some[$l] wrong type")(cp.parse(k, mp.make(k, b.some)).toOption, if (rc) b.some.some else none[Option[A]]) &&
+    matches(s"$l represents valid")(cp(mp.to(g.some)).toOption, g.some.some) &&
+    matches(s"none[$l] represents valid")(cp(mp.to(none[A])).toOption, none[A].some) &&
+    matches(s"$l repesented wrong type")(cp(mp.to(b.some)).toOption, if (rc) b.some.some else none[Option[A]])
 
   type NEString = String
   implicit val arbNE: Arbitrary[NEString] = Arbitrary { Gen.alphaStr.suchThat(_.nonEmpty) }
@@ -181,13 +170,12 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
       ((cpoli.parse(k, mp.make(k, li.map(_.toString).some)).toOption == li.some.some) :|
        "some[List[Int]] parses stringified") &&
       ((cpoli(mp.to(li.map(_.toString).some)).toOption == li.some.some) :|
-       "some[List[Int]] represents stringified")/* &&
+       "some[List[Int]] represents stringified") &&
       // List[P]
-      ((cplp(mp.to(li.flatMap(i => mp.make(k, i).focus)))
-        .toEither
-        .flatMap(_.traverse(cpi.parse(k, _)))
-        .toOption == li.some) :|
-       "List[Int] parses via List[P]")*/
+      ((parseList(mp.to(li.flatMap(i => mp.make(k, i).focus)))(
+        _ => ().invalidNel[List[P]],
+        cpi.parse(k, _).leftMap(_.map(_ => ()))).toOption == li.some) :|
+      "List[Int] parses via List[P]")
     }
 
   def recursive =

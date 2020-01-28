@@ -24,41 +24,61 @@ lazy val baseSettings = Seq(
 )
 
 lazy val root = project.in(file("."))
-  .aggregate(typify, playjsonTypify, circeTypify)
+  .aggregate(typifyJVM, typifyJS, circeTypify, json4sTypify, playjsonTypify, sjsTypify)
   .settings(
     publish := {},
     publishLocal := {},
     bintrayReleaseOnPublish in ThisBuild := false
   )
 
-lazy val cats = "org.typelevel" %% "cats-core" % "2.1.0"
+lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.1.0" }
 lazy val circe = "io.circe" %% "circe-core" % "0.12.3"
 lazy val playJson = "com.typesafe.play" %% "play-json" % "2.6.10"
-lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.3"
-lazy val scalacheck = "org.scalacheck" %% "scalacheck" % "1.14.2" % "test"
+lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.3" }
+lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.14.2" % "test" }
 
-lazy val typify = project.in(file("typify"))
+lazy val typify = sbtcrossproject.CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(file("typify"))
   .settings(baseSettings)
   .settings(
     name := "typify",
-    libraryDependencies ++= Seq(cats, shapeless, scalacheck),
+    libraryDependencies ++= Seq(cats.value, shapeless.value, scalacheck.value),
     tutTargetDirectory := file("."),
     scalacOptions in Tut := (scalacOptions in (Compile, console)).value
   )
   .enablePlugins(TutPlugin)
 
-lazy val playjsonTypify = project.in(file("play-json-typify"))
-  .settings(baseSettings)
-  .settings(
-    name := "play-json-typify",
-    libraryDependencies ++= Seq(cats, playJson, scalacheck)
-  )
-  .dependsOn(typify % "test->test;compile->compile")
+lazy val typifyJVM = typify.jvm
+lazy val typifyJS = typify.js.enablePlugins(ScalaJSPlugin)
 
 lazy val circeTypify = project.in(file("circe-typify"))
   .settings(baseSettings)
   .settings(
     name := "circe-typify",
-    libraryDependencies ++= Seq(circe, scalacheck),
+    libraryDependencies += circe,
   )
-  .dependsOn(typify % "test->test;compile->compile")
+  .dependsOn(typifyJVM % "test->test;compile->compile")
+
+lazy val json4sTypify = project.in(file("json4s-typify"))
+  .settings(baseSettings)
+  .settings(
+    name := "json4s-typify",
+    libraryDependencies += "org.json4s" %% "json4s-jackson" % "3.6.7"
+  )
+  .dependsOn(typifyJVM % "test->test;compile->compile")
+
+lazy val playjsonTypify = project.in(file("play-json-typify"))
+  .settings(baseSettings)
+  .settings(
+    name := "play-json-typify",
+    libraryDependencies ++= Seq(cats.value, playJson)
+  )
+  .dependsOn(typifyJVM % "test->test;compile->compile")
+
+lazy val sjsTypify = project.in(file("jsdynamic-typify"))
+  .settings(baseSettings)
+  .settings(
+    name := "jsdynamic-typify",
+    scalaJSUseMainModuleInitializer := true
+  )
+  .dependsOn(typifyJS % "test->test;compile->compile")
+  .enablePlugins(ScalaJSPlugin)
