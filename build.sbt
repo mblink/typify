@@ -35,7 +35,7 @@ lazy val cats = "org.typelevel" %% "cats-core" % "2.1.0"
 lazy val circe = "io.circe" %% "circe-core" % "0.12.3"
 lazy val playJson = "com.typesafe.play" %% "play-json" % "2.6.10"
 lazy val shapeless = "com.chuusai" %% "shapeless" % "2.3.3"
-lazy val scalacheck = "org.scalacheck" %% "scalacheck" % "1.14.2" % "test"
+lazy val scalacheck = "org.scalacheck" %% "scalacheck" % "1.14.2"
 
 lazy val typify = project.in(file("typify"))
   .settings(baseSettings)
