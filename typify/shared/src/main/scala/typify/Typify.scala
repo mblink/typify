@@ -10,13 +10,6 @@ import shapeless.{::, HList, HNil, Poly2, Witness}
 import shapeless.labelled.{field, FieldType}
 import shapeless.ops.hlist.RightFolder
 
-case class ParseError[P](cursor: Cursor[P], message: String)
-
-trait CanParse[T, P] {
-  def apply(cursor: Cursor[P]): ValidatedNel[ParseError[P], T]
-  def parse(key: String, cursor: Cursor[P]): ValidatedNel[ParseError[P], T] = apply(cursor.downField(key))
-}
-
 object Typify {
   def validate[L, P, A, B](v: (String, A, Cursor[P]) => ValidatedNel[L, B])(implicit e2l: E2L[L, P], cp: CanParse[A, P]): KPV[P, L, B] =
     (k: String) => (c0: Cursor[P]) => ap(c0.downField(k))(c => cp(c).fold(_.map(e2l).invalid[B], v(k, _, c)))
@@ -56,8 +49,6 @@ object Typify {
     optionalList((_, c: Cursor[P]) => v(c))
 }
 
-case class listOf[A](in: A)
-
 class Typify[L, P] {
   type PV[A] = typify.PV[P, L, A]
   type KPV[A] = typify.KPV[P, L, A]
@@ -84,7 +75,7 @@ class Typify[L, P] {
       at((in, acc) => (c: Cursor[P]) =>
         (typify.parseList(c.downField(k.value.name))(
           f => e2l(ParseError(f, "Could not be interpreted as List")).invalidNel[List[A]],
-          in.in),
+          in.run),
         acc(c)).mapN((x, y) => field[K](x) :: y))
 
     implicit def listOfHList[O <: HList, K <: Symbol, I <: HList, FR, IR <: HList](
@@ -93,7 +84,7 @@ class Typify[L, P] {
       k: Witness.Aux[K],
       e2l: E2L[L, P]
     ): Case.Aux[FieldType[K, listOf[I]], PV[O], PV[FieldType[K, List[IR]] :: O]] =
-      at((in, acc) => listOfPV[O, K, IR].apply(field[K](listOf(rf(in.in, pvHNil)(_))), acc))
+      at((in, acc) => listOfPV[O, K, IR].apply(field[K](listOf(rf(in.run, pvHNil)(_))), acc))
 
     implicit def nested[O <: HList, K <: Symbol, I <: HList, FR, IR <: HList](
       implicit rf: RightFolder.Aux[I, PV[HNil], foldPV.type, FR],
