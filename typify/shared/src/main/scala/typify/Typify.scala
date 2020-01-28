@@ -56,7 +56,7 @@ object Typify {
     optionalList((_, c: Cursor[P]) => v(c))
 }
 
-case class listOf[I <: HList](in: I)
+case class listOf[A](in: A)
 
 class Typify[L, P] {
   type PV[A] = typify.PV[P, L, A]
@@ -77,17 +77,23 @@ class Typify[L, P] {
     implicit def labelledKPV[O <: HList, K <: Symbol, A](implicit k: Witness.Aux[K]): Case.Aux[FieldType[K, KPV[A]], PV[O], PV[FieldType[K, A] :: O]] =
       at((a, acc) => runA(a(k.value.name), acc)(field[K](_)))
 
-    implicit def list[O <: HList, K <: Symbol, I <: HList, FR, IR <: HList](
+    implicit def listOfPV[O <: HList, K <: Symbol, A](
+      implicit k: Witness.Aux[K],
+      e2l: E2L[L, P]
+    ): Case.Aux[FieldType[K, listOf[PV[A]]], PV[O], PV[FieldType[K, List[A]] :: O]] =
+      at((in, acc) => (c: Cursor[P]) =>
+        (typify.parseList(c.downField(k.value.name))(
+          f => e2l(ParseError(f, "Could not be interpreted as List")).invalidNel[List[A]],
+          in.in),
+        acc(c)).mapN((x, y) => field[K](x) :: y))
+
+    implicit def listOfHList[O <: HList, K <: Symbol, I <: HList, FR, IR <: HList](
       implicit rf: RightFolder.Aux[I, PV[HNil], foldPV.type, FR],
       ev: FR <:< PV[IR],
       k: Witness.Aux[K],
       e2l: E2L[L, P]
     ): Case.Aux[FieldType[K, listOf[I]], PV[O], PV[FieldType[K, List[IR]] :: O]] =
-      at((in, acc) => (c: Cursor[P]) =>
-        (typify.parseList(c.downField(k.value.name))(
-          f => e2l(ParseError(f, "Could not be interpreted as List")).invalidNel[List[IR]],
-          rf(in.in, pvHNil)(_)),
-         acc(c)).mapN((x, y) => field[K](x) :: y))
+      at((in, acc) => listOfPV[O, K, IR].apply(field[K](listOf(rf(in.in, pvHNil)(_))), acc))
 
     implicit def nested[O <: HList, K <: Symbol, I <: HList, FR, IR <: HList](
       implicit rf: RightFolder.Aux[I, PV[HNil], foldPV.type, FR],
