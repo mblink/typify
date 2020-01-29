@@ -15,8 +15,6 @@ lazy val baseSettings = Seq(
     "-language:experimental.macros",
     "-language:implicitConversions"
   ),
-  scalacOptions in (Compile, console) := scalacOptions.value.filterNot(x =>
-    x.startsWith("-Ywarn-unused") || x.startsWith("-Xlint") || x.startsWith("-P:splain")),
   licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
   bintrayOrganization := Some("bondlink"),
   bintrayRepository := "Typify",
@@ -25,9 +23,11 @@ lazy val baseSettings = Seq(
 
 lazy val root = project.in(file("."))
   .aggregate(typifyJVM, typifyJS, circeTypify, json4sTypify, playjsonTypify, sjsTypify)
+  .settings(baseSettings)
   .settings(
     publish := {},
     publishLocal := {},
+    bintrayRelease := {},
     bintrayReleaseOnPublish in ThisBuild := false
   )
 
