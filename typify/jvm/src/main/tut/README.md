@@ -22,7 +22,7 @@ First some imports.
 ```tut:silent
 import shapeless.HNil
 import shapeless.syntax.singleton._
-import typify.{Cursor, ParseError, Typify}
+import typify.{Cursor, CursorHistory, ParseError, Typify}
 import typify.convert._
 import typify.convert.syntax._
 ```
@@ -38,7 +38,7 @@ Let's use Any for this example.
 ```tut
 import typify.parsedany._
 
-case class Fail(reason: String)
+case class Fail(reason: String, history: CursorHistory[_])
 
 val tp = new Typify[Fail, Any]
 ```
@@ -52,7 +52,7 @@ case class ParseError(key: String, error: String)
 ```
 
 ```tut
-implicit val parse2Error = (pe: ParseError[Any]) => Fail(s"${pe.message} -- ${pe.cursor.history.mkString(", ")}")
+implicit val parse2Error = (pe: ParseError[Any]) => Fail(pe.message, pe.cursor.history)
 ```
 
 Now we can define some validation functions.
@@ -62,14 +62,14 @@ Let's validate an email, an age and an optional session id.
 import cats.data.NonEmptyList
 import cats.syntax.validated._
 
-val checkEmail = Typify.validate((_: String).validNel[Fail]
-  .ensure(NonEmptyList.of(Fail("Email is invalid")))(_.contains("@")))
+val checkEmail = Typify.validate((_: String, s: String, c: Cursor[Any]) => s.validNel[Fail]
+  .ensure(NonEmptyList.of(Fail("Email is invalid", c.history)))(_.contains("@")))
 
-val checkAge = Typify.validate((_: Int).validNel[Fail]
-  .ensure(NonEmptyList.of(Fail("Too young")))(_ > 21))
+val checkAge = Typify.validate((_: String, i: Int, c: Cursor[Any]) => i.validNel[Fail]
+  .ensure(NonEmptyList.of(Fail("Too young", c.history)))(_ > 21))
 
-val checkSessIdF = ((_: Int).validNel[Fail]
-  .ensure(NonEmptyList.of(Fail("Invalid session id")))(_ > 3000))
+val checkSessIdF = ((_: String, i: Int, c: Cursor[Any]) => i.validNel[Fail]
+  .ensure(NonEmptyList.of(Fail("Invalid session id", c.history)))(_ > 3000))
 
 val checkSessId = Typify.optional(checkSessIdF)
 ```

@@ -116,8 +116,9 @@ class Typify[L, P] {
         e2l: E2L[L, P]
       ): ValidatedNel[L, Option[R]] =
         c match {
-          case f @ Cursor.Failed(_, _) if f.history.forall(CursorOp.isDownField) => None.validNel[L]
-          case _ => cpop(c).leftMap(_.map(e2l)).andThen(_.traverse(x => c.replace(x, Some(c), None).parse(in)))
+          case f @ Cursor.Failed(_, _) if f.history.failedOp.exists(CursorOp.isDownField) => None.validNel[L]
+          case _ => cpop(c).leftMap(_.map(e2l)).andThen(_.traverse(x =>
+            c.replace(x, Some(c), CursorOp.WithFocus((_: P) => x)).parse(in)))
         }
 
       def parseList[I <: HList, A, R <: HList](in: I)(

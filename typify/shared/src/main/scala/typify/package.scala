@@ -18,8 +18,8 @@ package object typify extends typify.StringOps {
     lazy val empty = List[O]().validNel[L]
 
     cursor.downArray match {
-      case f @ Cursor.Failed(_, _) => f.history match {
-        case CursorOp.DownArray(true) +: _ => empty
+      case f @ Cursor.Failed(_, _) => f.history.failedOp match {
+        case Some(CursorOp.DownArray(true)) => empty
         case _ => fail(f)
       }
       case a =>

@@ -6,6 +6,7 @@ import java.io.Serializable
 sealed abstract class CursorOp extends Product with Serializable
 
 final object CursorOp {
+  final case object MoveTop extends CursorOp
   final case object MoveLeft extends CursorOp
   final case object MoveRight extends CursorOp
   final case object MoveFirst extends CursorOp
@@ -17,6 +18,7 @@ final object CursorOp {
   final case class DownArray(empty: Boolean) extends CursorOp
   final case class DownN(n: Int, outOfRange: Boolean) extends CursorOp
   final case object DeleteGoParent extends CursorOp
+  final case class WithFocus[A](f: A => A) extends CursorOp
 
   implicit final val eqCursorOp: Eq[CursorOp] = Eq.fromUniversalEquals
 

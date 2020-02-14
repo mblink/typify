@@ -6,7 +6,7 @@ lazy val scala213 = "2.13.1"
 lazy val baseSettings = Seq(
   scalaVersion := scala212,
   crossScalaVersions := Seq(scala212/*, scala213*/),
-  version := "3.0.0",
+  version := "3.0.0-RC3",
   addCompilerPlugin("io.tryp" %% "splain" % "0.5.0" cross CrossVersion.patch),
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.patch),
   scalacOptions ++= Seq("-P:splain:all"),
