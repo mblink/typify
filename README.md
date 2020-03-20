@@ -43,7 +43,7 @@ scala> case class Fail(reason: String, history: CursorHistory[_])
 defined class Fail
 
 scala> val tp = new Typify[Fail, Any]
-tp: typify.Typify[Fail,Any] = typify.Typify@2d95ba7a
+tp: typify.Typify[Fail,Any] = typify.Typify@119588df
 ```
 
 We also need to define an implicit function to convert a typify.ParseError to our failure type.
@@ -56,7 +56,7 @@ case class ParseError(key: String, error: String)
 
 ```scala
 scala> implicit val parse2Error = (pe: ParseError[Any]) => Fail(pe.message, pe.cursor.history)
-parse2Error: typify.ParseError[Any] => Fail = $$Lambda$25945/1069441974@563e4b11
+parse2Error: typify.ParseError[Any] => Fail = $$Lambda$32214/565378721@14e94009
 ```
 
 Now we can define some validation functions.
@@ -71,25 +71,25 @@ import cats.syntax.validated._
 
 scala> val checkEmail = Typify.validate((_: String, s: String, c: Cursor[Any]) => s.validNel[Fail]
      |   .ensure(NonEmptyList.of(Fail("Email is invalid", c.history)))(_.contains("@")))
-checkEmail: typify.KPV[Any,Fail,String] = typify.Typify$$$Lambda$26043/1370013472@c2a3530
+checkEmail: typify.KPV[Any,Fail,String] = typify.Typify$$$Lambda$32312/1219492221@6c9c47c2
 
 scala> val checkAge = Typify.validate((_: String, i: Int, c: Cursor[Any]) => i.validNel[Fail]
      |   .ensure(NonEmptyList.of(Fail("Too young", c.history)))(_ > 21))
-checkAge: typify.KPV[Any,Fail,Int] = typify.Typify$$$Lambda$26043/1370013472@784aa045
+checkAge: typify.KPV[Any,Fail,Int] = typify.Typify$$$Lambda$32312/1219492221@27b58385
 
 scala> val checkSessIdF = ((_: String, i: Int, c: Cursor[Any]) => i.validNel[Fail]
      |   .ensure(NonEmptyList.of(Fail("Invalid session id", c.history)))(_ > 3000))
-checkSessIdF: (String, Int, typify.Cursor[Any]) => cats.data.Validated[cats.data.NonEmptyList[Fail],Int] = $$Lambda$26052/697725526@53daefd
+checkSessIdF: (String, Int, typify.Cursor[Any]) => cats.data.Validated[cats.data.NonEmptyList[Fail],Int] = $$Lambda$32321/873109281@54bf90cf
 
 scala> val checkSessId = Typify.optional(checkSessIdF)
-checkSessId: typify.KPV[Any,Fail,Option[Int]] = typify.Typify$$$Lambda$26053/1422044065@56fd9567
+checkSessId: typify.KPV[Any,Fail,Option[Int]] = typify.Typify$$$Lambda$32322/1651782305@6085fb40
 ```
 
 Now we can define in which fields to look for these values under our source value as follows.
 
 ```scala
 scala> val checkPerson = 'email ->> checkEmail :: 'age ->> checkAge :: 'session ->> checkSessId :: HNil
-checkPerson: typify.KPV[Any,Fail,String] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],typify.KPV[Any,Fail,String]] :: typify.KPV[Any,Fail,Int] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],typify.KPV[Any,Fail,Int]] :: typify.KPV[Any,Fail,Option[Int]] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],typify.KPV[Any,Fail,Option[Int]]] :: shapeless.HNil = typify.Typify$$$Lambda$26043/1370013472@c2a3530 :: typify.Typify$$$Lambda$26043/1370013472@784aa045 :: typify.Typify$$$Lambda$26053/1422044065@56fd9567 :: HNil
+checkPerson: typify.KPV[Any,Fail,String] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],typify.KPV[Any,Fail,String]] :: typify.KPV[Any,Fail,Int] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],typify.KPV[Any,Fail,Int]] :: typify.KPV[Any,Fail,Option[Int]] with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],typify.KPV[Any,Fail,Option[Int]]] :: shapeless.HNil = typify.Typify$$$Lambda$32312/1219492221@6c9c47c2 :: typify.Typify$$$Lambda$32312/1219492221@27b58385 :: typify.Typify$$$Lambda$32322/1651782305@6085fb40 :: HNil
 ```
 
 From here we are able to parse a person out of Any using our Typify instance.
@@ -157,7 +157,7 @@ scala> import shapeless.record._
 import shapeless.record._
 
 scala> val checkRequiredSess = Typify.validate(checkSessIdF)
-checkRequiredSess: typify.KPV[Any,Fail,Int] = typify.Typify$$$Lambda$26043/1370013472@306605b5
+checkRequiredSess: typify.KPV[Any,Fail,Int] = typify.Typify$$$Lambda$32312/1219492221@4aa9c454
 
 scala> val checkPersonWithSession = (checkPerson - 'session) + ('session ->> checkRequiredSess)
 checkPersonWithSession: String => (typify.Cursor[Any] => cats.data.Validated[cats.data.NonEmptyList[Fail],String]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("email")],String => (typify.Cursor[Any] => cats.data.Validated[cats.data.NonEmptyList[Fail],String])] :: String => (typify.Cursor[Any] => cats.data.Validated[cats.data.NonEmptyList[Fail],Int]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("age")],String => (typify.Cursor[Any] => cats.data.Validated[cats.data.NonEmptyList[Fail],Int])] :: String => (typify.Cursor[Any] => cats.data.Validated[cats.data.NonEmptyList[Fail],Int]) with shapeless.labelled.KeyTag[Symbol with shapeless.tag.Tagged[String("session")],String => (typify.Cursor[Any] => cats.data.Validated[c...

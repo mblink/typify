@@ -21,7 +21,7 @@ trait ParsedInstancesLP {
     c => c.focus.flatMap(Option(_).filterNot(js.isUndefined)).traverse(_ => cpa(c))
 }
 
-object parsedinstances extends ParsedInstancesLP {
+object parsedinstances extends ParsedInstancesLP with CollectionCompat {
   implicit val cpd: CanParse[Dynamic, Dynamic] =
     c => c.focus.filterNot(js.isUndefined).toValidNel(ParseError(c, "Could not be interpreted as Dynamic"))
 
@@ -44,7 +44,7 @@ object parsedinstances extends ParsedInstancesLP {
 
     def toFields(value: Dynamic): Option[ListMap[String, Dynamic]] =
       nf(js.Object.keys(value.asInstanceOf[js.Object])
-        .map(k => (k -> value.selectDynamic(k)))).toOption.map(x => ListMap(x:_*))
+        .map(k => (k -> value.selectDynamic(k)))).toOption.map(ListMap.from(_))
 
     def fromValues(values: Vector[Dynamic]): Dynamic =
       Dynamic.newInstance(Dynamic.global.Array)(values.toSeq:_*)
