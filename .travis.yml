@@ -1,0 +1,19 @@
+sudo: false
+language: scala
+scala:
+  - 2.12.10
+jdk:
+  - openjdk8
+script:
+  - while sleep 9m; do echo "=====[ $SECONDS seconds still running ]====="; done &
+  - sbt ++$TRAVIS_SCALA_VERSION test
+  - kill %1
+
+cache:
+  directories:
+    - "$HOME/.coursier/cache"
+    - "$HOME/.ivy2/cache"
+    - "$HOME/.sbt/boot"
+before_cache:
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm

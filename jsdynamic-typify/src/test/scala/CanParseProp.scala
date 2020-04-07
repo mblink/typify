@@ -6,18 +6,15 @@ import scala.scalajs.js.annotation.JSExportTopLevel
 import scala.scalajs.js.typify.parsedinstances._
 import org.scalacheck.{Gen, Properties}
 
-import scalaz.syntax.id._
-
 object MakeJsDynamic extends MakeParsed[js.Dynamic] {
-
   import implicits._
   import js.JSConverters._
 
   def none = Gen.oneOf(().asInstanceOf[js.Dynamic], null.asInstanceOf[js.Dynamic])
                 .sample.getOrElse(().asInstanceOf[js.Dynamic])
 
-  def make[A](k: String, v: A)(implicit mp: MustParse[A]): js.Dynamic =
-    mp match {
+  def make[A](k: String, v: A)(implicit mp: MustParse[A]): Cursor[js.Dynamic] =
+    Cursor.top(mp match {
       case MPS => literal(k -> v)
       case MPOS => MPOS(v).map(x => literal(k -> x)).getOrElse(none)
       case MPI => literal(k -> v)
@@ -35,10 +32,10 @@ object MakeJsDynamic extends MakeParsed[js.Dynamic] {
       case MPP => literal(k -> v)
       case MPOP => MPOP(v).map(x => literal(k -> x)).getOrElse(none)
       case MPLP => literal(k -> v.toSeq.toJSArray)
-    }
+    })
 
-  def to[A](v: A)(implicit mp: MustParse[A]): js.Dynamic =
-    mp match {
+  def to[A](v: A)(implicit mp: MustParse[A]): Cursor[js.Dynamic] =
+    Cursor.top(mp match {
       case MPS => v.asInstanceOf[js.Dynamic]
       case MPOS => MPOS(v).map(_.asInstanceOf[js.Dynamic]).getOrElse(none)
       case MPI => v.asInstanceOf[js.Dynamic]
@@ -56,16 +53,14 @@ object MakeJsDynamic extends MakeParsed[js.Dynamic] {
       case MPP => v.asInstanceOf[js.Dynamic]
       case MPOP => MPOP(v).map(_.asInstanceOf[js.Dynamic]).getOrElse(none)
       case MPLP => MPLP(v).toSeq.toJSArray.asInstanceOf[js.Dynamic]
-    }
+    })
 }
 
 @JSExportTopLevel("jsDynamicCanParse")
-object jsDynamicCanParse extends Properties("js.Dynamic CanParse") {
-
-  val prop = new CanParseProp(MakeJsDynamic)
-
-  // scalajs and long have an "opaque" relationship, see here
-  // http://stackoverflow.com/questions/27821841/working-with-opaque-types-char-and-long
-  property("parses required types correctly") =
-    prop.string && prop.int && prop.boolean && prop.list && prop.recursive
+object jsDynamicCanParse extends Properties("CanParse") {
+  include((new CanParseProp(MakeJsDynamic) {
+    // scalajs and long have an "opaque" relationship, see here
+    // http://stackoverflow.com/questions/27821841/working-with-opaque-types-char-and-long
+    override def long = true
+  }).props("js.Dynamic"))
 }

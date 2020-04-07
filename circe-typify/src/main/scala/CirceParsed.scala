@@ -1,96 +1,59 @@
 package circe.api.libs.json.typify
 
-import io.circe.Json.{JArray, JBoolean, JNull, JNumber, JObject, JString}
-import io.circe.syntax._
-import io.circe.{Decoder, DecodingFailure, HCursor, Json, ParsingFailure}
-import scala.language.higherKinds
+import cats.syntax.option._
+import cats.syntax.validated._
+import io.circe.{Decoder, Json}
+import scala.collection.immutable.ListMap
 import scala.reflect.ClassTag
-import scalaz.Id.Id
-import scalaz.std.list._
-import scalaz.std.option._
-import scalaz.std.string._
-import scalaz.syntax.id._
-import scalaz.syntax.monad._
-import scalaz.syntax.nel._
-import scalaz.syntax.std.option._
-import scalaz.syntax.std.string._
-import scalaz.syntax.traverse._
-import scalaz.syntax.validation._
-import scalaz.{\/, NonEmptyList, ValidationNel}
-import typify.{CanParse, Parsed, ParseError}
-
-private[this] object helper {
-  val bs = (kO: Option[String], ct: String, err: String) =>
-    ParseError(kO.getOrElse("_root_"), s"Could not be ${kO.map(_ => "parsed").getOrElse("interpreted")} as $ct:\n\t$err")
-  val hc = (kO: Option[String], jv: Json) => kO.map(jv.hcursor.downField(_)).getOrElse(jv.hcursor)
-  def tpv[T](ct: String)(e: Either[DecodingFailure, T], kO: Option[String]=None): ValidationNel[ParseError, T] = e match {
-    case Left(err) => bs(kO, ct, err.getMessage()).failureNel[T]
-    case Right(t) => t.successNel[ParseError]
-  }
-  def mk[T](ct: String)(implicit D: Decoder[T]) = new CanParse[T, Json] {
-    def parse(k: String, jv: Json)(implicit T: ClassTag[T]): ValidationNel[ParseError, T] =
-      tpv[T](ct)(jv.hcursor.downField(k).as[T], Some(k))
-
-    def as(jv: Json)(implicit T: ClassTag[T]): ValidationNel[ParseError, T] = tpv[T](ct)(jv.as[T])
-  }
-
-  def boolOpt(kO: Option[String], jv: Json)
-  (implicit T: ClassTag[Boolean]): ValidationNel[ParseError, Boolean] =
-    hc(kO, jv).as[Boolean].fold(
-      _ => tpv("Boolean")(hc(kO, jv).as[String]).fold(_.failure[Boolean],
-        (bStr: String) => bStr.toLowerCase match {
-          case "true" => true.successNel[ParseError]
-          case "false" => false.successNel[ParseError]
-          case _ => bs(kO, T.toString, s"String $bStr could not be parsed as Boolean.").failureNel[Boolean]
-        }),
-      (_: Boolean).successNel[ParseError])
-
-  def boolOOpt(kO: Option[String], jv: Json)
-  (implicit T: ClassTag[Option[Boolean]]): ValidationNel[ParseError, Option[Boolean]] =
-    hc(kO, jv).as[Option[Boolean]].fold(
-      _ => tpv("Option[Boolean]")(hc(kO, jv).as[Option[String]]).fold(
-        _.failure[Option[Boolean]],
-        (bStr: Option[String]) => bStr.map(s => s.toLowerCase) match {
-          case Some(s) if s == "true" => Some(true).successNel[ParseError]
-          case Some(s) if s == "false" => Some(false).successNel[ParseError]
-          case Some(_) => bs(kO, T.toString, s"String $bStr could not be parsed as Option[Boolean]").failureNel[Option[Boolean]]
-          case None => None.successNel[ParseError]
-        }),
-      (_: Option[Boolean]).successNel[ParseError])
-
-}
+import typify._
 
 trait CatchAllInstance {
-  implicit def cp[T](implicit D: Decoder[T], ct: ClassTag[T]) =
-    helper.mk[T](ct.toString)
+  protected def gen[A: Decoder](retry: String => Option[A])(implicit ct: ClassTag[A]): (CanParse[A, Json], CanParse[Option[A], Json], CanParse[List[A], Json], CanParse[Option[List[A]], Json]) = {
+    val cpa: CanParse[A, Json] = c =>
+      c.focus.flatMap(j => j.as[Option[A]].toOption.flatten.orElse(j.as[String].toOption.flatMap(retry)))
+        .toValidNel(ParseError(c, s"Could not be interpreted as $ct"))
+
+    val cpla: CanParse[List[A], Json] = parseList(_: Cursor[Json])(
+      ParseError(_, s"Could not be interpreted as List[$ct]").invalidNel[List[A]],
+      cpa(_))
+
+    def opt[B](cp: CanParse[B, Json]): CanParse[Option[B], Json] =
+      c => c.focus match {
+        case Some(Json.Null) => None.validNel[ParseError[Json]]
+        case Some(_) => cp(c).map(Some(_))
+        case None => None.validNel[ParseError[Json]]
+      }
+
+    (cpa, opt(cpa), cpla, opt(cpla))
+  }
+
+  implicit def cp[A: ClassTag: Decoder]: CanParse[A, Json] = gen(_ => none[A])._1
+  implicit def cpo[A: ClassTag: Decoder]: CanParse[Option[A], Json] = gen(_ => none[A])._2
+  implicit def cplo[A: ClassTag: Decoder]: CanParse[List[A], Json] = gen(_ => none[A])._3
+  implicit def cpolo[A: ClassTag: Decoder]: CanParse[Option[List[A]], Json] = gen(_ => none[A])._4
 }
 
-trait CatchOptionInstance extends CatchAllInstance {
-  implicit def parseO[T](implicit D: Decoder[T], ct: ClassTag[T]) =
-    helper.mk[Option[T]](s"Option[${ct.toString}}")
-}
-
-object parsedinstances extends CatchOptionInstance {
-  import helper.{boolOpt, boolOOpt, mk}
-
-  implicit lazy val pi = mk[Int]("Int")
-  implicit lazy val pio = mk[Option[Int]]("Option[Int]")
-  implicit lazy val pli = mk[List[Int]]("List[Int]")
-  implicit lazy val plio = mk[Option[List[Int]]]("Option[List[Int]]")
-  implicit lazy val pl = mk[Long]("Long")
-  implicit lazy val plo = mk[Option[Long]]("Option[Long]")
-  implicit lazy val pll = mk[List[Long]]("List[Long]")
-  implicit lazy val pllo = mk[Option[List[Long]]]("Option[List[Long]]")
-  implicit lazy val pd = mk[Double]("Double")
-  implicit lazy val pdo = mk[Option[Double]]("Option[Double]")
-  implicit lazy val pld = mk[List[Double]]("List[Double]")
-  implicit lazy val pldo = mk[Option[List[Double]]]("Option[List[Double]]")
-  implicit lazy val pb = new CanParse[Boolean, Json] {
-    def parse(k: String, jv: Json)(implicit T: ClassTag[Boolean]): ValidationNel[ParseError, Boolean] = boolOpt(Some(k), jv)
-    def as(jv: Json)(implicit T: ClassTag[Boolean]): ValidationNel[ParseError, Boolean] = boolOpt(None, jv)
+object parsedinstances extends CatchAllInstance {
+  implicit val genJson: Generic[Json] = new Generic[Json] {
+    def fromFields(fields: ListMap[String, Json]): Json = Json.fromFields(fields)
+    def toFields(value: Json): Option[ListMap[String, Json]] = value.asObject.map(o => ListMap(o.toVector:_*))
+    def fromValues(values: Vector[Json]): Json = Json.fromValues(values)
+    def toValues(value: Json): Option[Vector[Json]] = value.asArray
   }
-  implicit lazy val pbo = new CanParse[Option[Boolean], Json] {
-    def parse(k: String, jv: Json)(implicit T: ClassTag[Option[Boolean]]): ValidationNel[ParseError, Option[Boolean]] = boolOOpt(Some(k), jv)
-    def as(jv: Json)(implicit T: ClassTag[Option[Boolean]]): ValidationNel[ParseError, Option[Boolean]] = boolOOpt(None, jv)
-  }
+
+  implicit lazy val (pi: CanParse[Int, Json], pio: CanParse[Option[Int], Json],
+                     pli: CanParse[List[Int], Json], plio: CanParse[Option[List[Int]], Json]) =
+    gen(_.parseInt)
+
+  implicit lazy val (pl: CanParse[Long, Json], plo: CanParse[Option[Long], Json],
+                     pll: CanParse[List[Long], Json], pllo: CanParse[Option[List[Long]], Json]) =
+    gen(_.parseLong)
+
+  implicit lazy val (pd: CanParse[Double, Json], pdo: CanParse[Option[Double], Json],
+                     pld: CanParse[List[Double], Json], pldo: CanParse[Option[List[Double]], Json]) =
+    gen(_.parseDouble)
+
+  implicit lazy val (pb: CanParse[Boolean, Json], pbo: CanParse[Option[Boolean], Json],
+                     plb: CanParse[List[Boolean], Json], plbo: CanParse[Option[List[Boolean]], Json]) =
+    gen(_.parseBoolean)
 }

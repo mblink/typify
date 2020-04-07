@@ -2,7 +2,7 @@
 
 Typify is a library for parsing and validating poorly-typed data into well-typed data.
 
-While it currently provides support for json4s, play-json, scalajs, and the Any type,
+While it currently provides support for circe, play-json, and the Any type,
 new source types can be added easily by implementing a type class for your source type.
 
 Typify also does not prescribe a failure type, so you are able to accumulate parse/validation
@@ -20,9 +20,9 @@ and an optional session id.
 First some imports.
 
 ```tut:silent
-import shapeless.{::, HNil}
+import shapeless.HNil
 import shapeless.syntax.singleton._
-import typify.{Typify, Parsed, ParseError}
+import typify.{Cursor, CursorHistory, ParseError, Typify}
 import typify.convert._
 import typify.convert.syntax._
 ```
@@ -30,7 +30,7 @@ import typify.convert.syntax._
 Now we can create an instance of Typify  by specifying the failure type we will use and
 the type we will parse from.
 
-Typify currently includes support for parsing from Any, play json, json4s, and scalajs Dynamic.
+Typify currently includes support for parsing from Any, circe, and play json.
 New types can be added by implementing the CanParse typeclass for your desired source type.
 
 Let's use Any for this example.
@@ -38,9 +38,9 @@ Let's use Any for this example.
 ```tut
 import typify.parsedany._
 
-case class Fail(reason: String)
+case class Fail(reason: String, history: CursorHistory[_])
 
-val tp = new Typify[Fail, Parsed[Any]]
+val tp = new Typify[Fail, Any]
 ```
 
 We also need to define an implicit function to convert a typify.ParseError to our failure type.
@@ -52,32 +52,26 @@ case class ParseError(key: String, error: String)
 ```
 
 ```tut
-implicit val parse2Error = (p: Parsed[Any], pe: ParseError) => Fail(s"${pe.key} - ${pe.error}")
+implicit val parse2Error = (pe: ParseError[Any]) => Fail(pe.message, pe.cursor.history)
 ```
 
 Now we can define some validation functions.
 Let's validate an email, an age and an optional session id.
 
 ```tut
-import scalaz.NonEmptyList
-import scalaz.syntax.either._
-import scalaz.syntax.nel._
-import scalaz.syntax.validation._
+import cats.data.NonEmptyList
+import cats.syntax.validated._
 
-val checkEmail = Typify.validate((s: String) =>
-  s.right[NonEmptyList[Fail]]
-   .ensure(Fail("Email is invalid").wrapNel)(_.contains("@"))
-   .validation)
+val checkEmail = Typify.validate((_: String, s: String, c: Cursor[Any]) => s.validNel[Fail]
+  .ensure(NonEmptyList.of(Fail("Email is invalid", c.history)))(_.contains("@")))
 
-val checkAge = Typify.validate((i: Int) =>
-  i.right[NonEmptyList[Fail]]
-   .ensure(Fail("Too young").wrapNel)(_ > 21)
-   .validation)
+val checkAge = Typify.validate((_: String, i: Int, c: Cursor[Any]) => i.validNel[Fail]
+  .ensure(NonEmptyList.of(Fail("Too young", c.history)))(_ > 21))
 
-val checkSessId = Typify.optional((i: Int) =>
-  i.right[NonEmptyList[Fail]]
-   .ensure(Fail("Invalid session id").wrapNel)(_ > 3000)
-   .validation)
+val checkSessIdF = ((_: String, i: Int, c: Cursor[Any]) => i.validNel[Fail]
+  .ensure(NonEmptyList.of(Fail("Invalid session id", c.history)))(_ > 3000))
+
+val checkSessId = Typify.optional(checkSessIdF)
 ```
 
 Now we can define in which fields to look for these values under our source value as follows.
@@ -96,10 +90,10 @@ val passesNoSess: Any = Map("email" -> "foo@bar", "age" -> 22, 500L -> "extra do
 val failsAtParse: Any = 33
 val failsAtValidation: Any = Map("email" -> "foo", "session" -> 77777)
 
-val passed = Parsed(passes).parse(checkPerson)
-val passedNoSess = Parsed(passesNoSess).parse(checkPerson)
-val failedAtParse = Parsed(failsAtParse).parse(checkPerson)
-val failedAtValidation = Parsed(failsAtValidation).parse(checkPerson)
+val passed = Cursor.top(passes).parse(checkPerson)
+val passedNoSess = Cursor.top(passesNoSess).parse(checkPerson)
+val failedAtParse = Cursor.top(failsAtParse).parse(checkPerson)
+val failedAtValidation = Cursor.top(failsAtValidation).parse(checkPerson)
 ```
 
 Note that a successful validation returns an HList. We can easily convert it to a compatible case
@@ -124,20 +118,12 @@ operations to compose rules, and do partial validation.
 ```tut
 import shapeless.record._
 
-val checkSessId = ((i: Int) =>
-  i.right[NonEmptyList[Fail]]
-   .ensure(Fail("Invalid session id").wrapNel)(_ > 3000)
-   .validation)
+val checkRequiredSess = Typify.validate(checkSessIdF)
+val checkPersonWithSession = (checkPerson - 'session) + ('session ->> checkRequiredSess)
 
-val checkSessM = Typify.validate(checkSessId)
-val checkSessO = Typify.optional(checkSessId)
-
-val checkPerson = 'email ->> checkEmail :: 'age ->> checkAge :: 'session ->> checkSessO :: HNil
-val checkPersonWithSession = (checkPerson - 'session) + ('session ->> checkSessM)
-
-val passed = Parsed(passes).parse(checkPersonWithSession)
-val failedNoSession = Parsed(passesNoSess).parse(checkPersonWithSession)
-val passedPartialSession = Parsed(passesNoSess).parse(checkPersonWithSession - 'session)
+val passed = Cursor.top(passes).parse(checkPersonWithSession)
+val failedNoSession = Cursor.top(passesNoSess).parse(checkPersonWithSession)
+val passedPartialSession = Cursor.top(passesNoSess).parse(checkPersonWithSession - 'session)
 
 case class PersonRequireSession(session: Int, email: String, age: Int)
 

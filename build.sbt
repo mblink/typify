@@ -1,132 +1,91 @@
-import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
+Global / onChangedBuildSource := ReloadOnSourceChanges
 
-scalaVersion in ThisBuild := "2.12.6"
-crossScalaVersions in ThisBuild := Seq("2.11.12", "2.12.5", "2.12.6")
-wartremoverErrors ++= Warts.unsafe
+lazy val scala212 = "2.12.10"
+lazy val scala213 = "2.13.1"
 
-lazy val root = project.in(file(".")).
-  aggregate(typifyJS, typifyJVM, json4sTypify, sjsTypify, playjsonTypify, circeTypify).
-  settings(
+def scalaVersionSpecificFolders(srcName: String, srcBaseDir: java.io.File, scalaVersion: String): Seq[java.io.File] =
+  CrossVersion.partialVersion(scalaVersion) match {
+    case Some((2, 12)) => Seq(srcBaseDir / srcName / "scala-2.12")
+    case Some((2, 13)) => Seq(srcBaseDir / srcName / "scala-2.13")
+    case _ => Seq()
+  }
+
+lazy val baseSettings = Seq(
+  scalaVersion := scala213,
+  crossScalaVersions := Seq(scala212, scala213),
+  version := "3.0.0-RC4",
+  addCompilerPlugin("io.tryp" %% "splain" % "0.5.0" cross CrossVersion.patch),
+  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.patch),
+  scalacOptions ++= Seq("-P:splain:all", "-P:splain:keepmodules:500"),
+  scalacOptions --= Seq(
+    "-language:existentials",
+    "-language:experimental.macros",
+    "-language:implicitConversions"
+  ),
+  unmanagedSourceDirectories in Compile ++= scalaVersionSpecificFolders("main", baseDirectory.value, scalaVersion.value),
+  unmanagedSourceDirectories in Test ++= scalaVersionSpecificFolders("test", baseDirectory.value, scalaVersion.value),
+  licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
+  bintrayOrganization := Some("bondlink"),
+  bintrayRepository := "Typify",
+  bintrayReleaseOnPublish in ThisBuild := false
+)
+
+lazy val root = project.in(file("."))
+  .aggregate(typifyJVM, typifyJS, circeTypify, json4sTypify, playjsonTypify, sjsTypify)
+  .settings(baseSettings)
+  .settings(
     publish := {},
     publishLocal := {},
+    bintrayRelease := {},
     bintrayReleaseOnPublish in ThisBuild := false
   )
 
-lazy val scalacF = Seq(
-      "-deprecation",
-      "-encoding", "UTF-8", // yes, this is 2 args
-      "-feature",
-      "-unchecked",
-      "-Xfatal-warnings",
-      "-Yno-adapted-args",
-      "-Ywarn-dead-code", // N.B. doesn't work well with the ??? hole
-      "-Ywarn-infer-any",
-      "-Ywarn-numeric-widen",
-      "-Ywarn-value-discard",
-      "-Xfuture")
+lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.1.1" }
+lazy val circe = "io.circe" %% "circe-core" % "0.13.0"
+lazy val json4s = "org.json4s" %% "json4s-jackson" % "3.6.7"
+lazy val playJson = "com.typesafe.play" %% "play-json" % "2.8.1"
+lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.3" }
+lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.14.3" % "test" }
 
-lazy val scalacF_2_11 = scalacF ++ Seq(
-  "-Xlint",
-  "-Ywarn-unused"
-)
-
-lazy val scalacF_2_12 = scalacF ++ Seq(
-  "-Xlint:-unused,_",
-  "-Ywarn-unused:locals,patvars,privates"
-)
-
-scalacOptions in ThisBuild := {
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, scalaMajor)) if scalaMajor == 11 => scalacF_2_11
-    case _ => scalacF_2_12
-  }
-}
-
-lazy val typify = crossProject(JSPlatform, JVMPlatform).in(file(".")).
-  settings(
+lazy val typify = sbtcrossproject.CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(file("typify"))
+  .settings(baseSettings)
+  .settings(
     name := "typify",
-    version := "2.5.2",
-    libraryDependencies ++= Seq(
-      "com.chuusai" %%% "shapeless" % "2.3.3",
-      "org.scalaz" %%% "scalaz-core" % "7.2.17",
-      "org.scalacheck" %%% "scalacheck" % "1.12.6" % "test"
-    ),
-    licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
-    bintrayOrganization := Some("bondlink"),
-    bintrayRepository := "Typify",
-    bintrayReleaseOnPublish in ThisBuild := false,
-    publishArtifact in Test := true
-  ).
-  jvmSettings(
-    // Add JVM-specific settings here
-  ).
-  jsSettings(
-    // Add JS-specific settings here
-  ).
-  enablePlugins(TutPlugin)
+    libraryDependencies ++= Seq(cats.value, shapeless.value, scalacheck.value),
+    tutTargetDirectory := file("."),
+    scalacOptions in Tut := (scalacOptions in (Compile, console)).value
+  )
+  .enablePlugins(TutPlugin)
 
 lazy val typifyJVM = typify.jvm
 lazy val typifyJS = typify.js.enablePlugins(ScalaJSPlugin)
 
-lazy val json4sTypify = project.in(file("json4s-typify"))
-  .dependsOn(typifyJVM % "test->test;compile->compile")
-  .settings(
-    name := "json4s-typify",
-    version := "1.5.2",
-    licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
-    libraryDependencies ++= Seq(
-      "org.json4s" %% "json4s-jackson" % "3.6.0",
-      "org.scalaz" %% "scalaz-core" % "7.2.17",
-      "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
-    ),
-    bintrayOrganization := Some("bondlink"),
-    bintrayRepository := "Typify",
-    bintrayReleaseOnPublish in ThisBuild := false)
-
-lazy val sjsTypify = project.in(file("jsdynamic-typify"))
-  .dependsOn(typifyJS % "test->test;compile->compile")
-  .settings(
-    name := "jsdynamic-typify",
-    version := "1.5.2",
-    licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
-    libraryDependencies ++= Seq(
-      "org.scalaz" %%% "scalaz-core" % "7.2.17",
-      "org.scalacheck" %%% "scalacheck" % "1.12.6" % "test"
-    ),
-    scalaJSSemantics ~= { _.withAsInstanceOfs(
-        org.scalajs.core.tools.sem.CheckedBehavior.Compliant) },
-    bintrayOrganization := Some("bondlink"),
-    bintrayRepository := "Typify",
-    bintrayReleaseOnPublish in ThisBuild := false)
-  .enablePlugins(ScalaJSPlugin)
-
-lazy val playjsonTypify = project.in(file("play-json-typify"))
-  .dependsOn(typifyJVM % "test->test;compile->compile")
-  .settings(
-    name := "play-json-typify",
-    version := "1.5.2",
-    licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
-    libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play-json" % "2.6.10",
-      "org.scalaz" %% "scalaz-core" % "7.2.17",
-      "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
-    ),
-    bintrayOrganization := Some("bondlink"),
-    bintrayRepository := "Typify",
-    bintrayReleaseOnPublish in ThisBuild := false)
-
 lazy val circeTypify = project.in(file("circe-typify"))
-  .dependsOn(typifyJVM % "test->test;compile->compile")
+  .settings(baseSettings)
   .settings(
     name := "circe-typify",
-    version := "1.5.2",
-    licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
-    libraryDependencies ++= Seq(
-      "io.circe" %% "circe-core" % "0.11.1",
-      "org.scalaz" %% "scalaz-core" % "7.2.17",
-      "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
-    ),
-    bintrayOrganization := Some("bondlink"),
-    bintrayRepository := "Typify",
-    bintrayReleaseOnPublish in ThisBuild := false)
+    libraryDependencies += circe,
+  )
+  .dependsOn(typifyJVM % "test->test;compile->compile")
 
+lazy val json4sTypify = project.in(file("json4s-typify"))
+  .settings(baseSettings)
+  .settings(
+    name := "json4s-typify",
+    libraryDependencies += json4s
+  )
+  .dependsOn(typifyJVM % "test->test;compile->compile")
+
+lazy val playjsonTypify = project.in(file("play-json-typify"))
+  .settings(baseSettings)
+  .settings(
+    name := "play-json-typify",
+    libraryDependencies ++= Seq(cats.value, playJson)
+  )
+  .dependsOn(typifyJVM % "test->test;compile->compile")
+
+lazy val sjsTypify = project.in(file("jsdynamic-typify"))
+  .settings(baseSettings)
+  .settings(name := "jsdynamic-typify")
+  .dependsOn(typifyJS % "test->test;compile->compile")
+  .enablePlugins(ScalaJSPlugin)
