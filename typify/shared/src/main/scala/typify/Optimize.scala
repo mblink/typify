@@ -40,11 +40,11 @@ object Optimize {
 
 class Optimize[L, P](val tp: Typify[L, P]) {
   def folder[G <: HList, A, R <: HList](@deprecated("unused", "") in: G)(
-    implicit rf: RightFolder.Aux[G, tp.PV[HNil], tp.foldPV.type, A]
-  ): RightFolder.Aux[G, tp.PV[HNil], tp.foldPV.type, A] = rf
+    implicit rf: RightFolder.Aux[G, tp.PV[HNil], foldPV.type, A]
+  ): RightFolder.Aux[G, tp.PV[HNil], foldPV.type, A] = rf
 
   def success[G <: HList, A, R <: HList](@deprecated("unused", "")  in: G)(
-    implicit @deprecated("unused", "")  rf: RightFolder.Aux[G, tp.PV[HNil], tp.foldPV.type, A],
+    implicit @deprecated("unused", "")  rf: RightFolder.Aux[G, tp.PV[HNil], foldPV.type, A],
     @deprecated("unused", "")  pvEv: A <:< tp.PV[R]
   ): TWitness[R] = new TWitness[R] {}
 }
