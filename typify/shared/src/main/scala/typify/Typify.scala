@@ -1,7 +1,6 @@
 package typify
 
 import cats.data.ValidatedNel
-import cats.instances.option._
 import cats.syntax.traverse._
 import cats.syntax.validated._
 import scala.reflect.ClassTag

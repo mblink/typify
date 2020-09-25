@@ -1,7 +1,6 @@
 package typify
 
 import cats.Applicative
-import cats.instances.option._
 import cats.kernel.Eq
 import cats.syntax.eq._
 import java.io.Serializable
@@ -32,13 +31,13 @@ sealed abstract class Cursor[A](
   /**
    * The operations that have been performed so far.
    */
-  final def history: CursorHistory[A] = {
-    @tailrec def go(res: CursorHistory[A], next: Option[Cursor[A]]): CursorHistory[A] = next match {
+  final def history: CursorHistory = {
+    @tailrec def go(res: CursorHistory, next: Option[Cursor[A]]): CursorHistory = next match {
       case Some(c) => go(res :+ c.lastOp, c.lastCursor)
       case None => res
     }
 
-    go(CursorHistory.empty[A], Some(this))
+    go(CursorHistory.empty, Some(this))
   }
 
   /**
