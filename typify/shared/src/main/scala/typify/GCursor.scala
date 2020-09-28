@@ -1,6 +1,6 @@
 package typify
 
-import cats.{Functor, Id}
+import cats.{Comonad, Functor, Id}
 import cats.data.{NonEmptyList, NonEmptyVector, Validated, ValidatedNel}
 import cats.syntax.either._
 import cats.syntax.functor._
@@ -158,7 +158,7 @@ sealed abstract class GCursor[T, A](val value: A, val lastOp: CursorOp) extends 
     * @param ev Evidence that the current focus is a `List[B]`
     * @return A new cursor focused on the first element in the list, `None` if the list was empty
     */
-  final def downArray[B](implicit ev: A =:= List[B]): Either[CursorHistory, Next[B, (List[B], Int)]] =
+  final def downList[B](implicit ev: A =:= List[B]): Either[CursorHistory, Next[B, (List[B], Int)]] =
     moveList(CursorOp.DownArray(false), _ => (ev(value), 0), _ => CursorOp.DownArray(true))
 
   /** If the current value is a `NonEmptyList[B]`, move to the first element in the list
@@ -300,7 +300,7 @@ sealed abstract class GCursor[T, A](val value: A, val lastOp: CursorOp) extends 
     parseNel0(f)(_.map(_.toList), _ => List[C]().validNel[L])
 }
 
-object GCursor {
+object GCursor extends GCursorInstances0 {
   type Aux[T, A, F] = GCursor[T, A] {
     type Focus = F
   }
@@ -334,4 +334,21 @@ object GCursor {
   private[GCursor] sealed trait Dummy1; object Dummy1 { implicit val inst: Dummy1 = new Dummy1 {} }
   private[GCursor] sealed trait Dummy2; object Dummy2 { implicit val inst: Dummy2 = new Dummy2 {} }
   private[GCursor] sealed trait Dummy3; object Dummy3 { implicit val inst: Dummy3 = new Dummy3 {} }
+}
+
+private[typify] abstract class GCursorInstances0 {
+  implicit def gcursorComonad[T]: Comonad[GCursor[T, ?]] = new GCursorComonad[T] {}
+}
+
+private[typify] abstract class GCursorInstances1 {
+  implicit def gcursorFunctor[T]: Functor[GCursor[T, ?]] = new GCursorFunctor[T] {}
+}
+
+private[typify] trait GCursorComonad[T] extends Comonad[GCursor[T, ?]] with GCursorFunctor[T] {
+  def coflatMap[A, B](c: GCursor[T, A])(f: GCursor[T, A] => B): GCursor[T, B] = map(c)(_ => f(c))
+  def extract[A](c: GCursor[T, A]): A = c.value
+}
+
+private[typify] trait GCursorFunctor[T] extends Functor[GCursor[T, ?]] {
+  def map[A, B](c: GCursor[T, A])(f: A => B): GCursor[T, B] = c.map(f)
 }

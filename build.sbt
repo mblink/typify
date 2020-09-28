@@ -1,7 +1,7 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-lazy val scala212 = "2.12.10"
-lazy val scala213 = "2.13.1"
+lazy val scala212 = "2.12.12"
+lazy val scala213 = "2.13.3"
 
 def scalaVersionSpecificFolders(srcName: String, srcBaseDir: java.io.File, scalaVersion: String): Seq[java.io.File] =
   CrossVersion.partialVersion(scalaVersion) match {
@@ -13,8 +13,8 @@ def scalaVersionSpecificFolders(srcName: String, srcBaseDir: java.io.File, scala
 lazy val baseSettings = Seq(
   scalaVersion := scala213,
   crossScalaVersions := Seq(scala212, scala213),
-  version := "4.0.0-RC1",
-  addCompilerPlugin("io.tryp" %% "splain" % "0.5.0" cross CrossVersion.patch),
+  version := "4.0.0-RC2",
+  addCompilerPlugin("io.tryp" %% "splain" % "0.5.7" cross CrossVersion.patch),
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.patch),
   scalacOptions ++= Seq("-P:splain:all", "-P:splain:keepmodules:500"),
   scalacOptions --= Seq(
