@@ -1,5 +1,5 @@
-addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.8")
+addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.13")
 addSbtPlugin("org.foundweekends" % "sbt-bintray" % "0.5.4")
-addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.6.0")
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.32")
+addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "1.0.0")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.2.0")
 addSbtPlugin("org.tpolecat" % "tut-plugin" % "0.6.13")

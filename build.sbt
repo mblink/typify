@@ -1,7 +1,7 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-lazy val scala212 = "2.12.10"
-lazy val scala213 = "2.13.1"
+lazy val scala212 = "2.12.12"
+lazy val scala213 = "2.13.3"
 
 def scalaVersionSpecificFolders(srcName: String, srcBaseDir: java.io.File, scalaVersion: String): Seq[java.io.File] =
   CrossVersion.partialVersion(scalaVersion) match {
@@ -13,8 +13,8 @@ def scalaVersionSpecificFolders(srcName: String, srcBaseDir: java.io.File, scala
 lazy val baseSettings = Seq(
   scalaVersion := scala213,
   crossScalaVersions := Seq(scala212, scala213),
-  version := "3.0.0-RC6",
-  addCompilerPlugin("io.tryp" %% "splain" % "0.5.0" cross CrossVersion.patch),
+  version := "4.0.0-RC2",
+  addCompilerPlugin("io.tryp" %% "splain" % "0.5.7" cross CrossVersion.patch),
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.patch),
   scalacOptions ++= Seq("-P:splain:all", "-P:splain:keepmodules:500"),
   scalacOptions --= Seq(
@@ -40,7 +40,7 @@ lazy val root = project.in(file("."))
     bintrayReleaseOnPublish in ThisBuild := false
   )
 
-lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.1.1" }
+lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.2.0" }
 lazy val circe = "io.circe" %% "circe-core" % "0.13.0"
 lazy val json4s = "org.json4s" %% "json4s-jackson" % "3.6.7"
 lazy val playJson = "com.typesafe.play" %% "play-json" % "2.8.1"

@@ -2,31 +2,27 @@ package typify
 
 import cats.data.NonEmptyVector
 import cats.Eq
-import cats.instances.option._
-import cats.instances.vector._
 import cats.syntax.eq._
 
-class CursorHistory[A](
+final case class CursorHistory(
   val successfulOps: Vector[CursorOp],
   val failedOps: Option[NonEmptyVector[CursorOp]]
 ) {
-  override final def toString: String = s"CursorHistory($successfulOps, $failedOps)"
-
   def success: Boolean = failedOps.isEmpty
 
   def failedOp: Option[CursorOp] = failedOps.map(_.last)
 
   def toVector: Vector[CursorOp] = failedOps.fold(Vector[CursorOp]())(_.toVector) ++ successfulOps
 
-  def :+(op: Either[CursorOp, CursorOp]): CursorHistory[A] =
+  def :+(op: Either[CursorOp, CursorOp]): CursorHistory =
     op.fold(
-      f => new CursorHistory[A](successfulOps, Some(failedOps.fold(NonEmptyVector.of(f))(_ :+ f))),
-      s => new CursorHistory[A](successfulOps :+ s, failedOps))
+      f => copy(failedOps = Some(failedOps.fold(NonEmptyVector.of(f))(_ :+ f))),
+      s => copy(successfulOps = successfulOps :+ s))
 }
 
 object CursorHistory {
-  def empty[A]: CursorHistory[A] = new CursorHistory(Vector(), None)
+  lazy val empty: CursorHistory = CursorHistory(Vector(), None)
 
-  implicit def eqCursorHistory[A]: Eq[CursorHistory[A]] =
+  implicit val eqCursorHistory: Eq[CursorHistory] =
     Eq.instance((a, b) => a.successfulOps === b.successfulOps && a.failedOps === b.failedOps)
 }
