@@ -13,7 +13,6 @@ import shapeless.tag
 
 /** A cursor representing a view of a specific value of type `A` in an overall value of type `T`
   *
-  * @constructor Constructor
   * @tparam T The type of the overall root value
   * @tparam A The type of the current value
   * @param value The current value
@@ -76,11 +75,11 @@ sealed abstract class GCursor[T, A](val value: A, val lastOp: CursorOp) extends 
   ): F[Next[NewValue, NewFocus]] =
     newVals.map { case (newFocus, newValue) => new GCursor[T, NewValue](newValue, op) {
       type Focus = NewFocus
-      type Last = GCursor.AuxL[T, A, self.Focus, self.Last]
+      type Last = self.Self
 
       lazy val root: GCursor.Top[T] = self.root
       lazy val focus: NewFocus = newFocus
-      lazy val last: Option[GCursor.AuxL[T, A, self.Focus, self.Last]] = Some(self)
+      lazy val last: Option[self.Self] = Some(self)
     }}
 
   /** If the focus is a list, move the cursor horizontally along it
@@ -92,11 +91,11 @@ sealed abstract class GCursor[T, A](val value: A, val lastOp: CursorOp) extends 
     *           This implies that the current `value` (of type `A`) is the element in the list at the given index.
     * @return An optional cursor focused on the new index, `None` if the index doesn't exist in the list.
     */
-  private def moveList(
+  private def moveList[B](
     op: CursorOp,
-    newFocus: Focus => (List[A], Int),
+    newFocus: Focus => (List[B], Int),
     failedOp: CursorOp => CursorOp = identity
-  ): Either[CursorHistory, Next[A, (List[A], Int)]] =
+  ): Either[CursorHistory, Next[B, (List[B], Int)]] =
     move(op)(newFocus(focus) |> { case t @ (l, ni) =>
       Either.fromOption(l.lift(ni).map(t -> _), failedHistory(failedOp(op))) })
 
@@ -160,8 +159,7 @@ sealed abstract class GCursor[T, A](val value: A, val lastOp: CursorOp) extends 
     * @return A new cursor focused on the first element in the list, `None` if the list was empty
     */
   final def downArray[B](implicit ev: A =:= List[B]): Either[CursorHistory, Next[B, (List[B], Int)]] =
-    move(CursorOp.DownArray(false))(ev(value) |> (l =>
-      Either.fromOption(l.headOption.map((l, 0) -> _), failedHistory(CursorOp.DownArray(true)))))
+    moveList(CursorOp.DownArray(false), _ => (ev(value), 0), _ => CursorOp.DownArray(true))
 
   /** If the current value is a `NonEmptyList[B]`, move to the first element in the list
     *
