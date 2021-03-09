@@ -1,4 +1,4 @@
-#Typify
+# Typify
 
 Typify is a library for parsing and validating poorly-typed data into well-typed data.
 
@@ -19,7 +19,7 @@ and an optional session id.
 
 First some imports.
 
-```tut:silent
+```scala mdoc:silent
 import shapeless.HNil
 import shapeless.syntax.singleton._
 import typify.{Cursor, CursorHistory, ParseError, Typify}
@@ -35,7 +35,7 @@ New types can be added by implementing the CanParse typeclass for your desired s
 
 Let's use Any for this example.
 
-```tut
+```scala mdoc
 import typify.parsedany._
 
 case class Fail(reason: String, history: CursorHistory[_])
@@ -51,14 +51,14 @@ ParseError looks like this
 case class ParseError(key: String, error: String)
 ```
 
-```tut
+```scala mdoc
 implicit val parse2Error = (pe: ParseError[Any]) => Fail(pe.message, pe.cursor.history)
 ```
 
 Now we can define some validation functions.
 Let's validate an email, an age and an optional session id.
 
-```tut
+```scala mdoc
 import cats.data.NonEmptyList
 import cats.syntax.validated._
 
@@ -76,13 +76,13 @@ val checkSessId = Typify.optional(checkSessIdF)
 
 Now we can define in which fields to look for these values under our source value as follows.
 
-```tut
+```scala mdoc
 val checkPerson = 'email ->> checkEmail :: 'age ->> checkAge :: 'session ->> checkSessId :: HNil
 ```
 
 From here we are able to parse a person out of Any using our Typify instance.
 
-```tut
+```scala mdoc
 import tp.syntax._
 
 val passes: Any = Map("email" -> "foo@bar", "age" -> 22, "session" -> 77777, 3 -> "junk")
@@ -102,7 +102,7 @@ class. Field order is not important, and supersets of target types are allowed.
 These conversions are type safe. Attempting to convert to a case class that requires fields which
 are not present on a given HList will fail at compile time.
 
-```tut
+```scala mdoc
 case class Person(age: Int, email: String)
 case class PersonWithSession(session: Option[Int], email: String, age: Int)
 
@@ -115,19 +115,19 @@ passedNoSess.map(_.convertTo[PersonWithSession])
 Because our validation rules and results are both simply HLists, we can use HList and record
 operations to compose rules, and do partial validation.
 
-```tut
+```scala mdoc
 import shapeless.record._
 
 val checkRequiredSess = Typify.validate(checkSessIdF)
 val checkPersonWithSession = (checkPerson - 'session) + ('session ->> checkRequiredSess)
 
-val passed = Cursor.top(passes).parse(checkPersonWithSession)
+val passedWithSession = Cursor.top(passes).parse(checkPersonWithSession)
 val failedNoSession = Cursor.top(passesNoSess).parse(checkPersonWithSession)
 val passedPartialSession = Cursor.top(passesNoSess).parse(checkPersonWithSession - 'session)
 
 case class PersonRequireSession(session: Int, email: String, age: Int)
 
-passed.map(_.convertTo[PersonRequireSession])
+passedWithSession.map(_.convertTo[PersonRequireSession])
 failedNoSession.map(_.convertTo[PersonRequireSession])
 passedPartialSession.map(_ + ('session ->> 7777)).map(_.convertTo[PersonRequireSession])
 ```

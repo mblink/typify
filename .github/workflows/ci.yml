@@ -1,0 +1,21 @@
+name: routing
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        scala: [2.13.5]
+    env:
+      SCALA_VERSION: ${{ matrix.scala }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: sbt test
+        run: sbt ++$SCALA_VERSION $([ "$SCALA_VERSION" != "${SCALA_VERSION#2.13}" ] && echo 'test; docs/mdoc' || echo 'test')

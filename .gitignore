@@ -1,1 +1,4 @@
+.bsp
+*.DS_Store
 target
+.traces
