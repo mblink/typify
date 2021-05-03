@@ -11,7 +11,7 @@ def scalaVersionSpecificFolders(srcName: String, srcBaseDir: java.io.File, scala
 lazy val baseSettings = Seq(
   scalaVersion := scala213,
   crossScalaVersions := Seq(scala213),
-  version := "5.0.0",
+  version := "5.1.0",
   addCompilerPlugin("io.tryp" %% "splain" % "0.5.8" cross CrossVersion.patch),
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.patch),
   scalacOptions ++= Seq("-P:splain:all", "-P:splain:keepmodules:500"),
@@ -20,8 +20,8 @@ lazy val baseSettings = Seq(
     "-language:experimental.macros",
     "-language:implicitConversions"
   ),
-  unmanagedSourceDirectories in Compile ++= scalaVersionSpecificFolders("main", baseDirectory.value, scalaVersion.value),
-  unmanagedSourceDirectories in Test ++= scalaVersionSpecificFolders("test", baseDirectory.value, scalaVersion.value),
+  Compile / unmanagedSourceDirectories ++= scalaVersionSpecificFolders("main", baseDirectory.value, scalaVersion.value),
+  Test / unmanagedSourceDirectories ++= scalaVersionSpecificFolders("test", baseDirectory.value, scalaVersion.value),
   licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
   gitPublishDir := file("/src/maven-repo")
 )
@@ -35,11 +35,11 @@ lazy val root = project.in(file("."))
     gitRelease := {}
   )
 
-lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.4.2" }
-lazy val circe = "io.circe" %% "circe-core" % "0.14.0-M4"
+lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.6.0" }
+lazy val circe = "io.circe" %% "circe-core" % "0.14.0-M6"
 lazy val json4s = "org.json4s" %% "json4s-jackson" % "3.6.11"
 lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC2"
-lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.3" }
+lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.4" }
 lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.15.3" % "test" }
 
 lazy val typify = sbtcrossproject.CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(file("typify"))
