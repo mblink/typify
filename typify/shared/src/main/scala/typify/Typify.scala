@@ -4,6 +4,7 @@ import cats.data.ValidatedNel
 import cats.instances.option._
 import cats.syntax.traverse._
 import cats.syntax.validated._
+import scala.language.implicitConversions
 import scala.reflect.ClassTag
 import shapeless.HList
 
@@ -44,6 +45,33 @@ object Typify {
 
   def optionalList[L, P, B](v: Cursor[P] => ValidatedNel[L, B])(implicit ct: ClassTag[P], e2l: E2L[L, P], cp: CanParse[Option[List[P]], P]): KPV[P, L, Option[List[B]]] =
     optionalList((_, c: Cursor[P]) => v(c))
+
+  final class CursorOps[L, P](val c: Cursor[P]) extends AnyVal {
+    def as[A](implicit cp: CanParse[A, P], e2l: E2L[L, P]): ValidatedNel[L, A] =
+      cp(c).leftMap(_.map(e2l))
+
+    def get[A](k: String)(implicit cp: CanParse[A, P], e2l: E2L[L, P]): ValidatedNel[L, A] =
+      cp.parse(k, c).leftMap(_.map(e2l))
+
+    def parse[I <: HList, R <: HList](in: I)(implicit rf: PVFolder[P, L, I, R]): ValidatedNel[L, R] =
+      rf(in, pvHNil)(c)
+
+    def parseOption[I <: HList, R <: HList](in: I)(
+      implicit rf: PVFolder[P, L, I, R],
+      cpop: CanParse[Option[P], P],
+      e2l: E2L[L, P]
+    ): ValidatedNel[L, Option[R]] =
+      c match {
+        case f @ Cursor.Failed(_, _) if f.history.failedOp.exists(CursorOp.isDownField) => None.validNel[L]
+        case _ => cpop(c).leftMap(_.map(e2l)).andThen(_.traverse(x =>
+          new CursorOps[L, P](c.replace(x, Some(c), CursorOp.WithFocus((_: P) => x))).parse(in)))
+      }
+
+    def parseList[I <: HList, R <: HList](in: I)(implicit rf: PVFolder[P, L, I, R], e2l: E2L[L, P]): ValidatedNel[L, List[R]] =
+      typify.parseList(c)(
+        f => e2l(ParseError(f, s"Could not be interpreted as List")).invalidNel[List[R]],
+        rf(in, pvHNil)(_))
+  }
 }
 
 class Typify[L, P] { tp =>
@@ -52,31 +80,27 @@ class Typify[L, P] { tp =>
   final type PVFolder[I <: HList, O <: HList] = typify.PVFolder[P, L, I, O]
 
   object syntax {
-    implicit class CursorOps(c: Cursor[P]) {
-      def as[A](implicit cp: CanParse[A, P], e2l: E2L[L, P]): ValidatedNel[L, A] =
-        cp(c).leftMap(_.map(e2l))
-
-      def get[A](k: String)(implicit cp: CanParse[A, P], e2l: E2L[L, P]): ValidatedNel[L, A] =
-        cp.parse(k, c).leftMap(_.map(e2l))
-
-      def parse[I <: HList, R <: HList](in: I)(implicit rf: PVFolder[I, R]): ValidatedNel[L, R] =
-        rf(in, pvHNil)(c)
-
-      def parseOption[I <: HList, R <: HList](in: I)(
-        implicit rf: PVFolder[I, R],
-        cpop: CanParse[Option[P], P],
-        e2l: E2L[L, P]
-      ): ValidatedNel[L, Option[R]] =
-        c match {
-          case f @ Cursor.Failed(_, _) if f.history.failedOp.exists(CursorOp.isDownField) => None.validNel[L]
-          case _ => cpop(c).leftMap(_.map(e2l)).andThen(_.traverse(x =>
-            c.replace(x, Some(c), CursorOp.WithFocus((_: P) => x)).parse(in)))
-        }
-
-      def parseList[I <: HList, A, R <: HList](in: I)(implicit rf: PVFolder[I, R], e2l: E2L[L, P]): ValidatedNel[L, List[R]] =
-        typify.parseList(c)(
-          f => e2l(ParseError(f, s"Could not be interpreted as List")).invalidNel[List[R]],
-          rf(in, pvHNil)(_))
-    }
+    implicit def cursorToCursorOps(c: Cursor[P]): Typify.CursorOps[L, P] = new Typify.CursorOps[L, P](c)
   }
+
+  import syntax._
+
+  final def as[A](c: Cursor[P])(implicit cp: CanParse[A, P], e2l: E2L[L, P]): ValidatedNel[L, A] =
+    c.as[A]
+
+  final def get[A](c: Cursor[P])(k: String)(implicit cp: CanParse[A, P], e2l: E2L[L, P]): ValidatedNel[L, A] =
+    c.get[A](k)
+
+  final def parse[I <: HList, R <: HList](c: Cursor[P])(in: I)(implicit rf: PVFolder[I, R]): ValidatedNel[L, R] =
+    c.parse(in)
+
+  final def parseOption[I <: HList, R <: HList](c: Cursor[P])(in: I)(
+    implicit rf: PVFolder[I, R],
+    cpop: CanParse[Option[P], P],
+    e2l: E2L[L, P]
+  ): ValidatedNel[L, Option[R]] =
+    c.parseOption(in)
+
+  final def parseList[I <: HList, A, R <: HList](c: Cursor[P])(in: I)(implicit rf: PVFolder[I, R], e2l: E2L[L, P]): ValidatedNel[L, List[R]] =
+    c.parseList(in)
 }
