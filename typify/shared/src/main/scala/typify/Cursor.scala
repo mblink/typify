@@ -54,7 +54,7 @@ sealed abstract class Cursor[A](
   final def failed: Boolean = !succeeded
 
   /**
-   * Return the cursor as an [[Cursor[A]]] if it was successful.
+   * Return the cursor as a [[Cursor]] if it was successful.
    */
   def success: Option[Cursor[A]]
 
