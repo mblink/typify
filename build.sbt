@@ -1,6 +1,6 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-lazy val scala213 = "2.13.5"
+lazy val scala213 = "2.13.6"
 
 def scalaVersionSpecificFolders(srcName: String, srcBaseDir: java.io.File, scalaVersion: String): Seq[java.io.File] =
   CrossVersion.partialVersion(scalaVersion) match {
@@ -12,9 +12,8 @@ lazy val baseSettings = Seq(
   scalaVersion := scala213,
   crossScalaVersions := Seq(scala213),
   version := "5.1.0",
-  addCompilerPlugin("io.tryp" %% "splain" % "0.5.8" cross CrossVersion.patch),
-  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.3" cross CrossVersion.patch),
-  scalacOptions ++= Seq("-P:splain:all", "-P:splain:keepmodules:500"),
+  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.patch),
+  scalacOptions ++= Seq("-Vimplicits", "-Vimplicits-verbose-tree"),
   scalacOptions --= Seq(
     "-language:existentials",
     "-language:experimental.macros",
@@ -35,12 +34,12 @@ lazy val root = project.in(file("."))
     gitRelease := {}
   )
 
-lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.6.0" }
-lazy val circe = "io.circe" %% "circe-core" % "0.14.0-M6"
+lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.6.1" }
+lazy val circe = "io.circe" %% "circe-core" % "0.14.1"
 lazy val json4s = "org.json4s" %% "json4s-jackson" % "3.6.11"
-lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC2"
-lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.4" }
-lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.15.3" % "test" }
+lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC5"
+lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.7" }
+lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.15.4" % "test" }
 
 lazy val typify = sbtcrossproject.CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(file("typify"))
   .settings(baseSettings)
