@@ -5,8 +5,7 @@ import cats.instances.option._
 import cats.syntax.traverse._
 import cats.syntax.validated._
 import scala.reflect.ClassTag
-import shapeless.{HList, HNil}
-import shapeless.ops.hlist.RightFolder
+import shapeless.HList
 
 object Typify {
   def validate[L, P, A, B](v: (String, A, Cursor[P]) => ValidatedNel[L, B])(implicit e2l: E2L[L, P], cp: CanParse[A, P]): KPV[P, L, B] =
@@ -47,9 +46,10 @@ object Typify {
     optionalList((_, c: Cursor[P]) => v(c))
 }
 
-class Typify[L, P] {
-  type PV[A] = typify.PV[P, L, A]
-  type KPV[A] = typify.KPV[P, L, A]
+class Typify[L, P] { tp =>
+  final type PV[A] = typify.PV[P, L, A]
+  final type KPV[A] = typify.KPV[P, L, A]
+  final type PVFolder[I <: HList, O <: HList] = typify.PVFolder[P, L, I, O]
 
   object syntax {
     implicit class CursorOps(c: Cursor[P]) {
@@ -59,15 +59,11 @@ class Typify[L, P] {
       def get[A](k: String)(implicit cp: CanParse[A, P], e2l: E2L[L, P]): ValidatedNel[L, A] =
         cp.parse(k, c).leftMap(_.map(e2l))
 
-      def parse[I <: HList, A, R <: HList](in: I)(
-        implicit rf: RightFolder.Aux[I, PV[HNil], foldPV.type, A],
-        pvaEv: A <:< PV[R]
-      ): ValidatedNel[L, R] =
+      def parse[I <: HList, R <: HList](in: I)(implicit rf: PVFolder[I, R]): ValidatedNel[L, R] =
         rf(in, pvHNil)(c)
 
-      def parseOption[I <: HList, A, R <: HList](in: I)(
-        implicit rf: RightFolder.Aux[I, PV[HNil], foldPV.type, A],
-        pvaEv: A <:< PV[R],
+      def parseOption[I <: HList, R <: HList](in: I)(
+        implicit rf: PVFolder[I, R],
         cpop: CanParse[Option[P], P],
         e2l: E2L[L, P]
       ): ValidatedNel[L, Option[R]] =
@@ -77,11 +73,7 @@ class Typify[L, P] {
             c.replace(x, Some(c), CursorOp.WithFocus((_: P) => x)).parse(in)))
         }
 
-      def parseList[I <: HList, A, R <: HList](in: I)(
-        implicit rf: RightFolder.Aux[I, PV[HNil], foldPV.type, A],
-        pvaEv: A <:< PV[R],
-        e2l: E2L[L, P]
-      ): ValidatedNel[L, List[R]] =
+      def parseList[I <: HList, A, R <: HList](in: I)(implicit rf: PVFolder[I, R], e2l: E2L[L, P]): ValidatedNel[L, List[R]] =
         typify.parseList(c)(
           f => e2l(ParseError(f, s"Could not be interpreted as List")).invalidNel[List[R]],
           rf(in, pvHNil)(_))

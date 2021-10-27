@@ -36,6 +36,8 @@ package object typify extends typify.StringOps {
     }
   }
 
+  type PVFolder[P, L, I <: HList, O <: HList] = RightFolder[I, PV[P, L, HNil], foldPV.type] { type Out <: PV[P, L, O] }
+
   def pvHNil[P, L]: PV[P, L, HNil] = (_: Cursor[P]) => HNil.validNel[L]
 
   object foldPV extends Poly2 {
@@ -74,24 +76,21 @@ package object typify extends typify.StringOps {
           in.run),
         acc(c)).mapN((x, y) => field[K](x) :: y))
 
-    implicit def listOfHList[P, L, O <: HList, K, I <: HList, FR, IR <: HList](
-      implicit rf: RightFolder.Aux[I, PV[P, L, HNil], foldPV.type, FR],
-      ev: FR <:< PV[P, L, IR],
+    implicit def listOfHList[P, L, O <: HList, K, I <: HList, IR <: HList](
+      implicit rf: PVFolder[P, L, I, IR],
       lpv: Case.Aux[FieldType[K, listOf[PV[P, L, IR]]], PV[P, L, O], PV[P, L, FieldType[K, List[IR]] :: O]]
     ): Case.Aux[FieldType[K, listOf[I]], PV[P, L, O], PV[P, L, FieldType[K, List[IR]] :: O]] =
       at((in, acc) => lpv(field[K](listOf(rf(in.run, pvHNil)(_))), acc))
 
-    implicit def nestedSym[P, L, O <: HList, K <: Symbol, I <: HList, FR, IR <: HList](
-      implicit rf: RightFolder.Aux[I, PV[P, L, HNil], foldPV.type, FR],
-      ev: FR <:< PV[P, L, IR],
+    implicit def nestedSym[P, L, O <: HList, K <: Symbol, I <: HList, IR <: HList](
+      implicit rf: PVFolder[P, L, I, IR],
       k: Witness.Aux[K]
     ): Case.Aux[FieldType[K, I], PV[P, L, O], PV[P, L, FieldType[K, IR] :: O]] =
       at((in, acc) => (c: Cursor[P]) =>
         (rf(in, pvHNil)(c.downField(k.value.name)), acc(c)).mapN((x, y) => field[K](x) :: y))
 
-    implicit def nestedStr[P, L, O <: HList, K <: String, I <: HList, FR, IR <: HList](
-      implicit rf: RightFolder.Aux[I, PV[P, L, HNil], foldPV.type, FR],
-      ev: FR <:< PV[P, L, IR],
+    implicit def nestedStr[P, L, O <: HList, K <: String, I <: HList, IR <: HList](
+      implicit rf: PVFolder[P, L, I, IR],
       k: Witness.Aux[K]
     ): Case.Aux[FieldType[K, I], PV[P, L, O], PV[P, L, FieldType[K, IR] :: O]] =
       at((in, acc) => (c: Cursor[P]) =>
