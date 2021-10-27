@@ -11,7 +11,7 @@ def scalaVersionSpecificFolders(srcName: String, srcBaseDir: java.io.File, scala
 lazy val baseSettings = Seq(
   scalaVersion := scala213,
   crossScalaVersions := Seq(scala213),
-  version := "5.1.0",
+  version := "5.2.0",
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.patch),
   scalacOptions ++= Seq("-Vimplicits", "-Vimplicits-verbose-tree"),
   scalacOptions --= Seq(
