@@ -147,30 +147,6 @@ sealed abstract class Cursor[A](
    */
   def downField(k: String): Cursor[A]
 
-  /**
-   * Replay an operation against this cursor.
-   */
-  final def replayOne(op: CursorOp): Cursor[A] = op match {
-    case CursorOp.WithFocus(f: (A => A)) => withFocus(f)
-    case CursorOp.MoveTop        => top
-    case CursorOp.MoveLeft       => left
-    case CursorOp.MoveRight      => right
-    case CursorOp.MoveFirst      => first
-    case CursorOp.MoveUp         => up
-    case CursorOp.LeftN(n)       => leftN(n)
-    case CursorOp.RightN(n)      => rightN(n)
-    case CursorOp.Field(k)       => field(k)
-    case CursorOp.DownField(k)   => downField(k)
-    case CursorOp.DownArray(_)   => downArray
-    case CursorOp.DownN(n, _)    => downN(n)
-    case CursorOp.DeleteGoParent => delete
-  }
-
-  /**
-   * Replay history (a list of operations in reverse "chronological" order) against this cursor.
-   */
-  final def replay(history: List[CursorOp]): Cursor[A] = history.foldRight(this)((op, c) => c.replayOne(op))
-
   private[typify] final def fail(op: CursorOp): Cursor[A] = Cursor.Failed[A](Some(this), op)
 }
 

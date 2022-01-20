@@ -1,6 +1,6 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-lazy val scala213 = "2.13.6"
+lazy val scala213 = "2.13.8"
 
 def scalaVersionSpecificFolders(srcName: String, srcBaseDir: java.io.File, scalaVersion: String): Seq[java.io.File] =
   CrossVersion.partialVersion(scalaVersion) match {
@@ -34,9 +34,9 @@ lazy val root = project.in(file("."))
     gitRelease := {}
   )
 
-lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.6.1" }
+lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.7.0" }
 lazy val circe = "io.circe" %% "circe-core" % "0.14.1"
-lazy val json4s = "org.json4s" %% "json4s-jackson" % "3.6.11"
+lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.3"
 lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC5"
 lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.7" }
 lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.15.4" % "test" }
