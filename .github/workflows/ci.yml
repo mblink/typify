@@ -1,4 +1,4 @@
-name: routing
+name: typify
 on:
   push:
     branches:
@@ -35,6 +35,6 @@ jobs:
       - name: sbt test
         run: sbt ++${{ matrix.scala }} test
 
-      - name: sbt mdoc
+      - name: sbt docs/mdoc
         if: matrix.scala == '2.13.8'
-        run: sbt ++${{ matrix.scala }} mdoc
+        run: sbt ++${{ matrix.scala }} docs/mdoc
