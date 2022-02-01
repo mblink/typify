@@ -21,7 +21,7 @@ lazy val baseSettings = Seq(
   ),
   Compile / unmanagedSourceDirectories ++= scalaVersionSpecificFolders("main", baseDirectory.value, scalaVersion.value),
   Test / unmanagedSourceDirectories ++= scalaVersionSpecificFolders("test", baseDirectory.value, scalaVersion.value),
-  licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
+  licenses += License.Apache2,
   gitPublishDir := file("/src/maven-repo")
 )
 
