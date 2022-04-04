@@ -11,7 +11,7 @@ def scalaVersionSpecificFolders(srcName: String, srcBaseDir: java.io.File, scala
 lazy val baseSettings = Seq(
   scalaVersion := scala213,
   crossScalaVersions := Seq(scala213),
-  version := "6.0.0",
+  version := "6.0.1",
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.patch),
   scalacOptions ++= Seq("-Vimplicits", "-Vimplicits-verbose-tree"),
   scalacOptions --= Seq(
@@ -36,9 +36,9 @@ lazy val root = project.in(file("."))
 
 lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.7.0" }
 lazy val circe = "io.circe" %% "circe-core" % "0.14.1"
-lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.3"
-lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC5"
-lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.7" }
+lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.4"
+lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC6"
+lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.9" }
 lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.15.4" % "test" }
 
 lazy val typify = sbtcrossproject.CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(file("typify"))
