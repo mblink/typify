@@ -33,7 +33,7 @@ trait CatchAllInstance {
   implicit def cpolo[A: ClassTag: Reads]: CanParse[Option[List[A]], JsValue] = gen(_ => none[A])._4
 }
 
-object parsedinstances extends CatchAllInstance with CollectionCompat {
+object parsedinstances extends CatchAllInstance {
   implicit val genJsValue: Generic[JsValue] = new Generic[JsValue] {
     def fromFields(fields: ListMap[String, JsValue]): JsValue = JsObject(fields)
     def toFields(value: JsValue): Option[ListMap[String, JsValue]] = Some(value).collect {

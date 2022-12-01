@@ -21,7 +21,7 @@ trait ParsedInstancesLP {
     c => c.focus.flatMap(Option(_).filterNot(js.isUndefined)).traverse(_ => cpa(c))
 }
 
-object parsedinstances extends ParsedInstancesLP with CollectionCompat {
+object parsedinstances extends ParsedInstancesLP {
   implicit val cpd: CanParse[Dynamic, Dynamic] =
     c => c.focus.filterNot(js.isUndefined).toValidNel(ParseError(c, "Could not be interpreted as Dynamic"))
 

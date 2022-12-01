@@ -25,7 +25,7 @@ object MakeJValue extends MakeParsed[JValue] {
       case MPLS => (k -> MPLS(v))
       case MPOLS => MPOLS(v).map(x => (k -> x): JValue).getOrElse(JNull: JValue)
       case MPP => (k -> MPP(v))
-      case MPOP => MPOP(v).map(_ => (k -> v): JValue).getOrElse(JNull: JValue)
+      case MPOP => MPOP(v).map(_ => (k -> v.asInstanceOf[Option[JValue]]): JValue).getOrElse(JNull: JValue)
       case MPLP => (k -> MPLP(v))
     })
 

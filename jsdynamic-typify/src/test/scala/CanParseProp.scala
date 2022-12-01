@@ -15,15 +15,15 @@ object MakeJsDynamic extends MakeParsed[js.Dynamic] {
 
   def make[A](k: String, v: A)(implicit mp: MustParse[A]): Cursor[js.Dynamic] =
     Cursor.top(mp match {
-      case MPS => literal(k -> v)
+      case MPS => literal(k -> (v: String))
       case MPOS => MPOS(v).map(x => literal(k -> x)).getOrElse(none)
-      case MPI => literal(k -> v)
+      case MPI => literal(k -> (v: Int))
       case MPOI => MPOI(v).map(x => literal(k -> x)).getOrElse(none)
       case MPL => literal(k -> v.toDouble)
       case MPOL => MPOL(v).map(x => literal(k -> x.toDouble)).getOrElse(none)
-      case MPD => literal(k -> v)
+      case MPD => literal(k -> (v: Double))
       case MPOD => MPOD(v).map(x => literal(k -> x)).getOrElse(none)
-      case MPB => literal(k -> v)
+      case MPB => literal(k -> (v: Boolean))
       case MPOB => MPOB(v).map(x => literal(k -> x)).getOrElse(none)
       case MPLI => literal(k -> v.toSeq.toJSArray)
       case MPOLI => MPOLI(v).map(x => literal(k -> x.toSeq.toJSArray)).getOrElse(none)

@@ -2,7 +2,7 @@ package org.json4s.typify
 
 import cats.syntax.option._
 import cats.syntax.validated._
-import org.json4s.{JArray, JNothing, JNull, JObject, JString, JValue, Reader}
+import org.json4s.{jvalue2readerSyntax, JArray, JNothing, JNull, JObject, JString, JValue, Reader}
 import org.json4s.DefaultReaders._
 import scala.collection.immutable.ListMap
 import scala.reflect.ClassTag

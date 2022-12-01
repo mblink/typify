@@ -1,32 +1,37 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-lazy val scala213 = "2.13.8"
+lazy val scala213 = "2.13.10"
+lazy val scala3 = "3.2.1"
 
-def scalaVersionSpecificFolders(srcName: String, srcBaseDir: java.io.File, scalaVersion: String): Seq[java.io.File] =
+def foldScalaV[A](scalaVersion: String)(_213: => A, _3: => A): A =
   CrossVersion.partialVersion(scalaVersion) match {
-    case Some((2, 13)) => Seq(srcBaseDir / srcName / "scala-2.13")
-    case _ => Seq()
+    case Some((2, 13)) => _213
+    case Some((3, _)) => _3
   }
 
 lazy val baseSettings = Seq(
-  scalaVersion := scala213,
-  crossScalaVersions := Seq(scala213),
-  version := "6.0.1",
-  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.patch),
-  scalacOptions ++= Seq("-Vimplicits", "-Vimplicits-verbose-tree"),
+  scalaVersion := scala3,
+  crossScalaVersions := Seq(scala213, scala3),
+  version := "6.1.0-LOCAL1",
+  libraryDependencies ++= foldScalaV(scalaVersion.value)(
+    Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.patch)),
+    Seq(),
+  ),
+  scalacOptions ++= foldScalaV(scalaVersion.value)(
+    Seq("-Vimplicits-verbose-tree"),
+    Seq(),
+  ),
   scalacOptions --= Seq(
     "-language:existentials",
     "-language:experimental.macros",
     "-language:implicitConversions"
   ),
-  Compile / unmanagedSourceDirectories ++= scalaVersionSpecificFolders("main", baseDirectory.value, scalaVersion.value),
-  Test / unmanagedSourceDirectories ++= scalaVersionSpecificFolders("test", baseDirectory.value, scalaVersion.value),
   licenses += License.Apache2,
   gitPublishDir := file("/src/maven-repo")
 )
 
 lazy val root = project.in(file("."))
-  .aggregate(typifyJVM, typifyJS, circeTypify, json4sTypify, playjsonTypify, sjsTypify)
+  .aggregate(tagged.jvm, tagged.js, typifyJVM, typifyJS, circeTypify, json4sTypify, playjsonTypify, sjsTypify)
   .settings(baseSettings)
   .settings(
     publish := {},
@@ -38,15 +43,29 @@ lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.7.0" }
 lazy val circe = "io.circe" %% "circe-core" % "0.14.1"
 lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.4"
 lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC6"
-lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.9" }
+lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.10" }
 lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.15.4" % "test" }
 
-lazy val typify = sbtcrossproject.CrossPlugin.autoImport.crossProject(JSPlatform, JVMPlatform).in(file("typify"))
+lazy val tagged = crossProject(JSPlatform, JVMPlatform).in(file("tagged"))
+  .settings(baseSettings)
+  .settings(
+    name := "typify-tagged",
+    crossScalaVersions := Seq(scala213, scala3),
+    libraryDependencies ++= Seq(cats.value)
+  )
+
+lazy val typify = crossProject(JSPlatform, JVMPlatform).in(file("typify"))
   .settings(baseSettings)
   .settings(
     name := "typify",
-    libraryDependencies ++= Seq(cats.value, shapeless.value, scalacheck.value)
+    libraryDependencies ++= Seq(cats.value, scalacheck.value),
+    libraryDependencies ++= foldScalaV(scalaVersion.value)(
+      Seq(shapeless.value),
+      Seq(),
+    ),
   )
+  .dependsOn(tagged)
+  .aggregate(tagged)
 
 lazy val typifyJVM = typify.jvm
 lazy val typifyJS = typify.js.enablePlugins(ScalaJSPlugin)

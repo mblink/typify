@@ -1,5 +1,6 @@
 package typify
 
+import math.BigDecimal.{double2bigDecimal, int2bigDecimal, long2bigDecimal}
 import play.api.libs.json.{Json, JsBoolean, JsNull, JsNumber, JsObject, JsString, JsValue}
 import play.api.libs.json.typify.parsedinstances._
 import org.scalacheck.Properties
@@ -19,13 +20,13 @@ object MakeJsValue extends MakeParsed[JsValue] {
       case MPOD => MPOD(v).map(x => JsObject(Seq(k -> JsNumber(x)))).getOrElse(JsNull)
       case MPB => JsObject(Seq(k -> JsBoolean(v)))
       case MPOB => MPOB(v).map(x => JsObject(Seq(k -> JsBoolean(x)))).getOrElse(JsNull)
-      case MPLI => JsObject(Seq(k -> Json.toJson(v)))
+      case MPLI => JsObject(Seq(k -> Json.toJson(v: List[Int])))
       case MPOLI => MPOLI(v).map(x => JsObject(Seq(k -> Json.toJson(x)))).getOrElse(JsNull)
-      case MPLS => JsObject(Seq(k -> Json.toJson(v)))
+      case MPLS => JsObject(Seq(k -> Json.toJson(v: List[String])))
       case MPOLS => MPOLS(v).map(x => JsObject(Seq(k -> Json.toJson(x)))).getOrElse(JsNull)
       case MPP => JsObject(Seq(k -> v))
       case MPOP => MPOP(v).map(x => JsObject(Seq(k -> x))).getOrElse(JsNull)
-      case MPLP => JsObject(Seq(k -> Json.toJson(v)))
+      case MPLP => JsObject(Seq(k -> Json.toJson(v: List[JsValue])))
     })
 
   def to[A](v: A)(implicit mp: MustParse[A]): Cursor[JsValue] =
@@ -40,13 +41,13 @@ object MakeJsValue extends MakeParsed[JsValue] {
       case MPOD => MPOD(v).map(JsNumber(_)).getOrElse(JsNull)
       case MPB => JsBoolean(v)
       case MPOB => MPOB(v).map(JsBoolean(_)).getOrElse(JsNull)
-      case MPLI => Json.toJson(v)
+      case MPLI => Json.toJson(v: List[Int])
       case MPOLI => MPOLI(v).map(Json.toJson(_)).getOrElse(JsNull)
-      case MPLS => Json.toJson(v)
+      case MPLS => Json.toJson(v: List[String])
       case MPOLS => MPOLS(v).map(Json.toJson(_)).getOrElse(JsNull)
       case MPP => MPP(v)
       case MPOP => MPOP(v).getOrElse(JsNull)
-      case MPLP => Json.toJson(v)
+      case MPLP => Json.toJson(v: List[JsValue])
     })
 }
 
