@@ -1,5 +1,6 @@
 package typify
 
+import cats.data.NonEmptyList
 import cats.syntax.option._
 import cats.syntax.validated._
 import org.scalacheck.{Arbitrary, Gen, Prop, Properties}
@@ -47,7 +48,7 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
   def matches[A](msg: String)(actual: A, expected: A): Prop =
     (expected == actual) :| s"$msg\n\nEXPECTED:\n  ${expected}\n\nACTUAL:\n  ${actual}"
 
-  def assert[A, B](l: String, k: String, cp: CanParse[A, P], g: A, b: B, rc: Boolean = false)(
+  private def assert[A, B](l: String, k: String, cp: CanParse[A, P], g: A, b: B, rc: Boolean = false)(
       implicit mpa: MustParse[A], mpb: MustParse[B]): Prop =
     matches(s"$l parses valid")(cp.parse(k, mp.make(k, g)).toOption, g.some) &&
     matches(s"$l missed key")(cp.parse(k + "a", mp.make(k, g)).toOption, none[A]) &&
@@ -55,7 +56,7 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
     matches(s"$l represents valid")(cp(mp.to(g)).toOption, g.some) &&
     matches(s"$l represented wrong type")(cp(mp.to(b)).toOption, if (rc) b.some else none[A])
 
-  def assertO[A, B](l: String, k: String, cp: CanParse[Option[A], P], g: A, b: B, rc: Boolean = false)(
+  private def assertO[A, B](l: String, k: String, cp: CanParse[Option[A], P], g: A, b: B, rc: Boolean = false)(
       implicit mpoa: MustParse[Option[A]], mpob: MustParse[Option[B]]): Prop =
     matches(s"some[$l] parses valid")(cp.parse(k, mp.make(k, g.some)).toOption, g.some.some) &&
     matches(s"none[$l] parses valid")(cp.parse(k + "a", mp.make(k, g.some)).toOption, none[A].some) &&
@@ -153,12 +154,15 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
   def longString = stringify[Long]("Long", cpl)
   def doubleString = stringify[Double]("Double", cpd)
 
-  type NEList[A] = List[A]
-  implicit def arbNEL[A](implicit aa: Arbitrary[A]) =
-    Arbitrary { Arbitrary.arbitrary[List[A]].suchThat(_.nonEmpty) }
+  implicit def arbNEL[A](implicit aa: Arbitrary[A]): Arbitrary[NonEmptyList[A]] =
+    Arbitrary(for {
+      h <- aa.arbitrary
+      t <- Arbitrary.arbitrary[List[A]]
+    } yield NonEmptyList(h, t))
 
   def list =
-    forAllNoShrink { (k: NEString, li: NEList[Int], ls: NEList[String]) =>
+    forAllNoShrink { (k: NEString, li0: NonEmptyList[Int], ls0: NonEmptyList[String]) =>
+      val (li, ls) = (li0.toList, ls0.toList)
       // List[Int]
       assert("List[Int]", k, cpli, li, ls) &&
       ((cpli.parse(k, mp.make(k, li.map(_.toString))).toOption == li.some) :|
@@ -172,8 +176,8 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
       ((cpoli(mp.to(li.map(_.toString).some)).toOption == li.some.some) :|
        "some[List[Int]] represents stringified") &&
       // List[P]
-      ((parseList(mp.to(li.flatMap(i => mp.make(k, i).focus)))(
-        _ => ().invalidNel[List[P]],
+      ((parseList[P, Unit, Int](mp.to(li.flatMap(i => mp.make(k, i).focus)))(
+        _ => ().invalidNel[List[Int]],
         cpi.parse(k, _).leftMap(_.map(_ => ()))).toOption == li.some) :|
       "List[Int] parses via List[P]")
     }
@@ -189,16 +193,16 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
     }
 
   def props(msg: String): Properties = new Properties(msg) {
-    property("int") = int
-    property("string") = string
-    property("long") = long
-    property("double") = double
-    property("boolean") = boolean
-    property("list") = list
-    property("recursive") = recursive
-    property("boolString") = boolString
-    property("intString") = intString
-    property("longString") = longString
-    property("doubleString") = doubleString
+    property.update("int", int): Unit
+    property.update("string", string): Unit
+    property.update("long", long): Unit
+    property.update("double", double): Unit
+    property.update("boolean", boolean): Unit
+    property.update("list", list): Unit
+    property.update("recursive", recursive): Unit
+    property.update("boolString", boolString): Unit
+    property.update("intString", intString): Unit
+    property.update("longString", longString): Unit
+    property.update("doubleString", doubleString): Unit
   }
 }

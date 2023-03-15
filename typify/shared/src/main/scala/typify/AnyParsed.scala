@@ -6,7 +6,7 @@ import scala.collection.immutable.ListMap
 import scala.reflect.ClassTag
 
 trait CatchAllInstance {
-  implicit def cpt[T](implicit ct: ClassTag[T]) = new CanParse[T, Any] {
+  implicit def cpt[T](implicit ct: ClassTag[T]): CanParse[T, Any] = new CanParse[T, Any] {
     def apply(x: Cursor[Any]): ValidatedNel[ParseError[Any], T] =
       x.focus match {
         case Some(t: T) => t.validNel[ParseError[Any]]
@@ -16,7 +16,7 @@ trait CatchAllInstance {
 }
 
 trait CatchOptionInstance extends CatchAllInstance {
-  implicit def cpot[T: ClassTag] = new CanParse[Option[T], Any] {
+  implicit def cpot[T: ClassTag]: CanParse[Option[T], Any] = new CanParse[Option[T], Any] {
     def apply(x: Cursor[Any]): ValidatedNel[ParseError[Any], Option[T]] =
       (x.focus match {
         case Some(Some(t: T)) => Option(t)
@@ -46,7 +46,7 @@ trait GenericAnyInstance {
 }
 
 object parsedany extends CatchOptionInstance {
-  lazy implicit val cpoany = new CanParse[Option[Any], Any] {
+  lazy implicit val cpoany: CanParse[Option[Any], Any] = new CanParse[Option[Any], Any] {
     def apply(x: Cursor[Any]): ValidatedNel[ParseError[Any], Option[Any]] =
       (x.focus match {
         case Some(o: Option[Any]) => o

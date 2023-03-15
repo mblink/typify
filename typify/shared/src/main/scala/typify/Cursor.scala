@@ -12,7 +12,7 @@ import scala.collection.immutable.ListMap
  * A zipper that represents a position in a value of type `A` and supports navigation and modification.
  *
  * The `focus` represents the current position of the cursor; it may be updated with `withFocus` or
- * changed using navigation methods like `left` and `right`.
+ * changed implicit navigation methods like `left` and `right`.
  */
 sealed abstract class Cursor[A](
   private val lastCursor: Option[Cursor[A]],
@@ -59,12 +59,12 @@ sealed abstract class Cursor[A](
   def success: Option[Cursor[A]]
 
   /**
-   * Modify the focus using the given function.
+   * Modify the focus implicit the implicit val function.
    */
   def withFocus(f: A => A): Cursor[A]
 
   /**
-   * Modify the focus in a context using the given function.
+   * Modify the focus in a context implicit the implicit def function.
    */
   def withFocusM[F[_]](f: A => F[A])(implicit F: Applicative[F]): F[Cursor[A]]
 
@@ -114,14 +114,14 @@ sealed abstract class Cursor[A](
   def first: Cursor[A]
 
   /**
-   * If the focus is an element in JSON array, move to the left the given number of times.
+   * If the focus is an element in JSON array, move to the left the implicit val number of times.
    *
    * A negative value will move the cursor right.
    */
   def leftN(n: Int): Cursor[A]
 
   /**
-   * If the focus is an element in JSON array, move to the right the given number of times.
+   * If the focus is an element in JSON array, move to the right the implicit val number of times.
    *
    * A negative value will move the cursor left.
    */
@@ -133,24 +133,24 @@ sealed abstract class Cursor[A](
   def downArray: Cursor[A]
 
   /**
-   * If the focus is a JSON array, move to the element at the given index.
+   * If the focus is a JSON array, move to the element at the implicit val index.
    */
   def downN(n: Int): Cursor[A]
 
   /**
-   * If the focus is a value in a JSON object, move to a sibling with the given key.
+   * If the focus is a value in a JSON object, move to a sibling with the implicit val key.
    */
   def field(k: String): Cursor[A]
 
   /**
-   * If the focus is a JSON object, move to the value of the given key.
+   * If the focus is a JSON object, move to the value of the implicit val key.
    */
   def downField(k: String): Cursor[A]
 
   private[typify] final def fail(op: CursorOp): Cursor[A] = Cursor.Failed[A](Some(this), op)
 }
 
-final object Cursor {
+object Cursor {
   def top[A: Generic](value: A): Cursor[A] = new Top[A](value)(None, None)
 
   def at[A: Generic](value: A, root: Vector[String]): Cursor[A] =
@@ -161,7 +161,7 @@ final object Cursor {
 
   sealed trait WithValue[A] { self: Cursor[A] =>
     def value: A
-    implicit def gen: Generic[A]
+    implicit val gen: Generic[A]
 
     final def withFocus(f: A => A): Cursor[A] =
       replace(f(value), Some(self), CursorOp.WithFocus(f))

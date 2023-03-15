@@ -1,7 +1,7 @@
 package typify
 
-import circe.api.libs.json.typify.parsedinstances._
 import io.circe.Json
+import io.circe.parsedinstances._
 import io.circe.syntax._
 import org.scalacheck.Properties
 
@@ -24,30 +24,30 @@ object MakeJson extends MakeParsed[Json] {
       case MPOLI => Map[String, Option[List[Int]]](k -> v).asJson
       case MPLS => Map[String, List[String]](k -> v).asJson
       case MPOLS => Map[String, Option[List[String]]](k -> v).asJson
-      case MPP => Map[String, A](k -> v).asJson
-      case MPOP => Map[String, Option[A]](k -> Some(v)).asJson
-      case MPLP => Map[String, List[A]](k -> List(v)).asJson
+      case MPP => Map[String, Json](k -> v).asJson
+      case MPOP => Map[String, Option[Json]](k -> v).asJson
+      case MPLP => Map[String, List[Json]](k -> v).asJson
     })
 
   def to[A](v: A)(implicit mp: MustParse[A]): Cursor[Json] =
     Cursor.top(mp match {
-      case MPS => v.asJson
-      case MPOS => v.asJson
-      case MPI => v.asJson
-      case MPOI => v.asJson
-      case MPL => v.asJson
-      case MPOL => v.asJson
-      case MPD => v.asJson
-      case MPOD => v.asJson
-      case MPB => v.asJson
-      case MPOB => v.asJson
-      case MPLI => v.asJson
-      case MPOLI => v.asJson
-      case MPLS => v.asJson
-      case MPOLS => v.asJson
-      case MPP => v.asJson
-      case MPOP => v.asJson
-      case MPLP => v.asJson
+      case MPS => (v: String).asJson
+      case MPOS => (v: Option[String]).asJson
+      case MPI => (v: Int).asJson
+      case MPOI => (v: Option[Int]).asJson
+      case MPL => (v: Long).asJson
+      case MPOL => (v: Option[Long]).asJson
+      case MPD => (v: Double).asJson
+      case MPOD => (v: Option[Double]).asJson
+      case MPB => (v: Boolean).asJson
+      case MPOB => (v: Option[Boolean]).asJson
+      case MPLI => (v: List[Int]).asJson
+      case MPOLI => (v: Option[List[Int]]).asJson
+      case MPLS => (v: List[String]).asJson
+      case MPOLS => (v: Option[List[String]]).asJson
+      case MPP => (v: Json).asJson
+      case MPOP => (v: Option[Json]).asJson
+      case MPLP => (v: List[Json]).asJson
     })
 }
 

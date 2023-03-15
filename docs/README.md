@@ -23,8 +23,6 @@ First some imports.
 import shapeless.HNil
 import shapeless.syntax.singleton._
 import typify.{Cursor, CursorHistory, ParseError, Typify}
-import typify.convert._
-import typify.convert.syntax._
 ```
 
 Now we can create an instance of Typify  by specifying the failure type we will use and
@@ -77,7 +75,7 @@ val checkSessId = Typify.optional(checkSessIdF)
 Now we can define in which fields to look for these values under our source value as follows.
 
 ```scala mdoc
-val checkPerson = 'email ->> checkEmail :: 'age ->> checkAge :: 'session ->> checkSessId :: HNil
+val checkPerson = "email" ->> checkEmail :: "age" ->> checkAge :: "session" ->> checkSessId :: HNil
 ```
 
 From here we are able to parse a person out of Any using our Typify instance.
@@ -96,22 +94,6 @@ val failedAtParse = Cursor.top(failsAtParse).parse(checkPerson)
 val failedAtValidation = Cursor.top(failsAtValidation).parse(checkPerson)
 ```
 
-Note that a successful validation returns an HList. We can easily convert it to a compatible case
-class. Field order is not important, and supersets of target types are allowed.
-
-These conversions are type safe. Attempting to convert to a case class that requires fields which
-are not present on a given HList will fail at compile time.
-
-```scala mdoc
-case class Person(age: Int, email: String)
-case class PersonWithSession(session: Option[Int], email: String, age: Int)
-
-passed.map(_.convertTo[Person])
-passed.map(_.convertTo[PersonWithSession])
-passedNoSess.map(_.convertTo[Person])
-passedNoSess.map(_.convertTo[PersonWithSession])
-```
-
 Because our validation rules and results are both simply HLists, we can use HList and record
 operations to compose rules, and do partial validation.
 
@@ -119,15 +101,9 @@ operations to compose rules, and do partial validation.
 import shapeless.record._
 
 val checkRequiredSess = Typify.validate(checkSessIdF)
-val checkPersonWithSession = (checkPerson - 'session) + ('session ->> checkRequiredSess)
+val checkPersonWithSession = (checkPerson - "session") + ("session" ->> checkRequiredSess)
 
 val passedWithSession = Cursor.top(passes).parse(checkPersonWithSession)
 val failedNoSession = Cursor.top(passesNoSess).parse(checkPersonWithSession)
-val passedPartialSession = Cursor.top(passesNoSess).parse(checkPersonWithSession - 'session)
-
-case class PersonRequireSession(session: Int, email: String, age: Int)
-
-passedWithSession.map(_.convertTo[PersonRequireSession])
-failedNoSession.map(_.convertTo[PersonRequireSession])
-passedPartialSession.map(_ + ('session ->> 7777)).map(_.convertTo[PersonRequireSession])
+val passedPartialSession = Cursor.top(passesNoSess).parse(checkPersonWithSession - "session")
 ```
