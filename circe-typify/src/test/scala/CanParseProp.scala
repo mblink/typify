@@ -1,7 +1,7 @@
 package typify
 
-import circe.api.libs.json.typify.parsedinstances._
 import io.circe.Json
+import io.circe.parsedinstances._
 import io.circe.syntax._
 import org.scalacheck.Properties
 

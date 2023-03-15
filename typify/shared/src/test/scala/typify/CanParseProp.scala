@@ -193,16 +193,16 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
     }
 
   def props(msg: String): Properties = new Properties(msg) {
-    property("int") = int
-    property("string") = string
-    property("long") = long
-    property("double") = double
-    property("boolean") = boolean
-    property("list") = list
-    property("recursive") = recursive
-    property("boolString") = boolString
-    property("intString") = intString
-    property("longString") = longString
-    property("doubleString") = doubleString
+    property.update("int", int): Unit
+    property.update("string", string): Unit
+    property.update("long", long): Unit
+    property.update("double", double): Unit
+    property.update("boolean", boolean): Unit
+    property.update("list", list): Unit
+    property.update("recursive", recursive): Unit
+    property.update("boolString", boolString): Unit
+    property.update("intString", intString): Unit
+    property.update("longString", longString): Unit
+    property.update("doubleString", doubleString): Unit
   }
 }

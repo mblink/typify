@@ -14,6 +14,6 @@ object MakeAny extends MakeParsed[Any] {
 }
 
 object AnyCanParse extends Properties("CanParse.Any") {
-  property("parses required types correctly") = new CanParseProp(MakeAny: MakeParsed[Any]).recursive
+  property.update("parses required types correctly", new CanParseProp(MakeAny: MakeParsed[Any]).recursive): Unit
 }
 
