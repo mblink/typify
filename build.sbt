@@ -40,12 +40,12 @@ lazy val root = project.in(file("."))
     gitRelease := {}
   )
 
-lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.7.0" }
-lazy val circe = "io.circe" %% "circe-core" % "0.14.1"
-lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.4"
-lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC6"
+lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.9.0" }
+lazy val circe = "io.circe" %% "circe-core" % "0.14.5"
+lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.6"
+lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC7"
 lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.10" }
-lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.15.4" % "test" }
+lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.17.0" % "test" }
 
 lazy val tagged = crossProject(JSPlatform, JVMPlatform).in(file("tagged"))
   .settings(baseSettings)
