@@ -1,7 +1,7 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val scala213 = "2.13.10"
-lazy val scala3 = "3.2.1"
+lazy val scala3 = "3.3.0-RC3"
 
 def foldScalaV[A](scalaVersion: String)(_213: => A, _3: => A): A =
   CrossVersion.partialVersion(scalaVersion) match {
@@ -12,7 +12,8 @@ def foldScalaV[A](scalaVersion: String)(_213: => A, _3: => A): A =
 lazy val baseSettings = Seq(
   scalaVersion := scala3,
   crossScalaVersions := Seq(scala213, scala3),
-  version := "6.1.0-LOCAL1",
+  organization := "typify",
+  version := "6.0.1",
   libraryDependencies ++= foldScalaV(scalaVersion.value)(
     Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.patch)),
     Seq(),
@@ -50,8 +51,14 @@ lazy val tagged = crossProject(JSPlatform, JVMPlatform).in(file("tagged"))
   .settings(baseSettings)
   .settings(
     name := "typify-tagged",
-    crossScalaVersions := Seq(scala213, scala3),
-    libraryDependencies ++= Seq(cats.value)
+    libraryDependencies ++= Seq(cats.value),
+    libraryDependencies ++= foldScalaV(scalaVersion.value)(
+      Seq(
+        shapeless.value,
+        scalaOrganization.value % "scala-compiler" % scalaVersion.value % "provided",
+      ),
+      Seq(),
+    ),
   )
 
 lazy val typify = crossProject(JSPlatform, JVMPlatform).in(file("typify"))

@@ -1,13 +1,12 @@
-package circe.api.libs.json.typify
+package io.circe
 
 import cats.syntax.option._
 import cats.syntax.validated._
-import io.circe.{Decoder, Json}
 import scala.collection.immutable.ListMap
 import scala.reflect.ClassTag
 import typify._
 
-trait CatchAllInstance {
+trait TypifyCatchAllInstance {
   protected def gen[A: Decoder](retry: String => Option[A])(implicit ct: ClassTag[A]): (CanParse[A, Json], CanParse[Option[A], Json], CanParse[List[A], Json], CanParse[Option[List[A]], Json]) = {
     val cpa: CanParse[A, Json] = c =>
       c.focus.flatMap(j => j.as[Option[A]].toOption.flatten.orElse(j.as[String].toOption.flatMap(retry)))
@@ -33,7 +32,7 @@ trait CatchAllInstance {
   implicit def cpolo[A: ClassTag: Decoder]: CanParse[Option[List[A]], Json] = gen(_ => none[A])._4
 }
 
-object parsedinstances extends CatchAllInstance {
+object parsedinstances extends TypifyCatchAllInstance {
   implicit val genJson: Generic[Json] = new Generic[Json] {
     def fromFields(fields: ListMap[String, Json]): Json = Json.fromFields(fields)
     def toFields(value: Json): Option[ListMap[String, Json]] = value.asObject.map(o => ListMap(o.toVector:_*))
