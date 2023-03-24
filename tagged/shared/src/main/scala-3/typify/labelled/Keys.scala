@@ -14,11 +14,13 @@ trait Keys[T <: Tuple] {
 }
 
 object Keys {
-  inline def apply[T <: Tuple]: Keys[T] =
+  type Aux[T <: Tuple, Out0] = Keys[T] { type Out = Out0 }
+
+  inline def apply[T <: Tuple]: Aux[T, KeysT[T]] =
     new Keys[T] {
       def apply(): KeysT[T] = compiletime.constValueTuple[KeysT[T]]
     }
 
-  inline given inst[T <: Tuple]: Keys[T] =
+  inline given inst[T <: Tuple]: Aux[T, KeysT[T]] =
     apply[T]
 }
