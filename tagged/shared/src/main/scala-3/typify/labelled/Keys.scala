@@ -1,25 +1,24 @@
 package typify
 package labelled
 
+type StringKey[K <: String] = K
+
+type KeysT[T <: Tuple] <: Tuple = T match {
+  case (StringKey[k] ->> v) *: t => k *: KeysT[t]
+  case EmptyTuple => EmptyTuple
+}
+
 trait Keys[T <: Tuple] {
-  type Out
+  final type Out = KeysT[T]
   def apply(): Out
 }
 
 object Keys {
-  inline def apply[T <: Tuple](using k: Keys[T]): Aux[T, k.Out] = k
-
-  type Aux[T <: Tuple, Out0] = Keys[T] { type Out = Out0 }
-
-  given emptyTuple: Aux[EmptyTuple, EmptyTuple] =
-    new Keys[EmptyTuple] {
-      type Out = EmptyTuple
-      def apply(): Out = EmptyTuple
+  inline def apply[T <: Tuple]: Keys[T] =
+    new Keys[T] {
+      def apply(): KeysT[T] = compiletime.constValueTuple[KeysT[T]]
     }
 
-  given tupleN[K, V, T <: Tuple](using k: ValueOf[K], t: Keys[T] { type Out <: Tuple }): Aux[(K ->> V) *: T, K *: t.Out] =
-    new Keys[(K ->> V) *: T] {
-      type Out = K *: t.Out
-      def apply(): Out = k.value *: t()
-    }
+  inline given inst[T <: Tuple]: Keys[T] =
+    apply[T]
 }
