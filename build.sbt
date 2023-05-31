@@ -1,7 +1,7 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val scala213 = "2.13.10"
-lazy val scala3 = "3.3.0-RC3"
+lazy val scala3 = "3.3.0"
 
 def foldScalaV[A](scalaVersion: String)(_213: => A, _3: => A): A =
   CrossVersion.partialVersion(scalaVersion) match {
@@ -32,7 +32,7 @@ lazy val baseSettings = Seq(
 )
 
 lazy val root = project.in(file("."))
-  .aggregate(tagged.jvm, tagged.js, typifyJVM, typifyJS, circeTypify, json4sTypify, playjsonTypify, sjsTypify)
+  .aggregate(tagged.jvm, tagged.js, typifyJVM, typifyJS, circeTypify, json4sTypify/*, playjsonTypify*/, sjsTypify)
   .settings(baseSettings)
   .settings(
     publish := {},
@@ -43,7 +43,7 @@ lazy val root = project.in(file("."))
 lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.9.0" }
 lazy val circe = "io.circe" %% "circe-core" % "0.14.5"
 lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.6"
-lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC7"
+lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC8"
 lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.10" }
 lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.17.0" % "test" }
 
@@ -93,13 +93,13 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
   )
   .dependsOn(typifyJVM % "test->test;compile->compile")
 
-lazy val playjsonTypify = project.in(file("play-json-typify"))
-  .settings(baseSettings)
-  .settings(
-    name := "play-json-typify",
-    libraryDependencies ++= Seq(cats.value, playJson)
-  )
-  .dependsOn(typifyJVM % "test->test;compile->compile")
+// lazy val playjsonTypify = project.in(file("play-json-typify"))
+//   .settings(baseSettings)
+//   .settings(
+//     name := "play-json-typify",
+//     libraryDependencies ++= Seq(cats.value, playJson)
+//   )
+//   .dependsOn(typifyJVM % "test->test;compile->compile")
 
 lazy val sjsTypify = project.in(file("jsdynamic-typify"))
   .settings(baseSettings)
