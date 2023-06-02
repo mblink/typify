@@ -20,7 +20,15 @@ lazy val baseSettings = Seq(
   ),
   scalacOptions ++= foldScalaV(scalaVersion.value)(
     Seq("-Vimplicits-verbose-tree"),
-    Seq(),
+    Seq(
+      "-Wvalue-discard",
+      "-Wunused:implicits",
+      "-Wunused:imports",
+      "-Wunused:locals",
+      "-Wunused:params",
+      "-Wunused:privates",
+      "-Wunused:unsafe-warn-patvars",
+    ),
   ),
   scalacOptions --= Seq(
     "-language:existentials",

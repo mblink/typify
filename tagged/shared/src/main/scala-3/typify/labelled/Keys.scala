@@ -4,7 +4,7 @@ package labelled
 type StringKey[K <: String] = K
 
 type KeysT[T <: Tuple] <: Tuple = T match {
-  case (StringKey[k] ->> v) *: t => k *: KeysT[t]
+  case (StringKey[k] ->> _) *: t => k *: KeysT[t]
   case EmptyTuple => EmptyTuple
 }
 

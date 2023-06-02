@@ -1,7 +1,8 @@
 package typify
 
-import typify.parsedany._
+import typify.parsedany.*
 import org.scalacheck.Properties
+import scala.util.chaining.*
 
 object MakeAny extends MakeParsed[Any] {
   import implicits._
@@ -14,6 +15,6 @@ object MakeAny extends MakeParsed[Any] {
 }
 
 object AnyCanParse extends Properties("CanParse.Any") {
-  property.update("parses required types correctly", new CanParseProp(MakeAny: MakeParsed[Any]).recursive): Unit
+  property.update("parses required types correctly", new CanParseProp(MakeAny: MakeParsed[Any]).recursive).pipe(_ => ())
 }
 
