@@ -21,12 +21,23 @@ sealed trait SelectorLP {
 object Selector extends SelectorLP {
   inline def apply[A, T](using s: Selector[A, T]): Aux[A, T, s.Out] = s
 
-/* Run this in a REPL to generate the code below
+  // TODO - this would be dope if it worked...selecting anything but the first key doesn't preserve the value type
+  // inline given selectorInst[T <: Tuple, K <: Tuple.Union[KeysT[T]]]: Aux[T, K, ValueAtKey[T, K]] =
+  //   new Selector[T, K] {
+  //     type Out = ValueAtKey[T, K]
+  //     def apply(t: T): ValueAtKey[T, K] = {
+  //       val key = compiletime.constValue[K].asInstanceOf[Object]
+  //       val keys = compiletime.constValueTuple[KeysT[T]].toArray
+  //       t.productElement(keys.indexOf(key)).asInstanceOf[ValueAtKey[T, K]]
+  //     }
+  //   }
+
+  /* Run this in a REPL to generate the code below
 
   println(0.to(100).map { i =>
     val tps = 0.to(i - 1).map(j => s"A$j")
     val tupleTpe = s"${tps.mkString(" *: ")}${if (tps.isEmpty) "" else " *: "}(K ->> V) *: T"
-s"""
+    s"""
   given elem${i}Selector[${tps.mkString(", ")}${if (tps.isEmpty) "" else ", "}K, V, T <: Tuple]: Aux[$tupleTpe, K, V] =
     new Selector[$tupleTpe, K] {
       type Out = V
