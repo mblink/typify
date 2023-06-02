@@ -1,7 +1,16 @@
 package typify
 package labelled
 
+import scala.language.implicitConversions
+
 private[typify] trait LabelledPackageAux
+
+opaque type ->>[K, +V] = tagged.TranslucentTagged[V, K]
+object ->> {
+  implicit def convertToV[K, V](kv: K ->> V): V = kv
+}
+
+@inline def label[K]: [V] => V => (K ->> V) = [v] => (v: v) => tagged.translucentTag[K](v)
 
 extension[K <: Singleton](k: K) {
   inline final def ->>[V](v: V): K ->> V = label[K](v)
