@@ -1,49 +1,36 @@
-package typify
-package labelled
+package typify.labelled
 
-import scala.util.chaining.*
+import typify.tuple.DepFn1
 
-trait Remover[T <: Tuple, K] {
-  type Out
-  def apply(t: T): Out
+trait Remover[T <: Tuple, K] extends DepFn1[T]
+
+type ReversePrependTuple[L <: Tuple, M <: Tuple] <: Tuple = L match {
+  case EmptyTuple => M
+  case h *: t => ReversePrependTuple[t, h *: M]
 }
 
-sealed trait RemoverLP {
-  final type Aux[T <: Tuple, K, Out0] = Remover[T, K] { type Out = Out0 }
+object Remover {
+  type Aux[T <: Tuple, K, O] = Remover[T, K] { type Out = O }
 
-  final given tailRemover[H, K, V, TI <: Tuple, TO <: Tuple](using r: Aux[TI, K, (V, TO)]): Aux[H *: TI, K, (V, H *: TO)] =
-    new Remover[H *: TI, K] {
-      type Out = (V, H *: TO)
-      def apply(t: H *: TI): (V, H *: TO) =
-        r(t.tail).pipe { case (v, to) => (v, t.head *: to) }
-    }
-}
-
-object Remover extends RemoverLP {
   inline def apply[T <: Tuple, K](implicit r: Remover[T, K]): Aux[T, K, r.Out] = r
   inline def apply[T <: Tuple, K](t: T, k: K)(implicit r: Remover[T, K]): r.Out = r(t)
 
-  /* TODO - revisit specializing Remover instances by generating this code:
+  type RemoveField[T <: Tuple, K] = RemoveField0[T, K, 0, EmptyTuple]
 
-  println(0.to(100).map { i =>
-    val tps = 0.to(i - 1).map(j => s"A$j")
-    val tupleTpe = s"${tps.mkString(" *: ")}${if (tps.isEmpty) "" else " *: "}(K ->> V) *: T"
-    val rmTupleTpe = if (tps.isEmpty) "T" else s"${tps.mkString(" *: ")} *: T"
-s"""
-  given elem${i}Remover[${tps.mkString(", ")}${if (tps.isEmpty) "" else ", "}K, V, T <: Tuple]: Aux[$tupleTpe, K, (V, $rmTupleTpe)] =
-    new Remover[$tupleTpe, K] {
-      type Out = (V, $rmTupleTpe)
-      def apply(t: $tupleTpe): Out = {
+  type RemoveField0[T <: Tuple, K, I <: Int, Acc <: Tuple] <: (Int, Any, Tuple) = T match {
+    case (K ->> v) *: t => (I, v, ReversePrependTuple[Acc, t])
+    case h *: t => RemoveField0[t, K, compiletime.ops.int.S[I], h *: Acc]
+  }
+
+  inline given removerInst[T <: Tuple, K](
+    using idx: ValueOf[Tuple.Head[RemoveField[T, K]]],
+  ): Remover.Aux[T, K, Tuple.Tail[RemoveField[T, K]]] =
+    new Remover[T, K] {
+      type Out = Tuple.Tail[RemoveField[T, K]]
+      def apply(t: T): Out = {
         val b = t.toArray.to(collection.mutable.Buffer)
-        (b.remove($i).asInstanceOf[V], Tuple.fromArray(b.to(Array)).asInstanceOf[$rmTupleTpe])
+        val v = b.remove(idx.value)
+        (v, Tuple.fromArray(b.to(Array))).asInstanceOf[Tuple.Tail[RemoveField[T, K]]]
       }
-    }"""
-  }.mkString("\n"))
-  */
-
-  given headRemover[K, V, T <: Tuple]: Aux[(K ->> V) *: T, K, (V, T)] =
-    new Remover[(K ->> V) *: T, K] {
-      type Out = (V, T)
-      def apply(t: (K ->> V) *: T): (V, T) = (t.head, t.tail)
     }
 }

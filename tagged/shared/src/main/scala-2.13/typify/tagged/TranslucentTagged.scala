@@ -1,5 +1,4 @@
-package typify
-package tagged
+package typify.tagged
 
 private[typify] trait TranslucentPackageAux {
   final type TranslucentTagged[+A, T] = shapeless.labelled.FieldType[T, A]

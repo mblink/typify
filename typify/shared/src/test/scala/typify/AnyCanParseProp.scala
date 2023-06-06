@@ -1,8 +1,8 @@
 package typify
 
-import typify.parsedany.*
+import typify.parsedany._
 import org.scalacheck.Properties
-import scala.util.chaining.*
+import scala.util.chaining._
 
 object MakeAny extends MakeParsed[Any] {
   import implicits._

@@ -1,5 +1,4 @@
-package typify
-package labelled
+package typify.labelled
 
 import scala.util.NotGiven
 

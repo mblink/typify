@@ -13,7 +13,7 @@ lazy val baseSettings = Seq(
   scalaVersion := scala3,
   crossScalaVersions := Seq(scala213, scala3),
   organization := "typify",
-  version := "7.1.0",
+  version := "7.2.0-LOCAL35",
   libraryDependencies ++= foldScalaV(scalaVersion.value)(
     Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.patch)),
     Seq(),
@@ -55,6 +55,20 @@ lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC8"
 lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.10" }
 lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.17.0" % "test" }
 
+lazy val tuple = crossProject(JSPlatform, JVMPlatform).in(file("tuple"))
+  .settings(baseSettings)
+  .settings(
+    name := "typify-tuple",
+    libraryDependencies ++= Seq(cats.value),
+    libraryDependencies ++= foldScalaV(scalaVersion.value)(
+      Seq(
+        shapeless.value,
+        scalaOrganization.value % "scala-compiler" % scalaVersion.value % "provided",
+      ),
+      Seq(),
+    ),
+  )
+
 lazy val tagged = crossProject(JSPlatform, JVMPlatform).in(file("tagged"))
   .settings(baseSettings)
   .settings(
@@ -68,6 +82,8 @@ lazy val tagged = crossProject(JSPlatform, JVMPlatform).in(file("tagged"))
       Seq(),
     ),
   )
+  .dependsOn(tuple)
+  .aggregate(tuple)
 
 lazy val typify = crossProject(JSPlatform, JVMPlatform).in(file("typify"))
   .settings(baseSettings)

@@ -1,5 +1,7 @@
 package typify
 
+import typify.tuple.Tuple
+
 trait TWitness[T] { final type Out = T }
 
 class Optimize[L, P](val tp: Typify[L, P]) {

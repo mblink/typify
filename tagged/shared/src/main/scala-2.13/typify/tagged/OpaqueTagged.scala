@@ -1,5 +1,4 @@
-package typify
-package tagged
+package typify.tagged
 
 import scala.language.implicitConversions
 

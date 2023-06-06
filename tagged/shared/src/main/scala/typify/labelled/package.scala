@@ -1,3 +1,3 @@
 package typify
 
-package object labelled extends LabelledPackageAux with SelectorPackageAux
+package object labelled extends LabelledPackageAux

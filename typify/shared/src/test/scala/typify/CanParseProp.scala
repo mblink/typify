@@ -1,11 +1,11 @@
 package typify
 
 import cats.data.NonEmptyList
-import cats.syntax.option.*
-import cats.syntax.validated.*
+import cats.syntax.option._
+import cats.syntax.validated._
 import org.scalacheck.{Arbitrary, Gen, Prop, Properties}
 import org.scalacheck.Prop.{forAllNoShrink, propBoolean}
-import scala.util.chaining.*
+import scala.util.chaining._
 
 trait MakeParsed[P] {
 

@@ -3,42 +3,39 @@ package labelled
 
 import scala.language.implicitConversions
 
-private[typify] trait LabelledPackageAux
+trait LabelledPackageAux {
+  final opaque type ->>[K, +V] = V
+  object ->> {
+    implicit def convertToV[K, V](kv: K ->> V): V = kv
+  }
 
-opaque type ->>[K, +V] = tagged.TranslucentTagged[V, K]
-object ->> {
-  implicit def convertToV[K, V](kv: K ->> V): V = kv
-}
+  @inline final def label[K]: [V] => V => (K ->> V) = [v] => (v: v) => tagged.translucentTag[K](v)
 
-@inline def label[K]: [V] => V => (K ->> V) = [v] => (v: v) => tagged.translucentTag[K](v)
+  extension[K <: Singleton](k: K) {
+    inline final def ->>[V](v: V): K ->> V = v
+  }
 
-extension[K <: Singleton](k: K) {
-  inline final def ->>[V](v: V): K ->> V = label[K](v)
-}
+  extension[K, V](kv: K ->> V) {
+    inline final def label(using k: ValueOf[K]): K = k.value
+  }
 
-extension[T <: Tuple](t: T) {
-  inline def get[K <: Singleton](k: K)(using s: Selector[T, K]): s.Out = s(t)
-  inline def apply[K <: Singleton](k: K)(using s: Selector[T, K]): s.Out = s(t)
+  extension[T <: Tuple](t: T) {
+    def get[K <: Singleton](k: K)(using s: Selector[T, K]): s.Out = s(t)
 
-  inline def updated[K <: Singleton, V](k: K, v: V)(using u: Updater[T, K ->> V]): u.Out =
-    u(t, label[K](v))
+    def apply[K <: Singleton](k: K)(using s: Selector[T, K]): s.Out = s(t)
 
-  inline def updateWith[K <: Singleton, V](k: K)(
-    using s: Selector[T, K]
-  )(f: s.Out => V)(
-    using u: Updater[T, K ->> V]
-  ): u.Out =
-    u(t, label[K](f(s(t))))
+    def fieldAt[K <: Singleton](k: K)(using s: Selector[T, K]): K ->> s.Out = label[K](s(t))
 
-  inline def -[K <: Singleton, V, O](k: K)(using r: Remover.Aux[T, K, (V, O)]): O =
-    r(t)._2
+    def updated[K <: Singleton, V](k: K, v: V)(using u: Updater[T, K ->> V]): u.Out = u(t, label[K](v))
 
-  inline def merge[M <: Tuple](m: M)(using mg: Merger[T, M]): mg.Out =
-    mg(t, m)
+    def updateWith[K, A, B](s: SelectorFromKey.Aux[T, K, A])(f: A => B)(using m: Modifier[T, K, A, B]): m.Out = m(t, f)
 
-  inline def keys(using k: Keys[T]): k.Out =
-    k()
+    def -[K <: Singleton, R, V, O](k: K)(using r: Remover.Aux[T, K, R], ev: R <:< (V, O)): O = r(t)._2
 
-  inline def renameField[K1 <: Singleton, K2 <: Singleton](oldKey: K1, newKey: K2)(using r: Renamer[T, K1, K2]): r.Out =
-    r(t)
+    def merge[M <: Tuple](m: M)(using mg: Merger[T, M]): mg.Out = mg(t, m)
+
+    def keys(using k: Keys[T]): k.Out = k()
+
+    def renameField[K1 <: Singleton, K2 <: Singleton](oldKey: K1, newKey: K2)(using r: Renamer[T, K1, K2]): r.Out = r(t)
+  }
 }

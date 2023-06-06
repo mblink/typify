@@ -1,5 +1,6 @@
-package typify
-package labelled
+package typify.labelled
+
+import typify.tuple.DepFn0
 
 type StringKey[K <: String] = K
 
@@ -8,10 +9,7 @@ type KeysT[T <: Tuple] <: Tuple = T match {
   case EmptyTuple => EmptyTuple
 }
 
-trait Keys[T <: Tuple] {
-  final type Out = KeysT[T]
-  def apply(): Out
-}
+trait Keys[T <: Tuple] extends DepFn0 { final type Out = KeysT[T] }
 
 object Keys {
   type Aux[T <: Tuple, Out0] = Keys[T] { type Out = Out0 }

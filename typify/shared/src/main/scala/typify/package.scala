@@ -3,8 +3,9 @@ import cats.syntax.apply._
 import cats.syntax.validated._
 import scala.annotation.tailrec
 import scala.language.implicitConversions
+import typify.tuple._
 
-package object typify extends Compat {
+package object typify {
   type PV[P, L, A] = Cursor[P] => ValidatedNel[L, A]
   type KPV[P, L, A] = String => PV[P, L, A]
 
