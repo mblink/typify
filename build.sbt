@@ -40,7 +40,7 @@ lazy val baseSettings = Seq(
 )
 
 lazy val root = project.in(file("."))
-  .aggregate(tagged.jvm, tagged.js, typifyJVM, typifyJS, circeTypify, json4sTypify, playjsonTypify, sjsTypify)
+  .aggregate(tuple.jvm, tuple.js, typifyJVM, typifyJS, circeTypify, json4sTypify, playjsonTypify, sjsTypify)
   .settings(baseSettings)
   .settings(
     publish := {},
@@ -69,22 +69,6 @@ lazy val tuple = crossProject(JSPlatform, JVMPlatform).in(file("tuple"))
     ),
   )
 
-lazy val tagged = crossProject(JSPlatform, JVMPlatform).in(file("tagged"))
-  .settings(baseSettings)
-  .settings(
-    name := "typify-tagged",
-    libraryDependencies ++= Seq(cats.value),
-    libraryDependencies ++= foldScalaV(scalaVersion.value)(
-      Seq(
-        shapeless.value,
-        scalaOrganization.value % "scala-compiler" % scalaVersion.value % "provided",
-      ),
-      Seq(),
-    ),
-  )
-  .dependsOn(tuple)
-  .aggregate(tuple)
-
 lazy val typify = crossProject(JSPlatform, JVMPlatform).in(file("typify"))
   .settings(baseSettings)
   .settings(
@@ -95,8 +79,8 @@ lazy val typify = crossProject(JSPlatform, JVMPlatform).in(file("typify"))
       Seq(),
     ),
   )
-  .dependsOn(tagged)
-  .aggregate(tagged)
+  .dependsOn(tuple)
+  .aggregate(tuple)
 
 lazy val typifyJVM = typify.jvm
 lazy val typifyJS = typify.js.enablePlugins(ScalaJSPlugin)

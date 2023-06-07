@@ -1,4 +1,4 @@
-package typify.labelled
+package typify.record
 
 import typify.tuple.{Append, DepFn2, IfEq, IndexOf}
 

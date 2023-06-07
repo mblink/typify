@@ -1,4 +1,4 @@
-package typify.labelled
+package typify.record
 
 import scala.language.experimental.macros
 import scala.reflect.macros.whitebox
@@ -59,8 +59,8 @@ object StringLabelling {
         else
           c.abort(c.enclosingPosition, s"$tTpe is not case class like or the root of a sealed family of types")
 
-      q"""(new _root_.typify.labelled.StringLabelling[$tTpe] { type Labels = $labelsTpe })
-        .asInstanceOf[_root_.typify.labelled.StringLabelling.Aux[$tTpe, $labelsTpe]]"""
+      q"""(new _root_.typify.record.StringLabelling[$tTpe] { type Labels = $labelsTpe })
+        .asInstanceOf[_root_.typify.record.StringLabelling.Aux[$tTpe, $labelsTpe]]"""
     }
   }
 }

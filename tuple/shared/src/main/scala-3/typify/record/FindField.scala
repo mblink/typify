@@ -1,4 +1,4 @@
-package typify.labelled
+package typify.record
 
 type FindField[T <: Tuple, K] = FindField0[T, K, 0]
 

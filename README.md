@@ -39,7 +39,7 @@ import typify.parsedany._
 case class Fail(reason: String, history: CursorHistory[_])
 
 val tp = new Typify[Fail, Any]
-// tp: Typify[Fail, Any] = typify.Typify@714299d5
+// tp: Typify[Fail, Any] = typify.Typify@37c7b6b6
 ```
 
 We also need to define an implicit function to convert a typify.ParseError to our failure type.
@@ -64,25 +64,25 @@ import cats.syntax.validated._
 
 val checkEmail = Typify.validate((_: String, s: String, c: Cursor[Any]) => s.validNel[Fail]
   .ensure(NonEmptyList.of(Fail("Email is invalid", c.history)))(_.contains("@")))
-// checkEmail: typify.package.KPV[Any, Fail, String] = typify.Typify$$$Lambda$35264/0x0000000803f65a70@c251138
+// checkEmail: typify.package.KPV[Any, Fail, String] = typify.Typify$$$Lambda$24045/0x00000008038d0000@5137b660
 
 val checkAge = Typify.validate((_: String, i: Int, c: Cursor[Any]) => i.validNel[Fail]
   .ensure(NonEmptyList.of(Fail("Too young", c.history)))(_ > 21))
-// checkAge: typify.package.KPV[Any, Fail, Int] = typify.Typify$$$Lambda$35264/0x0000000803f65a70@22b16f40
+// checkAge: typify.package.KPV[Any, Fail, Int] = typify.Typify$$$Lambda$24045/0x00000008038d0000@6d67f97
 
 val checkSessIdF = ((_: String, i: Int, c: Cursor[Any]) => i.validNel[Fail]
   .ensure(NonEmptyList.of(Fail("Invalid session id", c.history)))(_ > 3000))
 // checkSessIdF: (String, Int, Cursor[Any]) => cats.data.Validated[NonEmptyList[Fail], Int] = <function3>
 
 val checkSessId = Typify.optional(checkSessIdF)
-// checkSessId: typify.package.KPV[Any, Fail, Option[Int]] = typify.Typify$$$Lambda$35265/0x0000000803f6c230@5dd57dba
+// checkSessId: typify.package.KPV[Any, Fail, Option[Int]] = typify.Typify$$$Lambda$24046/0x00000008038d03d0@32befbf6
 ```
 
 Now we can define in which fields to look for these values under our source value as follows.
 
 ```scala
 val checkPerson = "email" ->> checkEmail :: "age" ->> checkAge :: "session" ->> checkSessId :: HNil
-// checkPerson: shapeless.::[typify.package.KPV[Any, Fail, String] with shapeless.labelled.KeyTag["email", typify.package.KPV[Any, Fail, String]], shapeless.::[typify.package.KPV[Any, Fail, Int] with shapeless.labelled.KeyTag["age", typify.package.KPV[Any, Fail, Int]], shapeless.::[typify.package.KPV[Any, Fail, Option[Int]] with shapeless.labelled.KeyTag["session", typify.package.KPV[Any, Fail, Option[Int]]], HNil]]] = typify.Typify$$$Lambda$35264/0x0000000803f65a70@c251138 :: typify.Typify$$$Lambda$35264/0x0000000803f65a70@22b16f40 :: typify.Typify$$$Lambda$35265/0x0000000803f6c230@5dd57dba :: HNil
+// checkPerson: shapeless.::[typify.package.KPV[Any, Fail, String] with shapeless.labelled.KeyTag["email", typify.package.KPV[Any, Fail, String]], shapeless.::[typify.package.KPV[Any, Fail, Int] with shapeless.labelled.KeyTag["age", typify.package.KPV[Any, Fail, Int]], shapeless.::[typify.package.KPV[Any, Fail, Option[Int]] with shapeless.labelled.KeyTag["session", typify.package.KPV[Any, Fail, Option[Int]]], HNil]]] = typify.Typify$$$Lambda$24045/0x00000008038d0000@5137b660 :: typify.Typify$$$Lambda$24045/0x00000008038d0000@6d67f97 :: typify.Typify$$$Lambda$24046/0x00000008038d03d0@32befbf6 :: HNil
 ```
 
 From here we are able to parse a person out of Any using our Typify instance.
@@ -109,15 +109,15 @@ val failsAtValidation: Any = Map("email" -> "foo", "session" -> 77777)
 // failsAtValidation: Any = Map("email" -> "foo", "session" -> 77777)
 
 val passed = Cursor.top(passes).parse(checkPerson)
-// passed: cats.data.package.ValidatedNel[Fail, typify.package.*:[typify.labelled.package.->>["email", String], typify.package.*:[typify.labelled.package.->>["age", Int], typify.package.*:[typify.labelled.package.->>["session", Option[Int]], typify.package.EmptyTuple]]]] = Valid(
+// passed: cats.data.package.ValidatedNel[Fail, typify.tuple.package.*:[typify.record.package.->>["email", String], typify.tuple.package.*:[typify.record.package.->>["age", Int], typify.tuple.package.*:[typify.record.package.->>["session", Option[Int]], typify.tuple.package.EmptyTuple]]]] = Valid(
 //   a = "foo@bar" :: 22 :: None :: HNil
 // )
 val passedNoSess = Cursor.top(passesNoSess).parse(checkPerson)
-// passedNoSess: cats.data.package.ValidatedNel[Fail, typify.package.*:[typify.labelled.package.->>["email", String], typify.package.*:[typify.labelled.package.->>["age", Int], typify.package.*:[typify.labelled.package.->>["session", Option[Int]], typify.package.EmptyTuple]]]] = Valid(
+// passedNoSess: cats.data.package.ValidatedNel[Fail, typify.tuple.package.*:[typify.record.package.->>["email", String], typify.tuple.package.*:[typify.record.package.->>["age", Int], typify.tuple.package.*:[typify.record.package.->>["session", Option[Int]], typify.tuple.package.EmptyTuple]]]] = Valid(
 //   a = "foo@bar" :: 22 :: None :: HNil
 // )
 val failedAtParse = Cursor.top(failsAtParse).parse(checkPerson)
-// failedAtParse: cats.data.package.ValidatedNel[Fail, typify.package.*:[typify.labelled.package.->>["email", String], typify.package.*:[typify.labelled.package.->>["age", Int], typify.package.*:[typify.labelled.package.->>["session", Option[Int]], typify.package.EmptyTuple]]]] = Invalid(
+// failedAtParse: cats.data.package.ValidatedNel[Fail, typify.tuple.package.*:[typify.record.package.->>["email", String], typify.tuple.package.*:[typify.record.package.->>["age", Int], typify.tuple.package.*:[typify.record.package.->>["session", Option[Int]], typify.tuple.package.EmptyTuple]]]] = Invalid(
 //   e = NonEmptyList(
 //     head = Fail(
 //       reason = "Could not be interpreted as java.lang.String",
@@ -132,7 +132,7 @@ val failedAtParse = Cursor.top(failsAtParse).parse(checkPerson)
 //   )
 // )
 val failedAtValidation = Cursor.top(failsAtValidation).parse(checkPerson)
-// failedAtValidation: cats.data.package.ValidatedNel[Fail, typify.package.*:[typify.labelled.package.->>["email", String], typify.package.*:[typify.labelled.package.->>["age", Int], typify.package.*:[typify.labelled.package.->>["session", Option[Int]], typify.package.EmptyTuple]]]] = Invalid(
+// failedAtValidation: cats.data.package.ValidatedNel[Fail, typify.tuple.package.*:[typify.record.package.->>["email", String], typify.tuple.package.*:[typify.record.package.->>["age", Int], typify.tuple.package.*:[typify.record.package.->>["session", Option[Int]], typify.tuple.package.EmptyTuple]]]] = Invalid(
 //   e = NonEmptyList(
 //     head = Fail(
 //       reason = "Email is invalid",
@@ -155,16 +155,16 @@ operations to compose rules, and do partial validation.
 import shapeless.record._
 
 val checkRequiredSess = Typify.validate(checkSessIdF)
-// checkRequiredSess: typify.package.KPV[Any, Fail, Int] = typify.Typify$$$Lambda$35264/0x0000000803f65a70@371d9954
+// checkRequiredSess: typify.package.KPV[Any, Fail, Int] = typify.Typify$$$Lambda$24045/0x00000008038d0000@729b81fe
 val checkPersonWithSession = (checkPerson - "session") + ("session" ->> checkRequiredSess)
-// checkPersonWithSession: shapeless.::[String => Cursor[Any] => cats.data.Validated[NonEmptyList[Fail], String] with shapeless.labelled.KeyTag["email", String => Cursor[Any] => cats.data.Validated[NonEmptyList[Fail], String]], shapeless.::[String => Cursor[Any] => cats.data.Validated[NonEmptyList[Fail], Int] with shapeless.labelled.KeyTag["age", String => Cursor[Any] => cats.data.Validated[NonEmptyList[Fail], Int]], shapeless.::[String => Cursor[Any] => cats.data.Validated[NonEmptyList[Fail], Int] with shapeless.labelled.KeyTag["session", String => Cursor[Any] => cats.data.Validated[NonEmptyList[Fail], Int]], HNil]]] = typify.Typify$$$Lambda$35264/0x0000000803f65a70@c251138 :: typify.Typify$$$Lambda$35264/0x0000000803f65a70@22b16f40 :: typify.Typify$$$Lambda$35264/0x0000000803f65a70@371d9954 :: HNil
+// checkPersonWithSession: shapeless.::[String => Cursor[Any] => cats.data.Validated[NonEmptyList[Fail], String] with shapeless.labelled.KeyTag["email", String => Cursor[Any] => cats.data.Validated[NonEmptyList[Fail], String]], shapeless.::[String => Cursor[Any] => cats.data.Validated[NonEmptyList[Fail], Int] with shapeless.labelled.KeyTag["age", String => Cursor[Any] => cats.data.Validated[NonEmptyList[Fail], Int]], shapeless.::[String => Cursor[Any] => cats.data.Validated[NonEmptyList[Fail], Int] with shapeless.labelled.KeyTag["session", String => Cursor[Any] => cats.data.Validated[NonEmptyList[Fail], Int]], HNil]]] = typify.Typify$$$Lambda$24045/0x00000008038d0000@5137b660 :: typify.Typify$$$Lambda$24045/0x00000008038d0000@6d67f97 :: typify.Typify$$$Lambda$24045/0x00000008038d0000@729b81fe :: HNil
 
 val passedWithSession = Cursor.top(passes).parse(checkPersonWithSession)
-// passedWithSession: cats.data.package.ValidatedNel[Fail, typify.package.*:[typify.labelled.package.->>["email", String], typify.package.*:[typify.labelled.package.->>["age", Int], typify.package.*:[typify.labelled.package.->>["session", Int], typify.package.EmptyTuple]]]] = Valid(
+// passedWithSession: cats.data.package.ValidatedNel[Fail, typify.tuple.package.*:[typify.record.package.->>["email", String], typify.tuple.package.*:[typify.record.package.->>["age", Int], typify.tuple.package.*:[typify.record.package.->>["session", Int], typify.tuple.package.EmptyTuple]]]] = Valid(
 //   a = "foo@bar" :: 22 :: 77777 :: HNil
 // )
 val failedNoSession = Cursor.top(passesNoSess).parse(checkPersonWithSession)
-// failedNoSession: cats.data.package.ValidatedNel[Fail, typify.package.*:[typify.labelled.package.->>["email", String], typify.package.*:[typify.labelled.package.->>["age", Int], typify.package.*:[typify.labelled.package.->>["session", Int], typify.package.EmptyTuple]]]] = Invalid(
+// failedNoSession: cats.data.package.ValidatedNel[Fail, typify.tuple.package.*:[typify.record.package.->>["email", String], typify.tuple.package.*:[typify.record.package.->>["age", Int], typify.tuple.package.*:[typify.record.package.->>["session", Int], typify.tuple.package.EmptyTuple]]]] = Invalid(
 //   e = NonEmptyList(
 //     head = Fail(
 //       reason = "Could not be interpreted as Int",
@@ -174,7 +174,7 @@ val failedNoSession = Cursor.top(passesNoSess).parse(checkPersonWithSession)
 //   )
 // )
 val passedPartialSession = Cursor.top(passesNoSess).parse(checkPersonWithSession - "session")
-// passedPartialSession: cats.data.package.ValidatedNel[Fail, typify.package.*:[typify.labelled.package.->>["email", String], typify.package.*:[typify.labelled.package.->>["age", Int], typify.package.EmptyTuple]]] = Valid(
+// passedPartialSession: cats.data.package.ValidatedNel[Fail, typify.tuple.package.*:[typify.record.package.->>["email", String], typify.tuple.package.*:[typify.record.package.->>["age", Int], typify.tuple.package.EmptyTuple]]] = Valid(
 //   a = "foo@bar" :: 22 :: HNil
 // )
 ```

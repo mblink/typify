@@ -1,4 +1,4 @@
-package typify.labelled
+package typify.record
 
 type ReplaceKey[T <: Tuple, K1, K2] <: Tuple = T match {
   case (K1 ->> v) *: t => (K2 ->> v) *: t

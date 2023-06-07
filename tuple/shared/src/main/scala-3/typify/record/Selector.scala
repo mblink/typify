@@ -1,4 +1,4 @@
-package typify.labelled
+package typify.record
 
 import scala.language.implicitConversions
 import typify.tuple.DepFn1

@@ -1,9 +1,9 @@
 package typify
-package labelled
+package record
 
 import scala.language.implicitConversions
 
-trait LabelledPackageAux {
+trait RecordPackageAux {
   final opaque type ->>[K, +V] = V
   object ->> {
     implicit def convertToV[K, V](kv: K ->> V): V = kv

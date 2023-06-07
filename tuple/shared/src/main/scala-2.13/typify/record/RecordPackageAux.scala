@@ -1,10 +1,10 @@
 package typify
-package labelled
+package record
 
 import scala.language.implicitConversions
 import typify.tuple.Tuple
 
-private[typify] trait LabelledPackageAux {
+private[typify] trait RecordPackageAux {
   final type ->>[K, +V] = tagged.TranslucentTagged[V, K]
 
   final class LabelPartialAp[K] {

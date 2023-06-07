@@ -1,4 +1,4 @@
-package typify.labelled
+package typify.record
 
 import scala.deriving.Mirror
 import typify.tuple.ZipWith
