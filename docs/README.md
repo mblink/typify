@@ -20,9 +20,9 @@ and an optional session id.
 First some imports.
 
 ```scala mdoc:silent
-import shapeless.HNil
-import shapeless.syntax.singleton._
 import typify.{Cursor, CursorHistory, ParseError, Typify}
+import typify.tuple._
+import typify.record._
 ```
 
 Now we can create an instance of Typify  by specifying the failure type we will use and
@@ -50,7 +50,7 @@ case class ParseError(key: String, error: String)
 ```
 
 ```scala mdoc
-implicit val parse2Error = (pe: ParseError[Any]) => Fail(pe.message, pe.cursor.history)
+implicit val parse2Error: ParseError[Any] => Fail = pe => Fail(pe.message, pe.cursor.history)
 ```
 
 Now we can define some validation functions.
@@ -75,7 +75,7 @@ val checkSessId = Typify.optional(checkSessIdF)
 Now we can define in which fields to look for these values under our source value as follows.
 
 ```scala mdoc
-val checkPerson = "email" ->> checkEmail :: "age" ->> checkAge :: "session" ->> checkSessId :: HNil
+val checkPerson = ("email" ->> checkEmail) *: ("age" ->> checkAge) *: ("session" ->> checkSessId) *: EmptyTuple
 ```
 
 From here we are able to parse a person out of Any using our Typify instance.
@@ -98,10 +98,8 @@ Because our validation rules and results are both simply HLists, we can use HLis
 operations to compose rules, and do partial validation.
 
 ```scala mdoc
-import shapeless.record._
-
 val checkRequiredSess = Typify.validate(checkSessIdF)
-val checkPersonWithSession = (checkPerson - "session") + ("session" ->> checkRequiredSess)
+val checkPersonWithSession = checkPerson.updateWith("session")(_ => checkRequiredSess)
 
 val passedWithSession = Cursor.top(passes).parse(checkPersonWithSession)
 val failedNoSession = Cursor.top(passesNoSess).parse(checkPersonWithSession)
