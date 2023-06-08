@@ -13,6 +13,9 @@ trait TuplePackageAux {
     final def toList[Lub](implicit tl: ToList[T, Lub]): List[Lub] = tl(t)
   }
 
+  final type Generic[A] = shapeless.Generic[A]
+  final val Generic: shapeless.Generic.type = shapeless.Generic
+
   final type FillWith[F, L <: Tuple] = shapeless.ops.hlist.FillWith[F, L]
   final val FillWith: shapeless.ops.hlist.FillWith.type = shapeless.ops.hlist.FillWith
 
