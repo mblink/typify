@@ -1,3 +1,5 @@
+import typify._
+
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val scala213 = "2.13.10"
@@ -20,7 +22,16 @@ lazy val baseSettings = Seq(
   ),
   scalacOptions ++= foldScalaV(scalaVersion.value)(
     Seq("-Vimplicits-verbose-tree"),
-    Seq(),
+    Seq(
+      "-no-indent",
+      "-Wvalue-discard",
+      "-Wunused:implicits",
+      "-Wunused:imports",
+      "-Wunused:locals",
+      "-Wunused:params",
+      "-Wunused:privates",
+      "-Wunused:unsafe-warn-patvars",
+    ),
   ),
   scalacOptions --= Seq(
     "-language:existentials",
@@ -31,27 +42,31 @@ lazy val baseSettings = Seq(
   gitPublishDir := file("/src/maven-repo")
 )
 
-lazy val root = project.in(file("."))
-  .aggregate(tagged.jvm, tagged.js, typifyJVM, typifyJS, circeTypify, json4sTypify/*, playjsonTypify*/, sjsTypify)
-  .settings(baseSettings)
-  .settings(
-    publish := {},
-    publishLocal := {},
-    gitRelease := {}
-  )
+lazy val root = {
+  val root = project.in(file("."))
+    .aggregate(tuple.jvm, tuple.js, typifyJVM, typifyJS, circeTypify, json4sTypify, sjsTypify)
+    .settings(baseSettings)
+    .settings(
+      publish := {},
+      publishLocal := {},
+      gitRelease := {}
+    )
+
+  if (System.getProperty("java.version").startsWith("1.8")) root else root.aggregate(playjsonTypify)
+}
 
 lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.9.0" }
 lazy val circe = "io.circe" %% "circe-core" % "0.14.5"
 lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.6"
-lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC8"
+lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC9"
 lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.10" }
 lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.17.0" % "test" }
 
-lazy val tagged = crossProject(JSPlatform, JVMPlatform).in(file("tagged"))
+lazy val tuple = crossProject(JSPlatform, JVMPlatform).in(file("tuple"))
   .settings(baseSettings)
   .settings(
-    name := "typify-tagged",
-    libraryDependencies ++= Seq(cats.value),
+    name := "typify-tuple",
+    libraryDependencies ++= Seq(cats.value, scalacheck.value),
     libraryDependencies ++= foldScalaV(scalaVersion.value)(
       Seq(
         shapeless.value,
@@ -59,6 +74,25 @@ lazy val tagged = crossProject(JSPlatform, JVMPlatform).in(file("tagged"))
       ),
       Seq(),
     ),
+    Test / sourceGenerators += Def.task {
+      val srcManaged = (Test / sourceManaged).value / "generated"
+
+      def gen(scalaF: String, generator: SourceGenerator) = {
+        println(s"Generating ${srcManaged / scalaF} with $generator")
+        IO.write(srcManaged / scalaF, generator())
+        srcManaged / scalaF
+      }
+
+      Seq(
+        gen("Util.scala", SourceGenerator.Util),
+        gen("TupleSelectorTest.scala", SourceGenerator.TupleSelectorTest),
+        gen("SelectorTest.scala", SourceGenerator.SelectorTest),
+        gen("UpdaterTest.scala", SourceGenerator.UpdaterTest),
+        gen("ModifierTest.scala", SourceGenerator.ModifierTest),
+        gen("RenamerTest.scala", SourceGenerator.RenamerTest),
+        gen("RemoverTest.scala", SourceGenerator.RemoverTest),
+      )
+    }
   )
 
 lazy val typify = crossProject(JSPlatform, JVMPlatform).in(file("typify"))
@@ -71,8 +105,8 @@ lazy val typify = crossProject(JSPlatform, JVMPlatform).in(file("typify"))
       Seq(),
     ),
   )
-  .dependsOn(tagged)
-  .aggregate(tagged)
+  .dependsOn(tuple)
+  .aggregate(tuple)
 
 lazy val typifyJVM = typify.jvm
 lazy val typifyJS = typify.js.enablePlugins(ScalaJSPlugin)
@@ -93,13 +127,13 @@ lazy val json4sTypify = project.in(file("json4s-typify"))
   )
   .dependsOn(typifyJVM % "test->test;compile->compile")
 
-// lazy val playjsonTypify = project.in(file("play-json-typify"))
-//   .settings(baseSettings)
-//   .settings(
-//     name := "play-json-typify",
-//     libraryDependencies ++= Seq(cats.value, playJson)
-//   )
-//   .dependsOn(typifyJVM % "test->test;compile->compile")
+lazy val playjsonTypify = project.in(file("play-json-typify"))
+  .settings(baseSettings)
+  .settings(
+    name := "play-json-typify",
+    libraryDependencies ++= Seq(cats.value, playJson)
+  )
+  .dependsOn(typifyJVM % "test->test;compile->compile")
 
 lazy val sjsTypify = project.in(file("jsdynamic-typify"))
   .settings(baseSettings)

@@ -2,7 +2,8 @@ package typify
 
 import cats.syntax.apply._
 import cats.syntax.validated._
-import typify.labelled._
+import typify.record._
+import typify.tuple._
 
 sealed trait PVFolder[P, L, I <: Tuple, O <: Tuple]
 extends (I => PV[P, L, EmptyTuple] => PV[P, L, O])

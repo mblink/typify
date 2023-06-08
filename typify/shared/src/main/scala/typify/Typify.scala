@@ -6,6 +6,7 @@ import cats.syntax.traverse._
 import cats.syntax.validated._
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
+import typify.tuple._
 
 object Typify {
   def validate[L, P, A, B](v: (String, A, Cursor[P]) => ValidatedNel[L, B])(implicit e2l: E2L[L, P], cp: CanParse[A, P]): KPV[P, L, B] =

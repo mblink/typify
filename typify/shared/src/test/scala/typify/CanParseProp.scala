@@ -5,6 +5,7 @@ import cats.syntax.option._
 import cats.syntax.validated._
 import org.scalacheck.{Arbitrary, Gen, Prop, Properties}
 import org.scalacheck.Prop.{forAllNoShrink, propBoolean}
+import scala.util.chaining._
 
 trait MakeParsed[P] {
 
@@ -193,16 +194,16 @@ class CanParseProp[P](mp: MakeParsed[P])(implicit
     }
 
   def props(msg: String): Properties = new Properties(msg) {
-    property.update("int", int): Unit
-    property.update("string", string): Unit
-    property.update("long", long): Unit
-    property.update("double", double): Unit
-    property.update("boolean", boolean): Unit
-    property.update("list", list): Unit
-    property.update("recursive", recursive): Unit
-    property.update("boolString", boolString): Unit
-    property.update("intString", intString): Unit
-    property.update("longString", longString): Unit
-    property.update("doubleString", doubleString): Unit
+    property.update("int", int).pipe(_ => ())
+    property.update("string", string).pipe(_ => ())
+    property.update("long", long).pipe(_ => ())
+    property.update("double", double).pipe(_ => ())
+    property.update("boolean", boolean).pipe(_ => ())
+    property.update("list", list).pipe(_ => ())
+    property.update("recursive", recursive).pipe(_ => ())
+    property.update("boolString", boolString).pipe(_ => ())
+    property.update("intString", intString).pipe(_ => ())
+    property.update("longString", longString).pipe(_ => ())
+    property.update("doubleString", doubleString).pipe(_ => ())
   }
 }
