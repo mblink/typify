@@ -11,7 +11,8 @@ object Reify {
     new Reify[T] {
       type Out = T
       def apply(): T =
-        Tuple.fromArray(compiletime.summonAll[Tuple.Map[T, ValueOf]]
-          .toArray.asInstanceOf[Array[ValueOf[Any]]].map(_.value)).asInstanceOf[T]
+        compiletime.summonAll[Tuple.Map[T, ValueOf]].toList
+          .foldRight[Tuple](EmptyTuple)((v, acc) => v.asInstanceOf[ValueOf[_]].value *: acc)
+          .asInstanceOf[T]
     }
 }
