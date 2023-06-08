@@ -1,3 +1,5 @@
+import typify._
+
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val scala213 = "2.13.10"
@@ -21,6 +23,7 @@ lazy val baseSettings = Seq(
   scalacOptions ++= foldScalaV(scalaVersion.value)(
     Seq("-Vimplicits-verbose-tree"),
     Seq(
+      "-no-indent",
       "-Wvalue-discard",
       "-Wunused:implicits",
       "-Wunused:imports",
@@ -59,7 +62,7 @@ lazy val tuple = crossProject(JSPlatform, JVMPlatform).in(file("tuple"))
   .settings(baseSettings)
   .settings(
     name := "typify-tuple",
-    libraryDependencies ++= Seq(cats.value),
+    libraryDependencies ++= Seq(cats.value, scalacheck.value),
     libraryDependencies ++= foldScalaV(scalaVersion.value)(
       Seq(
         shapeless.value,
@@ -67,6 +70,25 @@ lazy val tuple = crossProject(JSPlatform, JVMPlatform).in(file("tuple"))
       ),
       Seq(),
     ),
+    Test / sourceGenerators += Def.task {
+      val srcManaged = (Test / sourceManaged).value / "generated"
+
+      def gen(scalaF: String, generator: SourceGenerator) = {
+        println(s"Generating ${srcManaged / scalaF} with $generator")
+        IO.write(srcManaged / scalaF, generator())
+        srcManaged / scalaF
+      }
+
+      Seq(
+        gen("Util.scala", SourceGenerator.Util),
+        gen("TupleSelectorTest.scala", SourceGenerator.TupleSelectorTest),
+        gen("SelectorTest.scala", SourceGenerator.SelectorTest),
+        gen("UpdaterTest.scala", SourceGenerator.UpdaterTest),
+        gen("ModifierTest.scala", SourceGenerator.ModifierTest),
+        gen("RenamerTest.scala", SourceGenerator.RenamerTest),
+        gen("RemoverTest.scala", SourceGenerator.RemoverTest),
+      )
+    }
   )
 
 lazy val typify = crossProject(JSPlatform, JVMPlatform).in(file("typify"))
