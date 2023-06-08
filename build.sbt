@@ -15,7 +15,7 @@ lazy val baseSettings = Seq(
   scalaVersion := scala3,
   crossScalaVersions := Seq(scala213, scala3),
   organization := "typify",
-  version := "7.1.0",
+  version := "8.0.0",
   libraryDependencies ++= foldScalaV(scalaVersion.value)(
     Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.patch)),
     Seq(),
