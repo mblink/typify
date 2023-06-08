@@ -42,14 +42,18 @@ lazy val baseSettings = Seq(
   gitPublishDir := file("/src/maven-repo")
 )
 
-lazy val root = project.in(file("."))
-  .aggregate(tuple.jvm, tuple.js, typifyJVM, typifyJS, circeTypify, json4sTypify, playjsonTypify, sjsTypify)
-  .settings(baseSettings)
-  .settings(
-    publish := {},
-    publishLocal := {},
-    gitRelease := {}
-  )
+lazy val root = {
+  val root = project.in(file("."))
+    .aggregate(tuple.jvm, tuple.js, typifyJVM, typifyJS, circeTypify, json4sTypify, sjsTypify)
+    .settings(baseSettings)
+    .settings(
+      publish := {},
+      publishLocal := {},
+      gitRelease := {}
+    )
+
+  if (System.getProperty("java.version").startsWith("1.8")) root else root.aggregate(playjsonTypify)
+}
 
 lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.9.0" }
 lazy val circe = "io.circe" %% "circe-core" % "0.14.5"
