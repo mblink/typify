@@ -4,6 +4,14 @@ package record
 import scala.language.implicitConversions
 import typify.tuple.Tuple
 
+final class TypifySingletonOps[K <: Singleton](private val k: K) extends AnyVal {
+  @inline final def ->>[V](v: V): K ->> V = label[K](v)
+}
+
+final class TypifyLabelledOps[K, V](private val kv: K ->> V) extends AnyVal {
+  @inline final def label(implicit k: ValueOf[K]): K = k.value
+}
+
 private[typify] trait RecordPackageAux {
   final type ->>[K, +V] = tagged.TranslucentTagged[V, K]
 
@@ -13,13 +21,8 @@ private[typify] trait RecordPackageAux {
 
   @inline final def label[K]: LabelPartialAp[K] = new LabelPartialAp[K]
 
-  final implicit class TypifySingletonOps[K <: Singleton](k: K) {
-    @inline final def ->>[V](v: V): K ->> V = label[K](v)
-  }
-
-  final implicit class TypifyLabelledOps[K, V](kv: K ->> V) {
-    @inline final def label(implicit k: ValueOf[K]): K = k.value
-  }
+  @inline final implicit def toTypifySingletonOps[K <: Singleton](k: K): TypifySingletonOps[K] = new TypifySingletonOps[K](k)
+  @inline final implicit def toTypifyLabelledOps[K, V](kv: K ->> V): TypifyLabelledOps[K, V] = new TypifyLabelledOps[K, V](kv)
 
   @inline final implicit def tupleToRecordOps[T <: Tuple](t: T): shapeless.syntax.RecordOps[T] =
     new shapeless.syntax.RecordOps[T](t)
