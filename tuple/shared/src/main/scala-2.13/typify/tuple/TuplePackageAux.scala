@@ -1,5 +1,13 @@
 package typify.tuple
 
+import scala.language.implicitConversions
+
+final class TypifyTupleOps[T <: Tuple](private val t: T) extends AnyVal {
+  final def *:[H](h: H): shapeless.::[H, T] = new shapeless.::(h, t)
+  final def mapPoly(f: Poly)(implicit m: Mapper[f.type, T]): m.Out = m(t)
+  final def toList[Lub](implicit tl: ToList[T, Lub]): List[Lub] = tl(t)
+}
+
 trait TuplePackageAux {
   final type Tuple = shapeless.HList
   final type *:[H, T <: Tuple] = shapeless.::[H, T]
@@ -7,11 +15,7 @@ trait TuplePackageAux {
   final type EmptyTuple = shapeless.HNil
   final val EmptyTuple: EmptyTuple = shapeless.HNil
 
-  final implicit class TypifyTupleOps[T <: Tuple](t: T) {
-    final def *:[H](h: H): shapeless.::[H, T] = new shapeless.::(h, t)
-    final def mapPoly(f: Poly)(implicit m: Mapper[f.type, T]): m.Out = m(t)
-    final def toList[Lub](implicit tl: ToList[T, Lub]): List[Lub] = tl(t)
-  }
+  @inline final implicit def toTypifyTupleOps[T <: Tuple](t: T): TypifyTupleOps[T] = new TypifyTupleOps[T](t)
 
   final type Generic[A] = shapeless.Generic[A]
   final val Generic: shapeless.Generic.type = shapeless.Generic
