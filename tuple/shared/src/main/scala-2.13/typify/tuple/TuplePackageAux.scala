@@ -176,6 +176,9 @@ trait TuplePackageAux {
   final type SelectRange[L <: Tuple, A <: shapeless.Nat, B <: shapeless.Nat] = shapeless.ops.hlist.SelectRange[L, A, B]
   final val SelectRange: shapeless.ops.hlist.SelectRange.type = shapeless.ops.hlist.SelectRange
 
+  final type Slice[N, U, L <: Tuple] = shapeless.ops.hlist.Slice[N, U, L]
+  final val Slice: shapeless.ops.hlist.Slice.type = shapeless.ops.hlist.Slice
+
   final type Split[T <: Tuple, N <: shapeless.Nat] = shapeless.ops.hlist.Split[T, N]
   final val Split: shapeless.ops.hlist.Split.type = shapeless.ops.hlist.Split
 
