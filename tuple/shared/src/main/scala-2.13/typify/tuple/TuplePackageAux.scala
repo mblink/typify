@@ -71,6 +71,9 @@ trait TuplePackageAux {
   final type Mapper[F, In <: Tuple] = shapeless.ops.hlist.Mapper[F, In]
   final val Mapper: shapeless.ops.hlist.Mapper.type = shapeless.ops.hlist.Mapper
 
+  final type Modifier[L <: Tuple, U, V] = shapeless.ops.hlist.Modifier[L, U, V]
+  final val Modifier: shapeless.ops.hlist.Modifier.type = shapeless.ops.hlist.Modifier
+
   final type Partition[L <: Tuple, U] = shapeless.ops.hlist.Partition[L, U]
   final val Partition: shapeless.ops.hlist.Partition.type = shapeless.ops.hlist.Partition
 
