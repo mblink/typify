@@ -23,6 +23,9 @@ trait TuplePackageAux {
   final type ConstMapper[C, T <: Tuple] = shapeless.ops.hlist.ConstMapper[C, T]
   final val ConstMapper: shapeless.ops.hlist.ConstMapper.type = shapeless.ops.hlist.ConstMapper
 
+  final type Drop[T <: Tuple, N <: shapeless.Nat] = shapeless.ops.hlist.Drop[T, N]
+  final val Drop: shapeless.ops.hlist.Drop.type = shapeless.ops.hlist.Drop
+
   final type Generic[A] = shapeless.Generic[A]
   final val Generic: shapeless.Generic.type = shapeless.Generic
 
