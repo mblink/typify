@@ -170,6 +170,9 @@ trait TuplePackageAux {
   final type Unifier[T <: Tuple] = shapeless.ops.hlist.Unifier[T]
   final val Unifier: shapeless.ops.hlist.Unifier.type = shapeless.ops.hlist.Unifier
 
+  final type ZipApply[FL <: Tuple, AL <: Tuple] = shapeless.ops.hlist.ZipApply[FL, AL]
+  final val ZipApply: shapeless.ops.hlist.ZipApply.type = shapeless.ops.hlist.ZipApply
+
   final type ZipOne[H <: Tuple, T <: Tuple] = shapeless.ops.hlist.ZipOne[H, T]
   final val ZipOne: shapeless.ops.hlist.ZipOne.type = shapeless.ops.hlist.ZipOne
 
