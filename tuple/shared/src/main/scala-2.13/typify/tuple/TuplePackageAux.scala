@@ -182,6 +182,9 @@ trait TuplePackageAux {
   final type ZipWith[L <: Tuple, R <: Tuple, F <: shapeless.Poly2] = shapeless.ops.hlist.ZipWith[L, R, F]
   final val ZipWith: shapeless.ops.hlist.ZipWith.type = shapeless.ops.hlist.ZipWith
 
+  final type ZipWithKeys[K <: Tuple, V <: Tuple] = shapeless.ops.hlist.ZipWithKeys[K, V]
+  final val ZipWithKeys: shapeless.ops.hlist.ZipWithKeys.type = shapeless.ops.hlist.ZipWithKeys
+
   final type DepFn0 = shapeless.DepFn0
   final type DepFn1[T] = shapeless.DepFn1[T]
   final type DepFn2[T, U] = shapeless.DepFn2[T, U]
