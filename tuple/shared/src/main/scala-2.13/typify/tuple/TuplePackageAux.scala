@@ -32,6 +32,9 @@ trait TuplePackageAux {
   final type FlatMapper[F, In <: Tuple] = shapeless.ops.hlist.FlatMapper[F, In]
   final val FlatMapper: shapeless.ops.hlist.FlatMapper.type = shapeless.ops.hlist.FlatMapper
 
+  final type Grouper[L <: Tuple, N <: shapeless.Nat, Step <: shapeless.Nat] = shapeless.ops.hlist.Grouper[L, N, Step]
+  final val Grouper: shapeless.ops.hlist.Grouper.type = shapeless.ops.hlist.Grouper
+
   final type Init[T <: Tuple] = shapeless.ops.hlist.Init[T]
   final val Init: shapeless.ops.hlist.Init.type = shapeless.ops.hlist.Init
 
