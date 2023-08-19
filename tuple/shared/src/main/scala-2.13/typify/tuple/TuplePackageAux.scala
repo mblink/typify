@@ -80,6 +80,9 @@ trait TuplePackageAux {
   final type Reify[T <: Tuple] = shapeless.ops.hlist.Reify[T]
   final val Reify: shapeless.ops.hlist.Reify.type = shapeless.ops.hlist.Reify
 
+  final type Remove[L <: Tuple, U] = shapeless.ops.hlist.Remove[L, U]
+  final val Remove: shapeless.ops.hlist.Remove.type = shapeless.ops.hlist.Remove
+
   final type RightFolder[L <: Tuple, In, F] = shapeless.ops.hlist.RightFolder[L, In, F]
   final val RightFolder: shapeless.ops.hlist.RightFolder.type = shapeless.ops.hlist.RightFolder
 
