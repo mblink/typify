@@ -29,6 +29,9 @@ trait TuplePackageAux {
   final type Comapped[T <: Tuple, F[_]] = shapeless.ops.hlist.Comapped[T, F]
   final val Comapped: shapeless.ops.hlist.Comapped.type = shapeless.ops.hlist.Comapped
 
+  final type Combinations[N <: shapeless.Nat, L <: Tuple] = shapeless.ops.hlist.Combinations[N, L]
+  final val Combinations: shapeless.ops.hlist.Combinations.type = shapeless.ops.hlist.Combinations
+
   final type ConstMapper[C, T <: Tuple] = shapeless.ops.hlist.ConstMapper[C, T]
   final val ConstMapper: shapeless.ops.hlist.ConstMapper.type = shapeless.ops.hlist.ConstMapper
 
