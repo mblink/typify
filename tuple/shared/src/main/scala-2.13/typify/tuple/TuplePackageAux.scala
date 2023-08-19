@@ -161,6 +161,9 @@ trait TuplePackageAux {
   final type ToTraversable[L <: Tuple, M[_]] = shapeless.ops.hlist.ToTraversable[L, M]
   final val ToTraversable: shapeless.ops.hlist.ToTraversable.type = shapeless.ops.hlist.ToTraversable
 
+  final type Transposer[L <: Tuple] = shapeless.ops.hlist.Transposer[L]
+  final val Transposer: shapeless.ops.hlist.Transposer.type = shapeless.ops.hlist.Transposer
+
   final type TupleSelector[T <: Tuple, A] = shapeless.ops.hlist.Selector[T, A]
   final val TupleSelector: shapeless.ops.hlist.Selector.type = shapeless.ops.hlist.Selector
 
