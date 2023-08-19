@@ -65,6 +65,9 @@ trait TuplePackageAux {
   final type RightFolder[L <: Tuple, In, F] = shapeless.ops.hlist.RightFolder[L, In, F]
   final val RightFolder: shapeless.ops.hlist.RightFolder.type = shapeless.ops.hlist.RightFolder
 
+  final type RightReducer[L <: Tuple, F] = shapeless.ops.hlist.RightReducer[L, F]
+  final val RightReducer: shapeless.ops.hlist.RightReducer.type = shapeless.ops.hlist.RightReducer
+
   final type ToList[T <: Tuple, Lub] = shapeless.ops.hlist.ToList[T, Lub]
 
   final type TupleSelector[T <: Tuple, A] = shapeless.ops.hlist.Selector[T, A]
