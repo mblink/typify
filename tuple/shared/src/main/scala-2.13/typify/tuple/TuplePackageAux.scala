@@ -68,6 +68,9 @@ trait TuplePackageAux {
   final type RightReducer[L <: Tuple, F] = shapeless.ops.hlist.RightReducer[L, F]
   final val RightReducer: shapeless.ops.hlist.RightReducer.type = shapeless.ops.hlist.RightReducer
 
+  final type SubtypeUnifier[T <: Tuple, B] = shapeless.ops.hlist.SubtypeUnifier[T, B]
+  final val SubtypeUnifier: shapeless.ops.hlist.SubtypeUnifier.type = shapeless.ops.hlist.SubtypeUnifier
+
   final type ToList[T <: Tuple, Lub] = shapeless.ops.hlist.ToList[T, Lub]
 
   final type TupleSelector[T <: Tuple, A] = shapeless.ops.hlist.Selector[T, A]
