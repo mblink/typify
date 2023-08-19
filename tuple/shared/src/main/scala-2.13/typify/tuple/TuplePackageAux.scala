@@ -53,6 +53,9 @@ trait TuplePackageAux {
   final type Init[T <: Tuple] = shapeless.ops.hlist.Init[T]
   final val Init: shapeless.ops.hlist.Init.type = shapeless.ops.hlist.Init
 
+  final type Interleave[A, L <: Tuple] = shapeless.ops.hlist.Interleave[A, L]
+  final val Interleave: shapeless.ops.hlist.Interleave.type = shapeless.ops.hlist.Interleave
+
   final type IsNonEmptyTuple[T <: Tuple] = shapeless.ops.hlist.IsHCons[T]
   final val IsNonEmptyTuple: shapeless.ops.hlist.IsHCons.type = shapeless.ops.hlist.IsHCons
 
