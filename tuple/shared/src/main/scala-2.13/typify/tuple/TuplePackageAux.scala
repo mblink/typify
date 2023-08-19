@@ -71,6 +71,9 @@ trait TuplePackageAux {
   final type LeftReducer[L <: Tuple, F] = shapeless.ops.hlist.LeftReducer[L, F]
   final val LeftReducer: shapeless.ops.hlist.LeftReducer.type = shapeless.ops.hlist.LeftReducer
 
+  final type LeftScanner[L <: Tuple, In, P <: shapeless.Poly] = shapeless.ops.hlist.LeftScanner[L, In, P]
+  final val LeftScanner: shapeless.ops.hlist.LeftScanner.type = shapeless.ops.hlist.LeftScanner
+
   final type Length[T <: Tuple] = shapeless.ops.hlist.Length[T]
   final val Length: shapeless.ops.hlist.Length.type = shapeless.ops.hlist.Length
 
