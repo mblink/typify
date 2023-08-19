@@ -27,6 +27,9 @@ private[typify] trait RecordPackageAux {
   @inline final implicit def tupleToRecordOps[T <: Tuple](t: T): shapeless.syntax.RecordOps[T] =
     new shapeless.syntax.RecordOps[T](t)
 
+  final type Fields[L <: Tuple] = shapeless.ops.record.Fields[L]
+  final val Fields: shapeless.ops.record.Fields.type = shapeless.ops.record.Fields
+
   final type LacksKey[T <: Tuple, K] = shapeless.ops.record.LacksKey[T, K]
   final val LacksKey: shapeless.ops.record.LacksKey.type = shapeless.ops.record.LacksKey
 
