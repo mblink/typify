@@ -32,6 +32,9 @@ trait TuplePackageAux {
   final type MapFolder[T <: Tuple, R, F] = shapeless.ops.hlist.MapFolder[T, R, F]
   final val MapFolder: shapeless.ops.hlist.MapFolder.type = shapeless.ops.hlist.MapFolder
 
+  final type Mapped[T <: Tuple, F[_]] = shapeless.ops.hlist.Mapped[T, F]
+  final val Mapped: shapeless.ops.hlist.Mapped.type = shapeless.ops.hlist.Mapped
+
   final type Mapper[F, In <: Tuple] = shapeless.ops.hlist.Mapper[F, In]
   final val Mapper: shapeless.ops.hlist.Mapper.type = shapeless.ops.hlist.Mapper
 
