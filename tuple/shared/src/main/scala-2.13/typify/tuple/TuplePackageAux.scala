@@ -73,6 +73,9 @@ trait TuplePackageAux {
   final type TupleSelector[T <: Tuple, A] = shapeless.ops.hlist.Selector[T, A]
   final val TupleSelector: shapeless.ops.hlist.Selector.type = shapeless.ops.hlist.Selector
 
+  final type Unifier[T <: Tuple] = shapeless.ops.hlist.Unifier[T]
+  final val Unifier: shapeless.ops.hlist.Unifier.type = shapeless.ops.hlist.Unifier
+
   final type DepFn0 = shapeless.DepFn0
   final type DepFn1[T] = shapeless.DepFn1[T]
   final type DepFn2[T, U] = shapeless.DepFn2[T, U]
