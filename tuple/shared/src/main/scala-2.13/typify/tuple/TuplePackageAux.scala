@@ -29,6 +29,9 @@ trait TuplePackageAux {
   final type IsNonEmptyTuple[T <: Tuple] = shapeless.ops.hlist.IsHCons[T]
   final val IsNonEmptyTuple: shapeless.ops.hlist.IsHCons.type = shapeless.ops.hlist.IsHCons
 
+  final type Length[T <: Tuple] = shapeless.ops.hlist.Length[T]
+  final val Length: shapeless.ops.hlist.Length.type = shapeless.ops.hlist.Length
+
   final type LiftAll[F[_], In <: Tuple] = shapeless.ops.hlist.LiftAll[F, In]
   final val LiftAll: shapeless.ops.hlist.LiftAll.type = shapeless.ops.hlist.LiftAll
 
