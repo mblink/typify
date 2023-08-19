@@ -5,7 +5,7 @@ trait Collect[I, F] extends DepFn1[I]
 sealed trait CollectLP {
   final type Aux[L, F, O] = Collect[L, F] { type Out = O }
 
-  final given hlistNoPolyCase[LH, LT <: Tuple, P <: Poly, CollectOut <: Tuple](
+  final given tupleNNoPolyCase[LH, LT <: Tuple, P <: Poly, CollectOut <: Tuple](
     using ct: Collect.Aux[LT, P, CollectOut],
   ): Collect.Aux[LH *: LT, P, CollectOut] =
     new Collect[LH *: LT, P] {
@@ -23,7 +23,7 @@ object Collect extends CollectLP {
       def apply(l: EmptyTuple): Out = EmptyTuple
     }
 
-  given hlistCollect[LH, LT <: Tuple, P <: Poly, CollectOut <: Tuple, ClrResult](
+  given tupleNCollect[LH, LT <: Tuple, P <: Poly, CollectOut <: Tuple, ClrResult](
     using ct: Collect.Aux[LT, P, CollectOut],
     ch: Case1[P, LH, ClrResult],
   ): Collect.Aux[LH *: LT, P, ClrResult *: CollectOut] =
