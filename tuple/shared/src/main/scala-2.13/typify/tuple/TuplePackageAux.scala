@@ -98,6 +98,9 @@ trait TuplePackageAux {
   final type RemoveAll[L <: Tuple, SL <: Tuple] = shapeless.ops.hlist.RemoveAll[L, SL]
   final val RemoveAll: shapeless.ops.hlist.RemoveAll.type = shapeless.ops.hlist.RemoveAll
 
+  final type Repeat[L <: Tuple, N <: shapeless.Nat] = shapeless.ops.hlist.Repeat[L, N]
+  final val Repeat: shapeless.ops.hlist.Repeat.type = shapeless.ops.hlist.Repeat
+
   final type Replacer[L <: Tuple, U, V] = shapeless.ops.hlist.Replacer[L, U, V]
   final val Replacer: shapeless.ops.hlist.Replacer.type = shapeless.ops.hlist.Replacer
 
