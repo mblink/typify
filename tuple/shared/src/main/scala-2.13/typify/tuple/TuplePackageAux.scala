@@ -128,6 +128,9 @@ trait TuplePackageAux {
   final type SplitLeft[T <: Tuple, U] = shapeless.ops.hlist.SplitLeft[T, U]
   final val SplitLeft: shapeless.ops.hlist.SplitLeft.type = shapeless.ops.hlist.SplitLeft
 
+  final type SplitRight[T <: Tuple, U] = shapeless.ops.hlist.SplitRight[T, U]
+  final val SplitRight: shapeless.ops.hlist.SplitRight.type = shapeless.ops.hlist.SplitRight
+
   final type SubtypeUnifier[T <: Tuple, B] = shapeless.ops.hlist.SubtypeUnifier[T, B]
   final val SubtypeUnifier: shapeless.ops.hlist.SubtypeUnifier.type = shapeless.ops.hlist.SubtypeUnifier
 
