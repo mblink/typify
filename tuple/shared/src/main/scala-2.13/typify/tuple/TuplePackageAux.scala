@@ -146,6 +146,9 @@ trait TuplePackageAux {
   final type RightReducer[L <: Tuple, F] = shapeless.ops.hlist.RightReducer[L, F]
   final val RightReducer: shapeless.ops.hlist.RightReducer.type = shapeless.ops.hlist.RightReducer
 
+  final type RightScanner[L <: Tuple, In, P <: shapeless.Poly] = shapeless.ops.hlist.RightScanner[L, In, P]
+  final val RightScanner: shapeless.ops.hlist.RightScanner.type = shapeless.ops.hlist.RightScanner
+
   final type RotateLeft[L <: Tuple, N <: shapeless.Nat] = shapeless.ops.hlist.RotateLeft[L, N]
   final val RotateLeft: shapeless.ops.hlist.RotateLeft.type = shapeless.ops.hlist.RotateLeft
 
