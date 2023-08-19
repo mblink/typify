@@ -48,6 +48,9 @@ private[typify] trait RecordPackageAux {
   final type Selector[T <: Tuple, K] = shapeless.ops.record.Selector[T, K]
   final val Selector: shapeless.ops.record.Selector.type = shapeless.ops.record.Selector
 
+  final type SelectAll[L <: Tuple, K <: Tuple] = shapeless.ops.record.SelectAll[L, K]
+  final val SelectAll: shapeless.ops.record.SelectAll.type = shapeless.ops.record.SelectAll
+
   final type Updater[T <: Tuple, F] = shapeless.ops.record.Updater[T, F]
   final val Updater: shapeless.ops.record.Updater.type = shapeless.ops.record.Updater
 }
