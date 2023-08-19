@@ -17,6 +17,9 @@ trait TuplePackageAux {
 
   @inline final implicit def toTypifyTupleOps[T <: Tuple](t: T): TypifyTupleOps[T] = new TypifyTupleOps[T](t)
 
+  final type Comapped[T <: Tuple, F[_]] = shapeless.ops.hlist.Comapped[T, F]
+  final val Comapped: shapeless.ops.hlist.Comapped.type = shapeless.ops.hlist.Comapped
+
   final type Generic[A] = shapeless.Generic[A]
   final val Generic: shapeless.Generic.type = shapeless.Generic
 
