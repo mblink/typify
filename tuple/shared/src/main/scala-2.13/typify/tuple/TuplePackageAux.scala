@@ -101,6 +101,9 @@ trait TuplePackageAux {
   final type ReplaceAt[L <: Tuple, N <: shapeless.Nat, V] = shapeless.ops.hlist.ReplaceAt[L, N, V]
   final val ReplaceAt: shapeless.ops.hlist.ReplaceAt.type = shapeless.ops.hlist.ReplaceAt
 
+  final type ReverseSplit[T <: Tuple, N <: shapeless.Nat] = shapeless.ops.hlist.ReverseSplit[T, N]
+  final val ReverseSplit: shapeless.ops.hlist.ReverseSplit.type = shapeless.ops.hlist.ReverseSplit
+
   final type RightFolder[L <: Tuple, In, F] = shapeless.ops.hlist.RightFolder[L, In, F]
   final val RightFolder: shapeless.ops.hlist.RightFolder.type = shapeless.ops.hlist.RightFolder
 
