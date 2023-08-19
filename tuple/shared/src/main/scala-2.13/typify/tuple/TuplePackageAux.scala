@@ -119,6 +119,9 @@ trait TuplePackageAux {
   final type SubtypeUnifier[T <: Tuple, B] = shapeless.ops.hlist.SubtypeUnifier[T, B]
   final val SubtypeUnifier: shapeless.ops.hlist.SubtypeUnifier.type = shapeless.ops.hlist.SubtypeUnifier
 
+  final type Take[T <: Tuple, N <: shapeless.Nat] = shapeless.ops.hlist.Take[T, N]
+  final val Take: shapeless.ops.hlist.Take.type = shapeless.ops.hlist.Take
+
   final type ToArray[L <: Tuple, Lub] = ToTraversable.Aux[L, Array, Lub]
   final def ToArray[L <: Tuple, Lub](implicit t: ToArray[L, Lub]): ToArray[L, Lub] = t
 
