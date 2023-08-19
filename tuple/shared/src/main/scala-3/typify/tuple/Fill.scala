@@ -15,7 +15,7 @@ object Fill {
   inline def apply[N, A](using f: Fill[N, A]): Fill.Aux[N, A, f.Out] = f
 
   @annotation.tailrec
-  private def fill[A](i: Int, a: A, acc: Tuple): Tuple =
+  private[tuple] def fill[A](i: Int, a: A, acc: Tuple): Tuple =
     if (i <= 0) acc
     else fill(i - 1, a, a *: acc)
 

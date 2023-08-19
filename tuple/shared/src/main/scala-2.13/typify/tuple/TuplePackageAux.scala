@@ -104,6 +104,9 @@ trait TuplePackageAux {
   final type ModifierAt[L <: Tuple, N <: shapeless.Nat, U, V] = shapeless.ops.hlist.ModifierAt[L, N, U, V]
   final val ModifierAt: shapeless.ops.hlist.ModifierAt.type = shapeless.ops.hlist.ModifierAt
 
+  final type PadTo[N, A, L <: Tuple] = shapeless.ops.hlist.PadTo[N, A, L]
+  final val PadTo: shapeless.ops.hlist.PadTo.type = shapeless.ops.hlist.PadTo
+
   final type Partition[L <: Tuple, U] = shapeless.ops.hlist.Partition[L, U]
   final val Partition: shapeless.ops.hlist.Partition.type = shapeless.ops.hlist.Partition
 
