@@ -9,9 +9,9 @@ object Modifier {
 
   given modifierTuple[L <: Tuple, U, V](
     using idx: ValueOf[ElemIndex[L, U]],
-  ): Modifier.Aux[L, U, V, (U, ReplacerT[L, U, V])] =
+  ): Modifier.Aux[L, U, V, (U, ReplaceElem[L, U, V])] =
     new Modifier[L, U, V] {
-      type Out = (U, ReplacerT[L, U, V])
+      type Out = (U, ReplaceElem[L, U, V])
       def apply(l: L, f: U => V): Out = {
         val b = l.toArray.to(collection.mutable.Buffer)
         val u = b(idx.value)
