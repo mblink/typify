@@ -173,6 +173,9 @@ trait TuplePackageAux {
   final type ZipApply[FL <: Tuple, AL <: Tuple] = shapeless.ops.hlist.ZipApply[FL, AL]
   final val ZipApply: shapeless.ops.hlist.ZipApply.type = shapeless.ops.hlist.ZipApply
 
+  final type ZipConst[C, T <: Tuple] = shapeless.ops.hlist.ZipConst[C, T]
+  final val ZipConst: shapeless.ops.hlist.ZipConst.type = shapeless.ops.hlist.ZipConst
+
   final type ZipOne[H <: Tuple, T <: Tuple] = shapeless.ops.hlist.ZipOne[H, T]
   final val ZipOne: shapeless.ops.hlist.ZipOne.type = shapeless.ops.hlist.ZipOne
 
