@@ -42,6 +42,9 @@ private[typify] trait RecordPackageAux {
   final type Modifier[T <: Tuple, K, A, B] = shapeless.ops.record.Modifier[T, K, A, B]
   final val Modifier: shapeless.ops.record.Modifier.type = shapeless.ops.record.Modifier
 
+  final type Remove[L <: Tuple, U] = shapeless.ops.record.Remove[L, U]
+  final val Remove: shapeless.ops.record.Remove.type = shapeless.ops.record.Remove
+
   final type Remover[T <: Tuple, K] = shapeless.ops.record.Remover[T, K]
   final val Remover: shapeless.ops.record.Remover.type = shapeless.ops.record.Remover
 
