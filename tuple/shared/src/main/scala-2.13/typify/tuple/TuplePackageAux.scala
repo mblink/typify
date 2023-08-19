@@ -26,6 +26,9 @@ trait TuplePackageAux {
   final type FillWith[F, L <: Tuple] = shapeless.ops.hlist.FillWith[F, L]
   final val FillWith: shapeless.ops.hlist.FillWith.type = shapeless.ops.hlist.FillWith
 
+  final type FlatMapper[F, In <: Tuple] = shapeless.ops.hlist.FlatMapper[F, In]
+  final val FlatMapper: shapeless.ops.hlist.FlatMapper.type = shapeless.ops.hlist.FlatMapper
+
   final type IsNonEmptyTuple[T <: Tuple] = shapeless.ops.hlist.IsHCons[T]
   final val IsNonEmptyTuple: shapeless.ops.hlist.IsHCons.type = shapeless.ops.hlist.IsHCons
 
