@@ -77,6 +77,9 @@ trait TuplePackageAux {
   final type SelectAll[L <: Tuple, S <: Tuple] = shapeless.ops.hlist.SelectAll[L, S]
   final val SelectAll: shapeless.ops.hlist.SelectAll.type = shapeless.ops.hlist.SelectAll
 
+  final type SelectMany[L <: Tuple, Ids <: Tuple] = shapeless.ops.hlist.SelectMany[L, Ids]
+  final val SelectMany: shapeless.ops.hlist.SelectMany.type = shapeless.ops.hlist.SelectMany
+
   final type SubtypeUnifier[T <: Tuple, B] = shapeless.ops.hlist.SubtypeUnifier[T, B]
   final val SubtypeUnifier: shapeless.ops.hlist.SubtypeUnifier.type = shapeless.ops.hlist.SubtypeUnifier
 
