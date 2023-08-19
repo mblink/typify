@@ -36,6 +36,9 @@ private[typify] trait RecordPackageAux {
   final type Keys[T <: Tuple] = shapeless.ops.record.Keys[T]
   final val Keys: shapeless.ops.record.Keys.type = shapeless.ops.record.Keys
 
+  final type MapValues[F, L <: Tuple] = shapeless.ops.record.MapValues[F, L]
+  final val MapValues: shapeless.ops.record.MapValues.type = shapeless.ops.record.MapValues
+
   final type Merger[L <: Tuple, M <: Tuple] = shapeless.ops.record.Merger[L, M]
   final val Merger: shapeless.ops.record.Merger.type = shapeless.ops.record.Merger
 
