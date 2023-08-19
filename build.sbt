@@ -3,7 +3,7 @@ import typify._
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val scala213 = "2.13.10"
-lazy val scala3 = "3.3.0"
+lazy val scala3 = "3.4.0-RC1-bin-20230818-932c10d-NIGHTLY"
 
 ThisBuild / crossScalaVersions := Seq(scala213, scala3)
 
