@@ -12,7 +12,7 @@ type ReversePrependTuple[L <: Tuple, M <: Tuple] <: Tuple = L match {
 object Remover {
   type Aux[T <: Tuple, K, O] = Remover[T, K] { type Out = O }
 
-  inline def apply[T <: Tuple, K](implicit r: Remover[T, K]): Aux[T, K, r.Out] = r
+  inline def apply[T <: Tuple, K](implicit r: Remover[T, K]): Remover.Aux[T, K, r.Out] = r
   inline def apply[T <: Tuple, K](t: T, k: K)(implicit r: Remover[T, K]): r.Out = r(t)
 
   type RemoveField[T <: Tuple, K] = RemoveField0[T, K, EmptyTuple]

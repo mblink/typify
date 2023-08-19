@@ -9,7 +9,7 @@ object SubtypeUnifier {
 
   inline def apply[T, B](using u: SubtypeUnifier[T, B]): SubtypeUnifier.Aux[T, B, u.Out] = u
 
-  given subtypeUnifierEmptyTuple[B]: Aux[EmptyTuple, B, EmptyTuple] =
+  given subtypeUnifierEmptyTuple[B]: SubtypeUnifier.Aux[EmptyTuple, B, EmptyTuple] =
     new SubtypeUnifier[EmptyTuple, B] {
       type Out = EmptyTuple
       def apply(l: EmptyTuple): Out = l

@@ -13,7 +13,7 @@ object Generic {
 
   inline def apply[A](using g: Generic[A]): Generic.Aux[A, g.Repr] = g
 
-  inline given productInst[A <: Product](using m: Mirror.ProductOf[A]): Aux[A, m.MirroredElemTypes] =
+  inline given productInst[A <: Product](using m: Mirror.ProductOf[A]): Generic.Aux[A, m.MirroredElemTypes] =
     new Generic[A] {
       type Repr = m.MirroredElemTypes
       def to(a: A): Repr = Tuple.fromProductTyped(a)

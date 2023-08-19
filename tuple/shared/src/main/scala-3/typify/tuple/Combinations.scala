@@ -29,7 +29,7 @@ object Combinations extends CombinationsLP {
     c2: Combinations.Aux[S[N], T, C2],
     cm: MapCons.Aux[H, C1, CM],
     cp: Prepend.Aux[CM, C2, CpOut],
-  ): Aux[S[N], H *: T, CpOut] =
+  ): Combinations.Aux[S[N], H *: T, CpOut] =
     new Combinations[S[N], H *: T] {
       type Out = cp.Out
       def apply(l: H *: T): Out = cp(cm(l.head, c1(l.tail)), c2(l.tail))

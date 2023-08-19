@@ -7,7 +7,7 @@ trait Updater[T <: Tuple, F] extends DepFn2[T, F]
 object Updater {
   type Aux[T <: Tuple, F, O] = Updater[T, F] { type Out = O }
 
-  inline def apply[T <: Tuple, F](implicit u: Updater[T, F]): Aux[T, F, u.Out] = u
+  inline def apply[T <: Tuple, F](implicit u: Updater[T, F]): Updater.Aux[T, F, u.Out] = u
   inline def apply[T <: Tuple, F](t: T, f: F)(implicit u: Updater[T, F]): u.Out = u(t, f)
 
   inline given updaterInst[T <: Tuple, F](

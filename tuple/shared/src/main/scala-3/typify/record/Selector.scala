@@ -8,7 +8,7 @@ trait Selector[T, Key] extends DepFn1[T]
 object Selector {
   type Aux[T, K, O] = Selector[T, K] { type Out = O }
 
-  inline def apply[T, K](using s: Selector[T, K]): Aux[T, K, s.Out] = s
+  inline def apply[T, K](using s: Selector[T, K]): Selector.Aux[T, K, s.Out] = s
 
   inline given selectorInst[T <: Tuple, K](
     using idx: ValueOf[FindFieldIndex[T, K]],

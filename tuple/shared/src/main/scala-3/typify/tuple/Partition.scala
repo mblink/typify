@@ -45,8 +45,8 @@ object Partition {
 
   given tupleNPartition2[H, L <: Tuple, U, LPrefix <: Tuple, LSuffix <: Tuple](
     using ev: NotGiven[U =:= H],
-    p: Aux[L, U, LPrefix, LSuffix],
-  ): Aux[H *: L, U, LPrefix, H *: LSuffix] =
+    p: Partition.Aux[L, U, LPrefix, LSuffix],
+  ): Partition.Aux[H *: L, U, LPrefix, H *: LSuffix] =
     new Partition[H *: L, U] {
       type Prefix = LPrefix
       type Suffix = H *: LSuffix

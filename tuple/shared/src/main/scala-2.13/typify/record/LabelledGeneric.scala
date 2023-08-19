@@ -11,14 +11,14 @@ trait LabelledGeneric[A] extends shapeless.LabelledGeneric[A]
 object LabelledGeneric {
   type Aux[A, R] = LabelledGeneric[A] { type Repr = R }
 
-  def apply[A](implicit l: LabelledGeneric[A]): Aux[A, l.Repr] = l
+  def apply[A](implicit l: LabelledGeneric[A]): LabelledGeneric.Aux[A, l.Repr] = l
   def toRecord[A](a: A)(implicit l: LabelledGeneric[A]): l.Repr = l.to(a)
 
   implicit def hlistInst[A, K <: HList, V <: HList, R <: HList](
     implicit @annotation.unused l: StringLabelling.Aux[A, K],
     g: shapeless.Generic.Aux[A, V],
     @annotation.unused z: HListZipWithKeys.Aux[K, V, R],
-  ): Aux[A, R] =
+  ): LabelledGeneric.Aux[A, R] =
     new LabelledGeneric[A] {
       type Repr = R
       def to(a: A): R = g.to(a).asInstanceOf[R]
@@ -29,7 +29,7 @@ object LabelledGeneric {
     implicit @annotation.unused l: StringLabelling.Aux[A, K],
     g: shapeless.Generic.Aux[A, V],
     @annotation.unused z: CoproductZipWithKeys.Aux[K, V, R],
-  ): Aux[A, R] =
+  ): LabelledGeneric.Aux[A, R] =
     new LabelledGeneric[A] {
       type Repr = R
       def to(a: A): R = g.to(a).asInstanceOf[R]

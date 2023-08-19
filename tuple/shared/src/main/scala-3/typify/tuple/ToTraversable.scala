@@ -51,7 +51,7 @@ object ToTraversable {
     }
 
   given tupleNToTraversable[H1, H2, T <: Tuple, LubT, Lub0, M[_]](
-    using tttvs: Aux[H2 *: T, M, LubT],
+    using tttvs: ToTraversable.Aux[H2 *: T, M, LubT],
     u: Lub[H1, LubT, Lub0],
     cbf: Factory[Lub0, M[Lub0]],
   ): ToTraversable.Aux[H1 *: H2 *: T, M, Lub0] =

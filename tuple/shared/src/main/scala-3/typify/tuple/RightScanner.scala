@@ -21,14 +21,14 @@ object RightScanner {
       }
   }
 
-  given emptyTupleRightScanner[In, F]: Aux[EmptyTuple, In, F, In *: EmptyTuple] =
+  given emptyTupleRightScanner[In, F]: RightScanner.Aux[EmptyTuple, In, F, In *: EmptyTuple] =
     new RightScanner[EmptyTuple, In, F] {
       type Out = In *: EmptyTuple
       def apply(l: EmptyTuple, in: In): Out = in *: EmptyTuple
     }
 
   given tupleNRightScanner[H, T <: Tuple, In, F, R <: Tuple, Scan0Out <: Tuple](
-    using st: Aux[T, In, F, R],
+    using st: RightScanner.Aux[T, In, F, R],
     sh: RightScanner0.Aux[R, H, F, Scan0Out],
   ): RightScanner.Aux[H *: T, In, F, Scan0Out] =
     new RightScanner[H *: T, In, F] {
