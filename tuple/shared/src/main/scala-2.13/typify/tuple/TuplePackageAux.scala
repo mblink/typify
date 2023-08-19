@@ -107,6 +107,9 @@ trait TuplePackageAux {
   final type Reverse[T <: Tuple] = shapeless.ops.hlist.Reverse[T]
   final val Reverse: shapeless.ops.hlist.Reverse.type = shapeless.ops.hlist.Reverse
 
+  final type ReversePrepend[L <: Tuple, R <: Tuple] = shapeless.ops.hlist.ReversePrepend[L, R]
+  final val ReversePrepend: shapeless.ops.hlist.ReversePrepend.type = shapeless.ops.hlist.ReversePrepend
+
   final type ReverseSplit[T <: Tuple, N <: shapeless.Nat] = shapeless.ops.hlist.ReverseSplit[T, N]
   final val ReverseSplit: shapeless.ops.hlist.ReverseSplit.type = shapeless.ops.hlist.ReverseSplit
 
