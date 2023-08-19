@@ -22,11 +22,11 @@ object SplitRight {
   inline def apply[T, U](using s: SplitRight[T, U]): SplitRight.Aux[T, U, s.Prefix, s.Suffix] = s
 
   given splitRightTuple[L <: Tuple, U](
-    using idxv: ValueOf[ElemIndex[Reverse[L], U]],
-  ): SplitRight.Aux[L, U, Reverse[Tuple.Drop[Reverse[L], ElemIndex[Reverse[L], U]]], Reverse[Tuple.Take[Reverse[L], ElemIndex[Reverse[L], U]]]] =
+    using idxv: ValueOf[ElemIndex[ReverseT[L], U]],
+  ): SplitRight.Aux[L, U, ReverseT[Tuple.Drop[ReverseT[L], ElemIndex[ReverseT[L], U]]], ReverseT[Tuple.Take[ReverseT[L], ElemIndex[ReverseT[L], U]]]] =
     new SplitRight[L, U] {
-      type Prefix = Reverse[Tuple.Drop[Reverse[L], ElemIndex[Reverse[L], U]]]
-      type Suffix = Reverse[Tuple.Take[Reverse[L], ElemIndex[Reverse[L], U]]]
+      type Prefix = ReverseT[Tuple.Drop[ReverseT[L], ElemIndex[ReverseT[L], U]]]
+      type Suffix = ReverseT[Tuple.Take[ReverseT[L], ElemIndex[ReverseT[L], U]]]
 
       private lazy val n = idxv.value
       def product(l: L): Prefix *: Suffix *: EmptyTuple = {

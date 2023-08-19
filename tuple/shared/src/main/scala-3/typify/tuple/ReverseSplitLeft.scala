@@ -23,9 +23,9 @@ object ReverseSplitLeft {
 
   given reverseSplitLeftTuple[L <: Tuple, U](
     using idxv: ValueOf[ElemIndex[L, U]],
-  ): ReverseSplitLeft.Aux[L, U, Reverse[Tuple.Take[L, ElemIndex[L, U]]], Tuple.Drop[L, ElemIndex[L, U]]] =
+  ): ReverseSplitLeft.Aux[L, U, ReverseT[Tuple.Take[L, ElemIndex[L, U]]], Tuple.Drop[L, ElemIndex[L, U]]] =
     new ReverseSplitLeft[L, U] {
-      type Prefix = Reverse[Tuple.Take[L, ElemIndex[L, U]]]
+      type Prefix = ReverseT[Tuple.Take[L, ElemIndex[L, U]]]
       type Suffix = Tuple.Drop[L, ElemIndex[L, U]]
       private lazy val n = idxv.value
       def product(l: L): Prefix *: Suffix *: EmptyTuple =
