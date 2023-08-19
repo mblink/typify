@@ -146,6 +146,9 @@ trait TuplePackageAux {
   final type RotateLeft[L <: Tuple, N <: shapeless.Nat] = shapeless.ops.hlist.RotateLeft[L, N]
   final val RotateLeft: shapeless.ops.hlist.RotateLeft.type = shapeless.ops.hlist.RotateLeft
 
+  final type RotateRight[L <: Tuple, N <: shapeless.Nat] = shapeless.ops.hlist.RotateRight[L, N]
+  final val RotateRight: shapeless.ops.hlist.RotateRight.type = shapeless.ops.hlist.RotateRight
+
   final type SelectAll[L <: Tuple, S <: Tuple] = shapeless.ops.hlist.SelectAll[L, S]
   final val SelectAll: shapeless.ops.hlist.SelectAll.type = shapeless.ops.hlist.SelectAll
 
