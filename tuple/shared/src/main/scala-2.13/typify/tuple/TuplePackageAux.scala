@@ -98,6 +98,9 @@ trait TuplePackageAux {
   final type Partition[L <: Tuple, U] = shapeless.ops.hlist.Partition[L, U]
   final val Partition: shapeless.ops.hlist.Partition.type = shapeless.ops.hlist.Partition
 
+  final type Permutations[T <: Tuple] = shapeless.ops.hlist.Permutations[T]
+  final val Permutations: shapeless.ops.hlist.Permutations.type = shapeless.ops.hlist.Permutations
+
   final type Prepend[L <: Tuple, R <: Tuple] = shapeless.ops.hlist.Prepend[L, R]
   final val Prepend: shapeless.ops.hlist.Prepend.type = shapeless.ops.hlist.Prepend
 
