@@ -38,6 +38,9 @@ trait TuplePackageAux {
   final type LeftFolder[L <: Tuple, In, F] = shapeless.ops.hlist.LeftFolder[L, In, F]
   final val LeftFolder: shapeless.ops.hlist.LeftFolder.type = shapeless.ops.hlist.LeftFolder
 
+  final type LeftReducer[L <: Tuple, F] = shapeless.ops.hlist.LeftReducer[L, F]
+  final val LeftReducer: shapeless.ops.hlist.LeftReducer.type = shapeless.ops.hlist.LeftReducer
+
   final type Length[T <: Tuple] = shapeless.ops.hlist.Length[T]
   final val Length: shapeless.ops.hlist.Length.type = shapeless.ops.hlist.Length
 
