@@ -1,0 +1,23 @@
+package typify.tuple
+
+trait Align[L, M] extends (L => M)
+
+object Align {
+  inline def apply[L, M](using a: Align[L, M]): Align[L, M] = a
+
+  given emptyTupleAlign: Align[EmptyTuple, EmptyTuple] =
+    new Align[EmptyTuple, EmptyTuple] {
+      def apply(l: EmptyTuple): EmptyTuple = l
+    }
+
+  given tupleNAlign[L <: Tuple, MH, MT <: Tuple, R <: Tuple](
+    using r: Remove.Aux[L, MH, (MH, R)],
+    at: Align[R, MT],
+  ): Align[L, MH *: MT] =
+    new Align[L, MH *: MT] {
+      def apply(l: L): MH *: MT = {
+        val (h, t) = r(l)
+        h *: at(t)
+      }
+    }
+}
