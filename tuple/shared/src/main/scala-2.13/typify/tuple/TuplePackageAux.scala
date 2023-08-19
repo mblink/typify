@@ -29,6 +29,12 @@ trait TuplePackageAux {
   final type FillWith[F, L <: Tuple] = shapeless.ops.hlist.FillWith[F, L]
   final val FillWith: shapeless.ops.hlist.FillWith.type = shapeless.ops.hlist.FillWith
 
+  final type Filter[L <: Tuple, U] = shapeless.ops.hlist.Filter[L, U]
+  final val Filter: shapeless.ops.hlist.Filter.type = shapeless.ops.hlist.Filter
+
+  final type FilterNot[L <: Tuple, U] = shapeless.ops.hlist.FilterNot[L, U]
+  final val FilterNot: shapeless.ops.hlist.FilterNot.type = shapeless.ops.hlist.FilterNot
+
   final type FlatMapper[F, In <: Tuple] = shapeless.ops.hlist.FlatMapper[F, In]
   final val FlatMapper: shapeless.ops.hlist.FlatMapper.type = shapeless.ops.hlist.FlatMapper
 
