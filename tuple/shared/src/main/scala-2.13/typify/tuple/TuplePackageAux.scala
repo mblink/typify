@@ -35,6 +35,9 @@ trait TuplePackageAux {
   final type IsNonEmptyTuple[T <: Tuple] = shapeless.ops.hlist.IsHCons[T]
   final val IsNonEmptyTuple: shapeless.ops.hlist.IsHCons.type = shapeless.ops.hlist.IsHCons
 
+  final type LeftFolder[L <: Tuple, In, F] = shapeless.ops.hlist.LeftFolder[L, In, F]
+  final val LeftFolder: shapeless.ops.hlist.LeftFolder.type = shapeless.ops.hlist.LeftFolder
+
   final type Length[T <: Tuple] = shapeless.ops.hlist.Length[T]
   final val Length: shapeless.ops.hlist.Length.type = shapeless.ops.hlist.Length
 
