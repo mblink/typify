@@ -10,8 +10,8 @@ object Modifier {
   inline def apply[T <: Tuple, K, A, B](implicit m: Modifier[T, K, A, B]): Aux[T, K, A, B, m.Out] = m
 
   inline given modifierInst[T <: Tuple, K, A, B](
-    using ev: Tuple.Head[FindField[T, K]] <:< A,
-    idx: ValueOf[Tuple.Elem[FindField[T, K], 1]],
+    using ev: FindFieldValue[T, K] <:< A,
+    idx: ValueOf[FindFieldIndex[T, K]],
   ): Modifier.Aux[T, K, A, B, ReplaceValue[T, K, B]] =
     new Modifier[T, K, A, B] {
       type Out = ReplaceValue[T, K, B]
