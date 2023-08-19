@@ -23,6 +23,9 @@ trait TuplePackageAux {
   final type Collect[I <: Tuple, P <: shapeless.Poly] = shapeless.ops.hlist.Collect[I, P]
   final val Collect: shapeless.ops.hlist.Collect.type = shapeless.ops.hlist.Collect
 
+  final type CollectFirst[L <: Tuple, P <: shapeless.Poly] = shapeless.ops.hlist.CollectFirst[L, P]
+  final val CollectFirst: shapeless.ops.hlist.CollectFirst.type = shapeless.ops.hlist.CollectFirst
+
   final type Comapped[T <: Tuple, F[_]] = shapeless.ops.hlist.Comapped[T, F]
   final val Comapped: shapeless.ops.hlist.Comapped.type = shapeless.ops.hlist.Comapped
 
