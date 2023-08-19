@@ -89,7 +89,7 @@ lazy val tuple = crossProject(JSPlatform, JVMPlatform).in(file("tuple"))
   .settings(baseSettings)
   .settings(
     name := "typify-tuple",
-    libraryDependencies ++= Seq(cats.value, scalacheck.value),
+    libraryDependencies ++= Seq(scalacheck.value),
     libraryDependencies ++= foldScalaV(scalaVersion.value)(
       Seq(
         shapeless.value,
