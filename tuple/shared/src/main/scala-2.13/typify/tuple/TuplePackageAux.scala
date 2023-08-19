@@ -71,6 +71,9 @@ trait TuplePackageAux {
   final type LiftAll[F[_], In <: Tuple] = shapeless.ops.hlist.LiftAll[F, In]
   final val LiftAll: shapeless.ops.hlist.LiftAll.type = shapeless.ops.hlist.LiftAll
 
+  final type MapCons[A, M <: Tuple] = shapeless.ops.hlist.MapCons[A, M]
+  final val MapCons: shapeless.ops.hlist.MapCons.type = shapeless.ops.hlist.MapCons
+
   final type MapFolder[T <: Tuple, R, F] = shapeless.ops.hlist.MapFolder[T, R, F]
   final val MapFolder: shapeless.ops.hlist.MapFolder.type = shapeless.ops.hlist.MapFolder
 
