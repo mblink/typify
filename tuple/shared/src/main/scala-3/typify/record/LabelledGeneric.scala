@@ -1,7 +1,7 @@
 package typify.record
 
 import scala.deriving.Mirror
-import typify.tuple.ZipWith
+import typify.tuple.ZipWithT
 
 trait LabelledGeneric[A] {
   type Repr
@@ -17,18 +17,18 @@ object LabelledGeneric {
 
   inline given productInst[A <: Product](
     using m: Mirror.ProductOf[A]
-  ): Aux[A, ZipWith[m.MirroredElemLabels, m.MirroredElemTypes, ->>]] =
+  ): Aux[A, ZipWithT[m.MirroredElemLabels, m.MirroredElemTypes, ->>]] =
     new LabelledGeneric[A] {
-      type Repr = Tuple & ZipWith[m.MirroredElemLabels, m.MirroredElemTypes, ->>]
+      type Repr = Tuple & ZipWithT[m.MirroredElemLabels, m.MirroredElemTypes, ->>]
       def from(r: Repr): A = m.fromTuple(r.asInstanceOf[m.MirroredElemTypes])
       def to(a: A): Repr = Tuple.fromProductTyped(a).asInstanceOf[Repr]
     }
 
   inline given sumInst[A](
     using m: Mirror.SumOf[A]
-  ): Aux[A, Tuple.Union[ZipWith[m.MirroredElemLabels, m.MirroredElemTypes, ->>]]] =
+  ): Aux[A, Tuple.Union[ZipWithT[m.MirroredElemLabels, m.MirroredElemTypes, ->>]]] =
     new LabelledGeneric[A] {
-      type Repr = Tuple.Union[ZipWith[m.MirroredElemLabels, m.MirroredElemTypes, ->>]]
+      type Repr = Tuple.Union[ZipWithT[m.MirroredElemLabels, m.MirroredElemTypes, ->>]]
       def from(r: Repr): A = r.asInstanceOf[A]
       def to(a: A): Repr = a.asInstanceOf[Repr]
     }
