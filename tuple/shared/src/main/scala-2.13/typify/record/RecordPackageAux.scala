@@ -53,4 +53,7 @@ private[typify] trait RecordPackageAux {
 
   final type Updater[T <: Tuple, F] = shapeless.ops.record.Updater[T, F]
   final val Updater: shapeless.ops.record.Updater.type = shapeless.ops.record.Updater
+
+  final type Values[L <: Tuple] = shapeless.ops.record.Values[L]
+  final val Values: shapeless.ops.record.Values.type = shapeless.ops.record.Values
 }
