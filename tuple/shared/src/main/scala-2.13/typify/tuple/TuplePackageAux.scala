@@ -35,6 +35,9 @@ trait TuplePackageAux {
   final type Generic[A] = shapeless.Generic[A]
   final val Generic: shapeless.Generic.type = shapeless.Generic
 
+  final type Fill[N, A] = shapeless.ops.hlist.Fill[N, A]
+  final val Fill: shapeless.ops.hlist.Fill.type = shapeless.ops.hlist.Fill
+
   final type FillWith[F, L <: Tuple] = shapeless.ops.hlist.FillWith[F, L]
   final val FillWith: shapeless.ops.hlist.FillWith.type = shapeless.ops.hlist.FillWith
 
