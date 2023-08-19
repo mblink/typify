@@ -13,7 +13,7 @@ object Renamer {
   inline def apply[T <: Tuple, K1, K2](using r: Renamer[T, K1, K2]): Renamer.Aux[T, K1, K2, r.Out] = r
 
   inline given renamerInst[T <: Tuple, K1, K2](
-    using idx: ValueOf[FindFieldIndex[T, K1]],
+    using idx: ValueOf[FieldIndex[T, K1]],
   ): Renamer.Aux[T, K1, K2, ReplaceKey[T, K1, K2]] =
     new Renamer[T, K1, K2] {
       type Out = ReplaceKey[T, K1, K2]

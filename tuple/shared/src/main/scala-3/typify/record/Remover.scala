@@ -23,7 +23,7 @@ object Remover {
   }
 
   inline given tupleRemover[T <: Tuple, K](
-    using idx: ValueOf[FindFieldIndex[T, K]],
+    using idx: ValueOf[FieldIndex[T, K]],
   ): Remover.Aux[T, K, RemoveField[T, K]] =
     new Remover[T, K] {
       type Out = RemoveField[T, K]

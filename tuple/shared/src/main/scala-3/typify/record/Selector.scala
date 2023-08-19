@@ -11,10 +11,10 @@ object Selector {
   inline def apply[T, K](using s: Selector[T, K]): Selector.Aux[T, K, s.Out] = s
 
   inline given selectorInst[T <: Tuple, K](
-    using idx: ValueOf[FindFieldIndex[T, K]],
-  ): Selector.Aux[T, K, FindFieldValue[T, K]] =
+    using idx: ValueOf[FieldIndex[T, K]],
+  ): Selector.Aux[T, K, FieldValue[T, K]] =
     new Selector[T, K] {
-      type Out = FindFieldValue[T, K]
+      type Out = FieldValue[T, K]
       def apply(t: T): Out = t.productElement(idx.value).asInstanceOf[Out]
     }
 }
