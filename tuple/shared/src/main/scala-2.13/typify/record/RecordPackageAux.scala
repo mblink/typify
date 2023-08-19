@@ -63,6 +63,9 @@ private[typify] trait RecordPackageAux {
   final type SwapRecord[L <: Tuple] = shapeless.ops.record.SwapRecord[L]
   final val SwapRecord: shapeless.ops.record.SwapRecord.type = shapeless.ops.record.SwapRecord
 
+  final type ToMap[L <: Tuple] = shapeless.ops.record.ToMap[L]
+  final val ToMap: shapeless.ops.record.ToMap.type = shapeless.ops.record.ToMap
+
   final type UnzipFields[L <: Tuple] = shapeless.ops.record.UnzipFields[L]
   final val UnzipFields: shapeless.ops.record.UnzipFields.type = shapeless.ops.record.UnzipFields
 
