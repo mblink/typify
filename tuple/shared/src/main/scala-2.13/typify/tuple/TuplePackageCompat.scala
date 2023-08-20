@@ -209,8 +209,8 @@ trait TuplePackageCompat {
   final type Transposer[L <: Tuple] = shapeless.ops.hlist.Transposer[L]
   final val Transposer: shapeless.ops.hlist.Transposer.type = shapeless.ops.hlist.Transposer
 
-  final type TupleSelector[T <: Tuple, A] = shapeless.ops.hlist.Selector[T, A]
-  final val TupleSelector: shapeless.ops.hlist.Selector.type = shapeless.ops.hlist.Selector
+  final type Selector[T <: Tuple, A] = shapeless.ops.hlist.Selector[T, A]
+  final val Selector: shapeless.ops.hlist.Selector.type = shapeless.ops.hlist.Selector
 
   final type Unifier[T <: Tuple] = shapeless.ops.hlist.Unifier[T]
   final val Unifier: shapeless.ops.hlist.Unifier.type = shapeless.ops.hlist.Unifier

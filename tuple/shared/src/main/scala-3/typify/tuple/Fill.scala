@@ -7,6 +7,10 @@ type FillT[N <: Int, A] <: Tuple = N match {
   case _ => A *: FillT[N - 1, A]
 }
 
+
+/**
+ * Type class supporting producing a `Tuple` of length `N` filled with elements of type `A`.
+ */
 trait Fill[N, A] extends DepFn1[A]
 
 object Fill {

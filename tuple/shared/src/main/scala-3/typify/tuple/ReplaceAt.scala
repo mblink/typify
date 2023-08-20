@@ -2,6 +2,10 @@ package typify.tuple
 
 import compiletime.ops.int.>
 
+/**
+ * Type class supporting replacement of the `N`th element of this `Tuple` with an element of type `V`.
+ * Available only if this `Tuple` contains at least `N` elements.
+ */
 trait ReplaceAt[L, N, V] extends DepFn2[L, V]
 
 object ReplaceAt {

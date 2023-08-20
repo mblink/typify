@@ -2,6 +2,9 @@ package typify.tuple
 
 import compiletime.ops.int.{+, >=}
 
+/**
+ * Type class supporting the patching of a `Tuple`.
+ */
 trait Patcher[N, M, L, In] extends DepFn2[L, In]
 
 object Patcher {

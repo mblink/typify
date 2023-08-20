@@ -5,6 +5,10 @@ type RemoveT[L <: Tuple, E] <: Tuple = L match {
   case h *: t => h *: RemoveT[t, E]
 }
 
+/**
+ * Type class supporting removal of an element from this `Tuple`. Available only if this `Tuple` contains an
+ * element of type `E`.
+ */
 trait Remove[L, E] extends DepFn1[L] {
   def reinsert(out: Out): L
 }

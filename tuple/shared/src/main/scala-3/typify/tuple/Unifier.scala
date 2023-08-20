@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting unification of this `Tuple`.
+ */
 trait Unifier[T] extends DepFn1[T]
 
 object Unifier {

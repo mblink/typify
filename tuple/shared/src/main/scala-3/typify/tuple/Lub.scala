@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class witnessing the least upper bound of a pair of types and providing conversions from each to their common supertype.
+ */
 trait Lub[-A, -B, Out] {
   def left(a: A): Out
   def right(b: B): Out

@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class witnessing that a `Tuple` can be collected with a `Poly` of type `F` to produce a `Tuple`
+ */
 trait Collect[I, F] extends DepFn1[I]
 
 sealed trait CollectLP {

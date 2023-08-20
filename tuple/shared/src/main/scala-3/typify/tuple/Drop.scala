@@ -2,6 +2,9 @@ package typify.tuple
 
 import compiletime.ops.int.>=
 
+/**
+ * Type class supporting removal of the first `N` elements of this `Tuple`. Available only if this `Tuple` has at least `N` elements.
+ */
 trait Drop[T, N] extends DepFn1[T]
 
 object Drop {

@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting the calculation of every permutation of this `Tuple`
+ */
 trait Permutations[L] extends DepFn1[L]
 
 object Permutations {

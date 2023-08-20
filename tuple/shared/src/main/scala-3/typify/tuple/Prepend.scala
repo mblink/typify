@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting prepending `L` to `R`.
+ */
 trait Prepend[L, R] extends DepFn2[L, R]
 
 object Prepend {

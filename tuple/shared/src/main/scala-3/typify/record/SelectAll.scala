@@ -1,7 +1,10 @@
 package typify.record
 
-import typify.tuple.*
+import typify.tuple.DepFn1
 
+/**
+ * Type class supporting multiple record field selection.
+ */
 trait SelectAll[L, K] extends DepFn1[L]
 
 object SelectAll {

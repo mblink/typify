@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class witnessing that this `Tuple` is composite and providing access to head and tail.
+ */
 trait IsNonEmptyTuple[L <: Tuple] extends Serializable {
   type H
   type T <: Tuple

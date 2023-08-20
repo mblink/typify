@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting that a `Tuple` of type `T` contains a set of elements of type `S`.
+ */
 trait SelectAll[L, S] extends DepFn1[L] { type Out = S }
 
 object SelectAll {
@@ -11,7 +14,7 @@ object SelectAll {
     }
 
   given tupleNSelectAll[L <: Tuple, H, S <: Tuple](
-    using sh: TupleSelector[L, H],
+    using sh: Selector[L, H],
     st: SelectAll[L, S],
   ): SelectAll[L, H *: S] =
     new SelectAll[L, H *: S] {

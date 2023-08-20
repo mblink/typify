@@ -2,6 +2,9 @@ package typify.record
 
 import typify.tuple.DepFn1
 
+/**
+ * Type class supporting record field removal.
+ */
 trait Remover[T, K] extends DepFn1[T]
 
 type ReversePrependTuple[L <: Tuple, M <: Tuple] <: Tuple = L match {

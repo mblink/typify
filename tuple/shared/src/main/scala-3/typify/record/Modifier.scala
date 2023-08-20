@@ -2,6 +2,9 @@ package typify.record
 
 import typify.tuple.DepFn2
 
+/**
+ * Type class supporting modification of a record field by given function.
+ */
 trait Modifier[T <: Tuple, K, A, B] extends DepFn2[T, A => B]
 
 object Modifier {

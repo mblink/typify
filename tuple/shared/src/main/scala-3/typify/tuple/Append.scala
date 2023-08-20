@@ -1,6 +1,9 @@
 package typify.tuple
 
-type Append[T <: Tuple, F] <: Tuple = T match {
-  case EmptyTuple => F *: EmptyTuple
-  case h *: t => h *: Append[t, F]
+/**
+ * Match type to append an element `A` to a `Tuple` of type `T`
+ */
+type AppendT[T <: Tuple, A] <: Tuple = T match {
+  case EmptyTuple => A *: EmptyTuple
+  case h *: t => h *: AppendT[t, A]
 }

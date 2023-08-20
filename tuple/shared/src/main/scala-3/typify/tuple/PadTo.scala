@@ -2,6 +2,9 @@ package typify.tuple
 
 import compiletime.ops.int.{-, Max}
 
+/**
+ * Type class supporting padding a `Tuple` of type `L` to length `N`, padded with elements of type `A`.
+ */
 trait PadTo[N, A, L] extends DepFn2[A, L]
 
 object PadTo {

@@ -5,6 +5,9 @@ type MapConsT[A, M <: Tuple] <: Tuple = M match {
   case h *: t => (A *: TupleType[h]) *: MapConsT[A, t]
 }
 
+/**
+ * Type class supporting consing an element onto each row of this `Tuple` of `Tuple`s.
+ */
 trait MapCons[A, M] extends DepFn2[A, M]
 
 object MapCons {

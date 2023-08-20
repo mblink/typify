@@ -2,6 +2,9 @@ package typify.tuple
 
 import compiletime.ops.int.{-, >=}
 
+/**
+ * Type class supporting the slicing of a `Tuple`.
+ */
 trait Slice[N, U, L] extends DepFn1[L]
 
 object Slice {

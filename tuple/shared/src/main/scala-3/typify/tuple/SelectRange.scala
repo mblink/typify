@@ -2,6 +2,10 @@ package typify.tuple
 
 import compiletime.ops.int.>=
 
+/**
+ * Type class supporting supporting access to the elements in range [a,b] of this `Tuple`.
+ * Available only if this `Tuple` contains all elements in range.
+ */
 trait SelectRange[L, A, B] extends DepFn1[L]
 
 object SelectRange {

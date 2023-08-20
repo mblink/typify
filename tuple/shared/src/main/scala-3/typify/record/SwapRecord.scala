@@ -7,6 +7,9 @@ type SwapRecordT[L <: Tuple] <: Tuple = L match {
   case EmptyTuple => EmptyTuple
 }
 
+/**
+ * Type class supporting swapping the keys and values in a record of type `L`.
+ */
 trait SwapRecord[L <: Tuple] extends DepFn0 { final type Out = SwapRecordT[L] }
 
 object SwapRecord {

@@ -8,6 +8,10 @@ type GrouperT[L <: Tuple, N <: Int, Step <: Int] <: Tuple =
     case false => EmptyTuple
   }
 
+/**
+ * Typeclass supporting grouping this `Tuple` into tuples of `N` items each, at `Step` apart.
+ * If `Step` equals `N` then the groups do not overlap.
+ */
 trait Grouper[L, N, Step] extends DepFn1[L]
 
 object Grouper {
@@ -27,10 +31,8 @@ object Grouper {
 
       @annotation.tailrec
       private def go(a: Array[Object], acc: Array[Tuple]): Array[Tuple] =
-        if (a.sizeIs >= n)
-          go(a.drop(step), acc :+ Tuple.fromArray(a.take(n)))
-        else
-          acc
+        if (a.sizeIs >= n) go(a.drop(step), acc :+ Tuple.fromArray(a.take(n)))
+        else acc
 
       def apply(l: L): Out = Tuple.fromArray(go(l.toArray, Array())).asInstanceOf[Out]
     }

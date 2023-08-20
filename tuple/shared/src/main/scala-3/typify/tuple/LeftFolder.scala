@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting left-folding a polymorphic binary function over this `Tuple`.
+ */
 trait LeftFolder[L <: Tuple, In, F] extends DepFn2[L, In]
 
 object LeftFolder {

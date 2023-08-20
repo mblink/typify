@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting permuting this `Tuple` into the same order as another `Tuple` with the same element types.
+ */
 trait Align[L, M] extends (L => M)
 
 object Align {

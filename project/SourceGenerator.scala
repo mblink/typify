@@ -48,17 +48,17 @@ package typify.tuple
 
 import org.scalacheck.{Prop, Properties}
 import scala.util.chaining._
-import typify.record._
+import typify.record.->>
 import typify.test.Util._
 
-object TupleSelectorTest extends Properties("TupleSelector") {
+object SelectorTest extends Properties("tuple.Selector") {
   ${1.to(tupleLimit).flatMap { i =>
     1.to(i).toList.map { j =>
       val tpe = s""""k$j" ->> ${tpes(j % tpes.length)}"""
       s"""
 
   property.update("select ${j - 1} from Tuple$i", Prop.forAll { (x: X$i) =>
-    compare(x.toList.apply(${j - 1}), TupleSelector[X$i, $tpe].apply(x))
+    compare(x.toList.apply(${j - 1}), Selector[X$i, $tpe].apply(x))
   }).pipe(_ => ())
   """
     }
@@ -67,7 +67,7 @@ object TupleSelectorTest extends Properties("TupleSelector") {
 """
   }
 
-  case object SelectorTest extends SourceGenerator {
+  case object RecordSelectorTest extends SourceGenerator {
     def apply(): String = s"""
 package typify.record
 
@@ -75,7 +75,7 @@ import org.scalacheck.{Prop, Properties}
 import scala.util.chaining._
 import typify.test.Util._
 
-object SelectorTest extends Properties("Selector") {
+object SelectorTest extends Properties("record.Selector") {
   ${1.to(tupleLimit).flatMap { i =>
     1.to(i).toList.map { j =>
       s"""

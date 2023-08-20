@@ -1,5 +1,10 @@
 package typify.tuple
 
+/**
+ * Type class supporting zipping this `Tuple` of monomorphic function values with its argument `Tuple` of
+ * correspondingly typed function arguments returning the result of each application as a `Tuple`. Available only if
+ * there is evidence that the corresponding function and argument elements have compatible types.
+ */
 trait ZipApply[FL, AL] extends DepFn2[FL, AL]
 
 object ZipApply {

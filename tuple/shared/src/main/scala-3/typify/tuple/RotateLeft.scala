@@ -2,6 +2,9 @@ package typify.tuple
 
 import compiletime.ops.int.%
 
+/**
+ * Type class supporting rotating a `Tuple` left.
+ */
 trait RotateLeft[L, N] extends DepFn1[L]
 
 object RotateLeft {

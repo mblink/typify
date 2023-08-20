@@ -2,9 +2,12 @@ package typify.tuple
 
 type ReverseT[T <: Tuple] <: Tuple = T match {
   case EmptyTuple => EmptyTuple
-  case h *: t => Append[ReverseT[t], h]
+  case h *: t => AppendT[ReverseT[t], h]
 }
 
+/**
+ * Type class supporting reversing this `Tuple`.
+ */
 trait Reverse[T] extends DepFn1[T]
 
 object Reverse {

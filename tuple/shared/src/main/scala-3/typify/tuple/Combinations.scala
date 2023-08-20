@@ -2,6 +2,9 @@ package typify.tuple
 
 import compiletime.ops.int.S
 
+/**
+ * Type class supporting the calculation of every combination of this `Tuple`
+ */
 trait Combinations[N, L] extends DepFn1[L]
 
 trait CombinationsLP {

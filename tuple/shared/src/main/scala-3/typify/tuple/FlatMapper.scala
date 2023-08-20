@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting flatmapping a higher ranked function of type `F` over this `Tuple`.
+ */
 trait FlatMapper[F, In <: Tuple] extends DepFn1[In] { type Out <: Tuple }
 
 object FlatMapper {

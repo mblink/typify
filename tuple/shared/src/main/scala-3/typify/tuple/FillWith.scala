@@ -2,6 +2,9 @@ package typify.tuple
 
 import scala.compiletime.summonAll
 
+/**
+ * Type class supporting producing a `Tuple` filled from a `Poly` of type `F`.
+ */
 trait FillWith[F, L <: Tuple] extends DepFn0 { final type Out = L }
 
 object FillWith {

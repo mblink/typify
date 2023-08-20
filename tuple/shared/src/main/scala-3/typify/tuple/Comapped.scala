@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class witnessing that the result of stripping type constructor `F` off each element of `Tuple` `L` is `Out`.
+ */
 trait Comapped[T, F[_]] {
   type Out
 }

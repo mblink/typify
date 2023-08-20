@@ -2,6 +2,9 @@ package typify.tuple
 
 import scala.util.NotGiven
 
+/**
+ * Type class supporting partitioning this `Tuple` into those elements of type `U` and the remainder.
+ */
 trait Partition[L, U] extends DepFn1[L] {
   type Prefix
   type Suffix

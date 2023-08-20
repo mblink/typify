@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting access to the all elements of this `Tuple` of type different than `U`.
+ */
 trait FilterNot[L, U] extends DepFn1[L]
 
 object FilterNot {

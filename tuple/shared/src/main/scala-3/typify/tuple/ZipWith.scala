@@ -7,6 +7,9 @@ type ZipWithT[T1 <: Tuple, T2 <: Tuple, F[_, _]] <: Tuple = (T1, T2) match {
   case _ => Tuple
 }
 
+/**
+ * Type class supporting zipping a `Tuple` with another `Tuple` using a `Poly` resulting in a `Tuple`
+ */
 trait ZipWith[L, R, F] extends DepFn2[L, R]
 
 object ZipWith {

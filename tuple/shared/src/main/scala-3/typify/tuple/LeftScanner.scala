@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting left scanning of this `Tuple` with a binary polymorphic function.
+ */
 trait LeftScanner[L, In, F] extends DepFn2[L, In]
 
 object LeftScanner{

@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting right-folding a polymorphic binary function over this `Tuple`.
+ */
 trait RightFolder[L <: Tuple, In, F] extends DepFn2[L, In]
 
 object RightFolder {

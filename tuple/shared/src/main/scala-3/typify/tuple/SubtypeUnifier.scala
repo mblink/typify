@@ -2,6 +2,10 @@ package typify.tuple
 
 import scala.util.NotGiven
 
+/**
+ * Type class supporting unification of all elements that are subtypes of `B` in this `Tuple` to `B`, with all other
+ * elements left unchanged.
+ */
 trait SubtypeUnifier[T, B] extends DepFn1[T]
 
 object SubtypeUnifier {

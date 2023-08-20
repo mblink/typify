@@ -1,5 +1,9 @@
 package typify.record
 
+/**
+ * Type class combining `Keys` and `Values` for convenience.
+ * Similar to `Fields`, but produces distinct `Tuple`s instead of a zipped one.
+ */
 trait UnzipFields[L] extends Serializable {
   type Keys
   type Values

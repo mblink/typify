@@ -2,6 +2,9 @@ package typify.record
 
 import typify.tuple.DepFn2
 
+/**
+ * Type class support record merging.
+ */
 trait Merger[L, M] extends DepFn2[L, M]
 
 object Merger {

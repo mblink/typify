@@ -5,6 +5,10 @@ type ZipConstT[C, L <: Tuple] <: Tuple = L match {
   case h *: t => (h, C) *: ZipConstT[C, t]
 }
 
+/**
+ * Type class supporting zipping a `Tuple` with a constant, resulting in a `Tuple` of `Tuple2`s of the form
+ * ({element from input `Tuple`}, {supplied constant})
+ */
 trait ZipConst[C, L] extends DepFn2[C, L]
 
 object ZipConst {

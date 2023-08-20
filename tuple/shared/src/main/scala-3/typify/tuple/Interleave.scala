@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting adding an element to each possible position in this `Tuple`.
+ */
 trait Interleave[A, L] extends DepFn2[A, L]
 
 object Interleave {

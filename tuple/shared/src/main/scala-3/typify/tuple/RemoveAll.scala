@@ -1,5 +1,11 @@
 package typify.tuple
 
+/**
+ * Type class supporting removal of a sublist from this `Tuple`. Available only if this `Tuple` contains a
+ * sublist of type `SL`.
+ *
+ * The elements of `SL` do not have to be contiguous in this `Tuple`.
+ */
 trait RemoveAll[L, SL] extends DepFn1[L] {
   def reinsert(out: Out): L
 }

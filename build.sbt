@@ -109,7 +109,7 @@ lazy val tuple = crossProject(JSPlatform, JVMPlatform).in(file("tuple"))
       Seq(
         gen("Util.scala", SourceGenerator.Util),
         gen("TupleSelectorTest.scala", SourceGenerator.TupleSelectorTest),
-        gen("SelectorTest.scala", SourceGenerator.SelectorTest),
+        gen("RecordSelectorTest.scala", SourceGenerator.RecordSelectorTest),
         gen("UpdaterTest.scala", SourceGenerator.UpdaterTest),
         gen("ModifierTest.scala", SourceGenerator.ModifierTest),
         gen("RenamerTest.scala", SourceGenerator.RenamerTest),

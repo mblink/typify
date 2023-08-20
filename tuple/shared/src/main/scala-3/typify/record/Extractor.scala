@@ -2,6 +2,9 @@ package typify.record
 
 import scala.util.NotGiven
 
+/**
+ * Type class supporting extraction of super-record from sub-record (witnesses depth subtype relation).
+ */
 trait Extractor[L, E] extends (L => E)
 
 trait ExtractorLP {

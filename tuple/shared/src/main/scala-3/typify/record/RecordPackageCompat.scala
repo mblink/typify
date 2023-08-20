@@ -97,7 +97,7 @@ trait RecordPackageCompat {
     final def renameField[K1 <: Singleton, K2 <: Singleton](oldKey: K1, newKey: K2)(using r: Renamer[T, K1, K2]): r.Out = r(t)
 
     /**
-     * Returns the keys of this record as an `Tuple` of singleton typed values.
+     * Returns the keys of this record as a `Tuple` of singleton typed values.
      */
     final def keys(implicit k: Keys[T]): k.Out = k()
 

@@ -58,25 +58,25 @@ trait TuplePackageCompat {
     final def reverse_:::[P <: Tuple](prefix: P)(using p: ReversePrepend[P, L]): p.Out = p(prefix, l)
 
     /**
-     * Returns the ''nth'' element of this `Tuple`. An explicit type argument must be provided. Available only if there is
-     * evidence that this `Tuple` has at least ''n'' elements.
+     * Returns the `N`th element of this `Tuple`. An explicit type argument must be provided. Available only if there is
+     * evidence that this `Tuple` has at least `N` elements.
      */
     final def apply[N <: Int](using n: ValueOf[N]): Tuple.Elem[L, N] = l.productElement(n.value).asInstanceOf[Tuple.Elem[L, N]]
 
     /**
-     * Returns the ''nth'' element of this `Tuple`. Available only if there is evidence that this `Tuple` has at least ''n''
+     * Returns the `N`th element of this `Tuple`. Available only if there is evidence that this `Tuple` has at least `N`
      * elements.
      */
     final def apply[N <: Int](n: N): Tuple.Elem[L, N] = l.productElement(n).asInstanceOf[Tuple.Elem[L, N]]
 
     /**
-     * Returns the ''nth'' element of this `Tuple`. An explicit type argument must be provided. Available only if there is
-     * evidence that this `Tuple` has at least ''n'' elements.
+     * Returns the `N`th element of this `Tuple`. An explicit type argument must be provided. Available only if there is
+     * evidence that this `Tuple` has at least `N` elements.
      */
     final def at[N <: Int](using n: ValueOf[N]): Tuple.Elem[L, N] = l.productElement(n.value).asInstanceOf[Tuple.Elem[L, N]]
 
     /**
-     * Returns the ''nth'' element of this `Tuple`. Available only if there is evidence that this `Tuple` has at least ''n''
+     * Returns the `N`th element of this `Tuple`. Available only if there is evidence that this `Tuple` has at least `N`
      * elements.
      */
     final def at[N <: Int](n: N): Tuple.Elem[L, N] = l.productElement(n).asInstanceOf[Tuple.Elem[L, N]]
@@ -87,7 +87,7 @@ trait TuplePackageCompat {
     final def last(using lst: Last[L]): lst.Out = lst(l)
 
     /**
-     * Returns an `Tuple` consisting of all the elements of this `Tuple` except the last. Available only if there is
+     * Returns a `Tuple` consisting of all the elements of this `Tuple` except the last. Available only if there is
      * evidence that this `Tuple` is composite.
      */
     final def init(using i: Init[L]): i.Out = i(l)
@@ -96,7 +96,7 @@ trait TuplePackageCompat {
      * Returns the first element of type `U` of this `Tuple`. An explicit type argument must be provided. Available only
      * if there is evidence that this `Tuple` has an element of type `U`.
      */
-    final def select[U](using s: TupleSelector[L, U]): U = s(l)
+    final def select[U](using s: Selector[L, U]): U = s(l)
 
     final def selectMany[Ids <: Tuple](using s: SelectMany[L, Ids]): s.Out = s(l)
 
@@ -192,66 +192,66 @@ trait TuplePackageCompat {
     final def updatedType[U]: UpdatedTypeAux[L, U] = new UpdatedTypeAux[L, U](l)
 
     /**
-     * Replaces the ''nth' element of this `Tuple` with the supplied value of type `U`. An explicit type argument
-     * must be provided for `N`. Available only if there is evidence that this `Tuple` has at least ''n'' elements.
+     * Replaces the `N`th element of this `Tuple` with the supplied value of type `U`. An explicit type argument
+     * must be provided for `N`. Available only if there is evidence that this `Tuple` has at least `N` elements.
      */
     final def updatedAt[N]: UpdatedAtAux[L, N] = new UpdatedAtAux[L, N](l)
 
     /**
-     * Replaces the ''nth' element of this `Tuple` with the supplied value of type `U`. Available only if there is
-     * evidence that this `Tuple` has at least ''n'' elements.
+     * Replaces the `n`th element of this `Tuple` with the supplied value of type `U`. Available only if there is
+     * evidence that this `Tuple` has at least `n` elements.
      */
     final def updatedAt[U, V, Out <: Tuple](n: Int, u: U)(using r: ReplaceAt.Aux[L, n.type, U, (V, Out)]): Out = r(l, u)._2
 
     /**
-     * Returns the first ''n'' elements of this `Tuple`. An explicit type argument must be provided. Available only if
-     * there is evidence that this `Tuple` has at least ''n'' elements.
+     * Returns the first `N` elements of this `Tuple`. An explicit type argument must be provided. Available only if
+     * there is evidence that this `Tuple` has at least `N` elements.
      */
     final def take[N](using t: Take[L, N]): t.Out = t(l)
 
     /**
-     * Returns the first ''n'' elements of this `Tuple`. Available only if there is evidence that this `Tuple` has at
-     * least ''n'' elements.
+     * Returns the first `n` elements of this `Tuple`. Available only if there is evidence that this `Tuple` has at
+     * least `n` elements.
      */
     final def take(n: Int)(using t: Take[L, n.type]): t.Out = t(l)
 
     /**
-     * Returns all but the  first ''n'' elements of this `Tuple`. An explicit type argument must be provided. Available
-     * only if there is evidence that this `Tuple` has at least ''n'' elements.
+     * Returns all but the  first `N` elements of this `Tuple`. An explicit type argument must be provided. Available
+     * only if there is evidence that this `Tuple` has at least `N` elements.
      */
     final def drop[N](using d: Drop[L, N]): d.Out = d(l)
 
     /**
-     * Returns all but the  first ''n'' elements of this `Tuple`. Available only if there is evidence that this `Tuple`
-     * has at least ''n'' elements.
+     * Returns all but the  first `n` elements of this `Tuple`. Available only if there is evidence that this `Tuple`
+     * has at least `n` elements.
      */
     final def drop(n: Int)(using d: Drop[L, n.type]): d.Out = d(l)
 
     /**
-     * Splits this `Tuple` at the ''nth'' element, returning the prefix and suffix as a pair. An explicit type argument
-     * must be provided. Available only if there is evidence that this `Tuple` has at least ''n'' elements.
+     * Splits this `Tuple` at the `N`th element, returning the prefix and suffix as a pair. An explicit type argument
+     * must be provided. Available only if there is evidence that this `Tuple` has at least `N` elements.
      */
     final def split[N](using s: Split[L, N]): (s.Prefix, s.Suffix) = s(l)
     final def splitP[N](using s: Split[L, N]): s.Prefix *: s.Suffix *: EmptyTuple = s.product(l)
 
     /**
-     * Splits this `Tuple` at the ''nth'' element, returning the prefix and suffix as a pair. Available only if there is
-     * evidence that this `Tuple` has at least ''n'' elements.
+     * Splits this `Tuple` at the `n`th element, returning the prefix and suffix as a pair. Available only if there is
+     * evidence that this `Tuple` has at least `n` elements.
      */
     final def split(n: Int)(using s: Split[L, n.type]): (s.Prefix, s.Suffix) = s(l)
     final def splitP(n: Int)(using s: Split[L, n.type]): s.Prefix *: s.Suffix *: EmptyTuple = s.product(l)
 
     /**
-     * Splits this `Tuple` at the ''nth'' element, returning the reverse of the prefix and suffix as a pair. An explicit
-     * type argument must be provided. Available only if there is evidence that this `Tuple` has at least ''n'' elements.
+     * Splits this `Tuple` at the `N`th element, returning the reverse of the prefix and suffix as a pair. An explicit
+     * type argument must be provided. Available only if there is evidence that this `Tuple` has at least `N` elements.
      */
     final def reverse_split[N](using s: ReverseSplit[L, N]): (s.Prefix, s.Suffix) = s(l)
 
     final def reverse_splitP[N](using s: ReverseSplit[L, N]): s.Prefix *: s.Suffix *: EmptyTuple = s.product(l)
 
     /**
-     * Splits this `Tuple` at the ''nth'' element, returning the reverse of the prefix and suffix as a pair. Available
-     * only if there is evidence that this `Tuple` has at least ''n'' elements.
+     * Splits this `Tuple` at the `n`th element, returning the reverse of the prefix and suffix as a pair. Available
+     * only if there is evidence that this `Tuple` has at least `n` elements.
      */
     final def reverse_split(n: Int)(using s: ReverseSplit[L, n.type]): (s.Prefix, s.Suffix) = s(l)
 
@@ -334,9 +334,9 @@ trait TuplePackageCompat {
     final def collect(p: Poly)(using c: Collect[L, p.type]): c.Out = c(l)
 
     /**
-     * Maps a higher rank function ''f'' across this `Tuple` and folds the result using monomorphic combining operator
+     * Maps a higher rank function `f` across this `Tuple` and folds the result using monomorphic combining operator
      * `op`. Available only if there is evidence that the result type of `f` at each element conforms to the argument
-     * type of ''op''.
+     * type of `op`.
      */
     final def foldMap[R](z: R)(f: Poly)(op: (R, R) => R)(using folder: MapFolder[L, R, f.type]): R = folder(l, z, op)
 
@@ -373,32 +373,32 @@ trait TuplePackageCompat {
 
     /**
      * Zips this `Tuple` of monomorphic function values with its argument `Tuple` of correspondingly typed function
-     * arguments returning the result of each application as an `Tuple`. Available only if there is evidence that the
+     * arguments returning the result of each application as a `Tuple`. Available only if there is evidence that the
      * corresponding function and argument elements have compatible types.
      */
     final def zipApply[A <: Tuple](a: A)(using z: ZipApply[L, A]): z.Out = z(l, a)
 
     /**
-     * Zips this `Tuple` with its argument `Tuple` of `Tuple`s, returning an `Tuple` of `Tuple`s with each element of
+     * Zips this `Tuple` with its argument `Tuple` of `Tuple`s, returning a `Tuple` of `Tuple`s with each element of
      * this `Tuple` prepended to the corresponding `Tuple` element of the argument `Tuple`.
      */
     final def zipOne[T <: Tuple](t: T)(using z: ZipOne[L, T]): z.Out = z(l, t)
 
     /**
-     * Zips this `Tuple` with a constant, resulting in an `Tuple` of tuples of the form
+     * Zips this `Tuple` with a constant, resulting in a `Tuple` of tuples of the form
      * ({element from this `Tuple`}, {supplied constant})
      */
     final def zipConst[C](c: C)(using z: ZipConst[C, L]): z.Out = z(c, l)
 
     /**
-     * Zips this 'Tuple' with its argument 'Tuple' using argument 'Poly2', returning an 'Tuple'.
-     * Doesn't require this to be the same length as its 'Tuple' argument, but does require evidence that its
-     * 'Poly2' argument is defined at their intersection.
+     * Zips this `Tuple` with its argument `Tuple` using argument `Poly2`, returning an `Tuple`.
+     * Doesn't require this to be the same length as its `Tuple` argument, but does require evidence that its
+     * `Poly2` argument is defined at their intersection.
      */
     final def zipWith[R <: Tuple, P <: Poly2](r: R)(p: P)(using z: ZipWith[L, R, P]): z.Out = z(l, r)
 
     /**
-     * Zips this `Tuple` with its element indices,  resulting in a 'Tuple' of  tuples of the form
+     * Zips this `Tuple` with its element indices,  resulting in a `Tuple` of  tuples of the form
      * ({element from input tuple}, {element index})
      */
     final def zipWithIndex(using z: ZipWithIndex[L]): z.Out = z(l)
@@ -409,12 +409,12 @@ trait TuplePackageCompat {
     final def transpose(using t: Transposer[L]): t.Out = t(l)
 
     /**
-     * Returns an `Tuple` typed as a repetition of the least upper bound of the types of the elements of this `Tuple`.
+     * Returns a `Tuple` typed as a repetition of the least upper bound of the types of the elements of this `Tuple`.
      */
     final def unify(using u: Unifier[L]): u.Out = u(l)
 
     /**
-     * Returns an `Tuple` with all elements that are subtypes of `B` typed as `B`.
+     * Returns a `Tuple` with all elements that are subtypes of `B` typed as `B`.
      */
     final def unifySubtypes[B](using u: SubtypeUnifier[L, B]): u.Out = u(l)
 
@@ -477,7 +477,6 @@ trait TuplePackageCompat {
     /**
      * Displays all elements of this Tuple in a string using start, end, and separator strings.
       */
-    // TODO: Remove the toTraversable instance at the next major release.
     final def mkString(start: String, sep: String, end: String): String = {
       @annotation.tailrec
       def go(acc: String, sub: Tuple): String = sub match {
@@ -501,27 +500,27 @@ trait TuplePackageCompat {
     final def zipWithKeys[K <: Tuple](using z: ZipWithKeys[K, L]): z.Out = z(l)
 
     /**
-     * Returns all permutations of this 'Tuple'
+     * Returns all permutations of this `Tuple`
      */
     final def permutations(using p: Permutations[L]): p.Out = p(l)
 
     /**
-     * Rotate this 'Tuple' left by N. An explicit type argument must be provided.
+     * Rotate this `Tuple` left by N. An explicit type argument must be provided.
      */
     final def rotateLeft[N](using r: RotateLeft[L, N]): r.Out = r(l)
 
     /**
-     * Rotate this 'Tuple' left by N
+     * Rotate this `Tuple` left by N
      */
     final def rotateLeft(n: Int)(using r: RotateLeft[L, n.type]): r.Out = r(l)
 
     /**
-     * Rotate this 'Tuple' right by N. An explicit type argument must be provided.
+     * Rotate this `Tuple` right by N. An explicit type argument must be provided.
      */
     final def rotateRight[N](using r: RotateRight[L, N]): r.Out = r(l)
 
     /**
-     * Rotate this 'Tuple' right by N
+     * Rotate this `Tuple` right by N
      */
     final def rotateRight(n: Int)(using r: RotateRight[L, n.type]): r.Out = r(l)
 

@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting left-reducing a polymorphic binary function over this `Tuple`.
+ */
 trait LeftReducer[L <: Tuple, F] extends DepFn1[L]
 
 object LeftReducer {

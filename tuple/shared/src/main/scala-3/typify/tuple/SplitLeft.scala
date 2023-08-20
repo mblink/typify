@@ -1,5 +1,9 @@
 package typify.tuple
 
+/**
+ * Type class supporting splitting this `Tuple` at the first occurrence of an element of type `U` returning the prefix
+ * and suffix as a pair. Available only if this `Tuple` contains an element of type `U`.
+ */
 trait SplitLeft[L, U] extends DepFn1[L] {
   type Prefix
   type Suffix

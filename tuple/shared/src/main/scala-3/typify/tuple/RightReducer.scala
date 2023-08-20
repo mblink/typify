@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting right-reducing a polymorphic binary function over this `Tuple`.
+ */
 trait RightReducer[L <: Tuple, F] extends DepFn1[L]
 
 object RightReducer {

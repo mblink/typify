@@ -2,6 +2,9 @@ package typify.tuple
 
 import typify.record.{->>, label}
 
+/**
+ * Type class supporting zipping a `Tuple` of values with a `Tuple` of keys to create a record.
+ */
 trait ZipWithKeys[K, V] extends DepFn1[V]
 
 object ZipWithKeys {

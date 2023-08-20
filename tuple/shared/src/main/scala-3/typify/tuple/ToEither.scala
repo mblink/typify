@@ -7,6 +7,9 @@ type ToEitherT[T <: Tuple] = T match {
   case l *: r => Either[l, ToEitherT[r]]
 }
 
+/**
+ * Type class computing the `Either` type corresponding to this `Tuple`.
+ */
 trait ToEither[T] {
   type Out
 }

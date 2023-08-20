@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting transposing this `Tuple`.
+ */
 trait Transposer[L] extends DepFn1[L]
 
 object Transposer {

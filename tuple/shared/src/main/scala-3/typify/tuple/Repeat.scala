@@ -7,6 +7,9 @@ type RepeatT[L <: Tuple, N <: Int] = N match {
   case _ => Tuple.Concat[RepeatT[L, N - 1], L]
 }
 
+/**
+ * Typeclass supporting repeating a `Tuple` of type `L` `N` times.
+ */
 trait Repeat[L, N] extends DepFn1[L]
 
 object Repeat {

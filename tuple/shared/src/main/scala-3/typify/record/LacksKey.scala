@@ -2,6 +2,9 @@ package typify.record
 
 import scala.util.NotGiven
 
+/**
+ * Type class to witness that a record of type `T` does not contain a key of type `K`.
+ */
 opaque type LacksKey[T <: Tuple, K] = NotGiven[Selector[T, K]]
 
 object LacksKey {

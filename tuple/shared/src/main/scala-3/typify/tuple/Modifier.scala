@@ -1,5 +1,10 @@
 package typify.tuple
 
+/**
+ * Type class supporting replacement of the first element of type `U` in this `Tuple` with the result of
+ * its transformation via a given function into a new element of type `V`.
+ * Available only if this `Tuple` contains an element of type `U`.
+ */
 trait Modifier[L, U, V] extends DepFn2[L, U => V]
 
 object Modifier {

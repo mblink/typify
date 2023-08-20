@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting prepending `L` in reverse order to `R`.
+ */
 trait ReversePrepend[L, R] extends DepFn2[L, R]
 
 object ReversePrepend {

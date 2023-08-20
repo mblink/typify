@@ -3,6 +3,9 @@ package typify.record
 import scala.language.implicitConversions
 import typify.tuple.DepFn1
 
+/**
+ * Type class supporting record field selection.
+ */
 trait Selector[T, Key] extends DepFn1[T]
 
 object Selector {

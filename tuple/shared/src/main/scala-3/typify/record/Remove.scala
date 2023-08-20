@@ -2,6 +2,9 @@ package typify.record
 
 import typify.tuple.DepFn1
 
+/**
+ * Type class supporting removal and re-insertion of an element (possibly unlabelled).
+ */
 trait Remove[L, E] extends DepFn1[L] {
   def reinsert(out: Out): L
 }

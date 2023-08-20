@@ -12,6 +12,10 @@ type ReplaceAtIndex0[L <: Tuple, I <: Int, A, Curr <: Int] <: Tuple = (L, Curr) 
   case (h *: t, _) => h *: ReplaceAtIndex0[t, I, A, compiletime.ops.int.S[Curr]]
 }
 
+/**
+ * Type class supporting replacement of the first element of type `U` from this `Tuple` with an element of type `V`.
+ * Available only if this `Tuple` contains an element of type `U`.
+ */
 trait Replacer[L, U, V] extends DepFn2[L, V]
 
 object Replacer {

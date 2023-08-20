@@ -2,6 +2,9 @@ package typify.record
 
 import typify.tuple.{Case2, DepFn2}
 
+/**
+ * Type class support record merging with a polymorphic function.
+ */
 trait MergeWith[L, M, F] extends DepFn2[L, M]
 
 sealed trait MergeWithLP {

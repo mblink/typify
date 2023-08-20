@@ -1,5 +1,8 @@
 package typify.tuple
 
+/**
+ * Type class supporting access to the last element of this `Tuple`. Available only if this `Tuple` has at least one element.
+ */
 trait Last[T] extends DepFn1[T]
 
 object Last {

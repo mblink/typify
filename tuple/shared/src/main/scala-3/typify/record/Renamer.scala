@@ -2,6 +2,9 @@ package typify.record
 
 import typify.tuple.DepFn1
 
+/**
+ * Type class supporting renaming of a record field.
+ */
 trait Renamer[T <: Tuple, K1, K2] extends DepFn1[T] {
   type Out
   def apply(t: T): Out

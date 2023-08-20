@@ -5,6 +5,10 @@ type SelectManyT[L <: Tuple, Ids <: Tuple] <: Tuple = Ids match {
   case EmptyTuple => EmptyTuple
 }
 
+/**
+ * Type class supporting access to the elements of this `Tuple` specified by `Ids`. Available only if this `Tuple`
+ * contains all elements specified in `Ids`.
+ */
 trait SelectMany[L, Ids] extends DepFn1[L]
 
 object SelectMany {
