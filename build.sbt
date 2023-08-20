@@ -3,7 +3,7 @@ import typify._
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val scala213 = "2.13.10"
-lazy val scala3 = "3.4.0-RC1-bin-20230818-932c10d-NIGHTLY"
+lazy val scala3 = "3.3.0"
 
 ThisBuild / crossScalaVersions := Seq(scala213, scala3)
 
@@ -45,12 +45,6 @@ lazy val baseSettings = Seq(
     Seq("-Vimplicits-verbose-tree"),
     Seq(
       "-no-indent",
-      "-Wvalue-discard",
-      "-Wunused:implicits",
-      "-Wunused:imports",
-      "-Wunused:locals",
-      "-Wunused:params",
-      "-Wunused:privates",
       "-Wunused:unsafe-warn-patvars",
     ),
   ),
@@ -85,7 +79,7 @@ lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC9"
 lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.10" }
 lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.17.0" % "test" }
 
-lazy val tuple = crossProject(JSPlatform, JVMPlatform).in(file("tuple"))
+lazy val tuple = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file("tuple"))
   .settings(baseSettings)
   .settings(
     name := "typify-tuple",
@@ -118,7 +112,7 @@ lazy val tuple = crossProject(JSPlatform, JVMPlatform).in(file("tuple"))
     }
   )
 
-lazy val typify = crossProject(JSPlatform, JVMPlatform).in(file("typify"))
+lazy val typify = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file("typify"))
   .settings(baseSettings)
   .settings(
     name := "typify",
