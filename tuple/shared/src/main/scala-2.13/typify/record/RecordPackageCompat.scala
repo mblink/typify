@@ -12,7 +12,7 @@ final class TypifyLabelledOps[K, V](private val kv: K ->> V) extends AnyVal {
   @inline final def label(implicit k: ValueOf[K]): K = k.value
 }
 
-private[typify] trait RecordPackageAux {
+private[typify] trait RecordPackageCompat {
   final type ->>[K, +V] = tagged.TranslucentTagged[V, K]
 
   final class LabelPartialAp[K] {

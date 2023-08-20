@@ -1,3 +1,3 @@
 package typify
 
-package object tuple extends TuplePackageAux
+package object tuple extends TuplePackageCompat

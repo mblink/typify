@@ -1,3 +1,3 @@
 package typify
 
-package object record extends RecordPackageAux
+package object record extends RecordPackageCompat

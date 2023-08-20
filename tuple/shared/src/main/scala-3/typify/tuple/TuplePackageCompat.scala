@@ -1,6 +1,6 @@
 package typify.tuple
 
-trait TuplePackageAux {
+trait TuplePackageCompat {
   final type Tuple = scala.Tuple
   final type *:[H, T <: Tuple] = scala.*:[H, T]
   final val *: : scala.*:.type = scala.*:

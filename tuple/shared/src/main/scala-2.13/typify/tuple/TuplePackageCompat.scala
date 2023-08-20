@@ -8,7 +8,7 @@ final class TypifyTupleOps[T <: Tuple](private val t: T) extends AnyVal {
   final def toList[Lub](implicit tl: ToList[T, Lub]): List[Lub] = tl(t)
 }
 
-trait TuplePackageAux {
+trait TuplePackageCompat {
   final type Tuple = shapeless.HList
   final type *:[H, T <: Tuple] = shapeless.::[H, T]
   final val *: : shapeless.::.type = shapeless.::

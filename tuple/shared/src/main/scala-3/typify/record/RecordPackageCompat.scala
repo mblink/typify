@@ -3,7 +3,7 @@ package record
 
 import scala.language.implicitConversions
 
-trait RecordPackageAux {
+trait RecordPackageCompat {
   final opaque type ->>[K, +V] = tagged.TranslucentTagged[V, K]
   object ->> {
     implicit def convertToV[K, V](kv: K ->> V): V = kv
