@@ -2,13 +2,13 @@ package typify.record
 
 import typify.tuple.{Append, DepFn2, IfEq, IndexOf}
 
-trait Updater[T <: Tuple, F] extends DepFn2[T, F]
+trait Updater[T, F] extends DepFn2[T, F]
 
 object Updater {
-  type Aux[T <: Tuple, F, O] = Updater[T, F] { type Out = O }
+  type Aux[T, F, O] = Updater[T, F] { type Out = O }
 
-  inline def apply[T <: Tuple, F](implicit u: Updater[T, F]): Updater.Aux[T, F, u.Out] = u
-  inline def apply[T <: Tuple, F](t: T, f: F)(implicit u: Updater[T, F]): u.Out = u(t, f)
+  inline def apply[T, F](implicit u: Updater[T, F]): Updater.Aux[T, F, u.Out] = u
+  inline def apply[T, F](t: T, f: F)(implicit u: Updater[T, F]): u.Out = u(t, f)
 
   inline given updaterInst[T <: Tuple, F](
     using idx: ValueOf[IndexOf[T, F]]
