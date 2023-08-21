@@ -1,6 +1,6 @@
 package typify.tuple
 
-import compiletime.ops.int.>=
+import compiletime.ops.int.{-, >=}
 
 /**
  * Type class supporting supporting access to the elements in range [a,b] of this `Tuple`.
@@ -14,12 +14,15 @@ object SelectRange {
   inline def apply[L, A, B](using s: SelectRange[L, A, B]): SelectRange.Aux[L, A, B, s.Out] = s
 
   given tupleSelectRange[L <: Tuple, A <: Int, B <: Int](
-    using a: ValueOf[A],
-    b: ValueOf[B],
-    ev: (Tuple.Size[L] >= B) =:= true,
-  ): SelectRange.Aux[L, A, B, Tuple.Take[Tuple.Drop[L, A], B]] =
+    using av: ValueOf[A],
+    bv: ValueOf[B],
+    evA: (A >= 0) =:= true,
+    evB: (B >= A) =:= true,
+  ): SelectRange.Aux[L, A, B, Tuple.Take[Tuple.Drop[L, A], B - A]] =
     new SelectRange[L, A, B] {
-      type Out = Tuple.Take[Tuple.Drop[L, A], B]
-      def apply(l: L): Out = l.toArray.drop(a.value).take(b.value).asInstanceOf[Out]
+      type Out = Tuple.Take[Tuple.Drop[L, A], B - A]
+      private lazy val a = av.value
+      private lazy val b = bv.value
+      def apply(l: L): Out = Tuple.fromArray(l.toArray.drop(a).take(b - a)).asInstanceOf[Out]
     }
 }
