@@ -8,7 +8,7 @@ trait TuplePackageAux {
   final val EmptyTuple: EmptyTuple = shapeless.HNil
 
   final implicit class TypifyTupleOps[T <: Tuple](t: T) {
-    final def *:[H](h: H): H *: T = shapeless.::(h, t)
+    final def *:[H](h: H): shapeless.::[H, T] = new shapeless.::(h, t)
     final def mapPoly(f: Poly)(implicit m: Mapper[f.type, T]): m.Out = m(t)
     final def toList[Lub](implicit tl: ToList[T, Lub]): List[Lub] = tl(t)
   }
