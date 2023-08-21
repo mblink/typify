@@ -15,32 +15,107 @@ trait DepFn2[T, U] {
   def apply(t: T, u: U): Out
 }
 
-opaque type Case0[F, A] = () => A
+abstract class Case[F, L <: Tuple] extends Serializable {
+  type Result
+  val value: L => Result
+
+  final def apply(t: L) = value(t)
+  final def apply()(implicit ev: EmptyTuple =:= L) = value(EmptyTuple)
+  final def apply[T](t: T)(implicit ev: (T *: EmptyTuple) =:= L) = value(t *: EmptyTuple)
+  final def apply[T, U](t: T, u: U)(implicit ev: (T *: U *: EmptyTuple) =:= L) = value(t *: u *: EmptyTuple)
+}
+
+object Case {
+  type Aux[F, L <: Tuple, R] = Case[F, L] { type Result = R }
+  type Hom[F, T] = Case.Aux[F, T *: EmptyTuple, T]
+
+  def apply[F, L <: Tuple, R](v: L => R): Case.Aux[F, L, R] =
+    new Case[F, L] {
+      type Result = R
+      val value = v
+    }
+}
+
+type Case0[F] = Case[F, EmptyTuple]
 object Case0 {
-  inline def apply[F, A](f: () => A): Case0[F, A] = f
-  extension [F, A](f: Case0[F, A]) inline def run(): A = f()
+  type Aux[F, R] = Case0[F] { type Result = R }
+
+  def apply[F, R](f: () => R): Case0.Aux[F, R] = Case(_ => f())
 }
-opaque type Case1[F, A, B] = A => B
+
+type Case1[F, A] = Case[F, A *: EmptyTuple]
 object Case1 {
-  inline def apply[F, A, B](f: A => B): Case1[F, A, B] = f
-  extension [F, A, B](f: Case1[F, A, B]) inline def run(a: A): B = f(a)
+  type Aux[F, A, R] = Case1[F, A] { type Result = R }
+
+  def apply[F, A, R](f: A => R): Case1.Aux[F, A, R] = Case { case (a *: EmptyTuple) => f(a) }
 }
-opaque type Case2[F, A, B, C] = (A, B) => C
+
+type Case2[F, A, B] = Case[F, A *: B *: EmptyTuple]
 object Case2 {
-  inline def apply[F, A, B, C](f: (A, B) => C): Case2[F, A, B, C] = f
-  extension [F, A, B, C](f: Case2[F, A, B, C]) inline def run(a: A, b: B): C = f(a, b)
+  type Aux[F, A, B, R] = Case2[F, A, B] { type Result = R }
+
+  def apply[F, A, B, R](f: (A, B) => R): Case2.Aux[F, A, B, R] = Case { case (a *: b *: EmptyTuple) => f(a, b) }
 }
 
 sealed trait Poly
-trait Poly0 extends Poly {
-  final type Case[A] = Case0[this.type, A]
-  final inline def at[A](f: () => A): Case[A] = Case0(f)
+trait Poly0 extends Poly { self =>
+  final type Case = Case0[self.type]
+  object Case {
+    final type Aux[R] = Case0.Aux[self.type, R]
+  }
+
+  final inline def at[R](f: () => R): Case.Aux[R] = Case0[self.type, R](f)
 }
-trait Poly1 extends Poly {
-  final type Case[A, B] = Case1[this.type, A, B]
-  final inline def at[A, B](f: A => B): Case[A, B] = Case1(f)
+trait Poly1 extends Poly { self =>
+  final type Case[A] = Case1[this.type, A]
+  object Case {
+    final type Aux[A, R] = Case1.Aux[self.type, A, R]
+  }
+
+  final inline def at[A] = [R] => (f: A => R) => Case1[self.type, A, R](f)
 }
-trait Poly2 extends Poly {
-  final type Case[A, B, C] = Case2[this.type, A, B, C]
-  final inline def at[A, B, C](f: (A, B) => C): Case[A, B, C] = Case2(f)
+trait Poly2 extends Poly { self =>
+  final type Case[A, B] = Case2[this.type, A, B]
+  object Case {
+    final type Aux[A, B, R] = Case2.Aux[self.type, A, B, R]
+  }
+
+  final inline def at[A, B] = [R] => (f: (A, B) => R) => Case2[self.type, A, B, R](f)
 }
+
+/**
+ * Base class for lifting a `Function1` to a `Poly1`
+ */
+class ->[T, R](f: T => R) extends Poly1 {
+  final given subT[U <: T]: Case.Aux[U, R] = at(f)
+}
+
+trait LiftFunction1LP extends Poly1 {
+  final given default[T]: Case.Aux[T, EmptyTuple] = at(_ => EmptyTuple)
+}
+
+/**
+ * Base class for lifting a `Function1` to a `Poly1` over the universal domain, yielding a `Tuple` with the result as
+ * its only element if the argument is in the original functions domain, `EmptyTuple` otherwise.
+ */
+class >->[T, R](f: T => R) extends LiftFunction1LP {
+  final given subT[U <: T]: Case.Aux[U, R *: EmptyTuple] = at(f(_) *: EmptyTuple)
+}
+
+// trait LiftULP extends Poly {
+//   implicit def default[L <: HList] = new ProductCase[L] {
+//     type Result = HNil
+//     val value = (l: L) => HNil
+//   }
+// }
+
+// /**
+//  * Base class for lifting a `Poly` to a `Poly` over the universal domain, yielding a `Tuple` with the result as it's
+//  * only element if the argument is in the original functions domain, `EmptyTuple` otherwise.
+//  */
+// class LiftU[P <: Poly](p: P)  extends LiftULP {
+//   implicit def defined[L <: HList](implicit caseT: Case[P, L]) = new ProductCase[L] {
+//     type Result = caseT.Result *: HNil
+//     val value = (l: L) => caseT(l) *: HNil
+//   }
+// }

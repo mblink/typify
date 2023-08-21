@@ -18,12 +18,12 @@ object MapValues {
       def apply(l: L) = EmptyTuple
     }
 
-  given tupleNMapValues[F, K, V, O, T <: Tuple](
-    using ch: Case1[F, V, O],
+  given tupleNMapValues[F, K, V, T <: Tuple](
+    using ch: Case1[F, V],
     mt: MapValues[F, T] { type Out <: Tuple },
-  ): MapValues.Aux[F, (K ->> V) *: T, (K ->> O) *: mt.Out] =
+  ): MapValues.Aux[F, (K ->> V) *: T, (K ->> ch.Result) *: mt.Out] =
     new MapValues[F, (K ->> V) *: T] {
-      type Out = (K ->> O) *: mt.Out
-      def apply(l: (K ->> V) *: T) = label[K](ch.run(l.head)) *: mt(l.tail)
+      type Out = (K ->> ch.Result) *: mt.Out
+      def apply(l: (K ->> V) *: T) = label[K](ch(l.head: V)) *: mt(l.tail)
     }
 }

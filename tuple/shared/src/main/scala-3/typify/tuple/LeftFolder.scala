@@ -17,11 +17,11 @@ object LeftFolder {
     }
 
   given leftFolderTupleCons[H, T <: Tuple, In, F, OutH, FtOut](
-    using f: Case2[F, In, H, OutH],
+    using f: Case2.Aux[F, In, H, OutH],
     ft: LeftFolder.Aux[T, OutH, F, FtOut],
   ): LeftFolder.Aux[H *: T, In, F, FtOut] =
     new LeftFolder[H *: T, In, F] {
       type Out = FtOut
-      def apply(l: H *: T, in: In): Out = ft(l.tail, f.run(in, l.head))
+      def apply(l: H *: T, in: In): Out = ft(l.tail, f(in, l.head))
     }
 }

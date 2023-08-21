@@ -18,10 +18,10 @@ object RightFolder {
 
   given rightFolderTupleCons[H, T <: Tuple, In, F, OutT, FOut](
     using ft: RightFolder.Aux[T, In, F, OutT],
-    f: Case2[F, H, OutT, FOut],
+    f: Case2.Aux[F, H, OutT, FOut],
   ): RightFolder.Aux[H *: T, In, F, FOut] =
     new RightFolder[H *: T, In, F] {
       type Out = FOut
-      def apply(l: H *: T, in: In): Out = f.run(l.head, ft(l.tail, in))
+      def apply(l: H *: T, in: In): Out = f(l.head, ft(l.tail, in))
     }
 }

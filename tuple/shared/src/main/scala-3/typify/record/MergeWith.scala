@@ -32,13 +32,13 @@ object MergeWith extends MergeWithLP {
   given tupleNMergeWith2[K, V0, V1, V, T <: Tuple, M <: Tuple, MT <: Tuple, F, Out0 <: Tuple](
     using rm: Remover.Aux[M, K, (V1, MT)],
     mt: MergeWith.Aux[T, MT, F, Out0],
-    callback: Case2[F, V0, V1, V],
+    callback: Case2.Aux[F, V0, V1, V],
   ): MergeWith.Aux[(K ->> V0) *: T, M, F, (K ->> V) *: Out0] = {
     new MergeWith[(K ->> V0) *: T, M, F] {
       type Out = (K ->> V) *: mt.Out
       def apply(l: (K ->> V0) *: T, m: M): Out = {
         val (mv, mr) = rm(m)
-        val up = label[K](callback.run(l.head, mv))
+        val up = label[K](callback(l.head: V0, mv))
         up *: mt(l.tail, mr)
       }
     }

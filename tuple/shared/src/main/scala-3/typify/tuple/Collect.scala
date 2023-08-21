@@ -28,10 +28,10 @@ object Collect extends CollectLP {
 
   given tupleNCollect[LH, LT <: Tuple, P <: Poly, CollectOut <: Tuple, ClrResult](
     using ct: Collect.Aux[LT, P, CollectOut],
-    ch: Case1[P, LH, ClrResult],
+    ch: Case1.Aux[P, LH, ClrResult],
   ): Collect.Aux[LH *: LT, P, ClrResult *: CollectOut] =
     new Collect[LH *: LT, P] {
       type Out = ClrResult *: CollectOut
-      def apply(l: LH *: LT): Out = ch.run(l.head) *: ct(l.tail)
+      def apply(l: LH *: LT): Out = ch(l.head) *: ct(l.tail)
     }
 }

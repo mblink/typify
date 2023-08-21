@@ -11,12 +11,7 @@ trait Split[L, N] extends DepFn1[L] {
   type Suffix
   final type Out = (Prefix, Suffix)
 
-  def product(l: L): Prefix *: Suffix *: EmptyTuple
-
-  final def apply(l: L): Out = {
-    val p = product(l)
-    (p.head, p.tail.head)
-  }
+  def apply(l: L): Out
 }
 
 object Split {
@@ -35,7 +30,6 @@ object Split {
       type Prefix = Tuple.Take[L, N]
       type Suffix = Tuple.Drop[L, N]
       private lazy val n = nv.value
-      def product(l: L): Prefix *: Suffix *: EmptyTuple =
-        l.take(n).asInstanceOf[Prefix] *: l.drop(n).asInstanceOf[Suffix] *: EmptyTuple
+      def apply(l: L): Out = (l.take(n).asInstanceOf[Prefix], l.drop(n).asInstanceOf[Suffix])
     }
 }

@@ -9,12 +9,7 @@ trait SplitLeft[L, U] extends DepFn1[L] {
   type Suffix
   final type Out = (Prefix, Suffix)
 
-  def product(l: L): Prefix *: Suffix *: EmptyTuple
-
-  final def apply(l: L): Out = {
-    val p = product(l)
-    (p.head, p.tail.head)
-  }
+  def apply(l: L): Out
 }
 
 object SplitLeft {
@@ -32,7 +27,6 @@ object SplitLeft {
       type Prefix = Tuple.Take[L, ElemIndex[L, U]]
       type Suffix = Tuple.Drop[L, ElemIndex[L, U]]
       private lazy val n = idxv.value
-      def product(l: L): Prefix *: Suffix *: EmptyTuple =
-        l.take(n).asInstanceOf[Prefix] *: l.drop(n).asInstanceOf[Suffix] *: EmptyTuple
+      def apply(l: L): Out = (l.take(n).asInstanceOf[Prefix], l.drop(n).asInstanceOf[Suffix])
     }
 }

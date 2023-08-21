@@ -18,10 +18,10 @@ object RightReducer {
 
   given rightReducerTupleN[H, T <: Tuple, F, OutT, Out0](
     using rt: RightReducer.Aux[T, F, OutT],
-    f: Case2[F, H, OutT, Out0],
+    f: Case2.Aux[F, H, OutT, Out0],
   ): RightReducer.Aux[H *: T, F, Out0] =
       new RightReducer[H *: T, F] {
         type Out = Out0
-        def apply(l: H *: T): Out = f.run(l.head, rt(l.tail))
+        def apply(l: H *: T): Out = f(l.head, rt(l.tail))
       }
 }

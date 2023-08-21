@@ -29,11 +29,11 @@ object ZipWith {
 
   given tupleZipWithTuple[LH, RH, LT <: Tuple, RT <: Tuple, F, ZipWithOut <: Tuple, ClrResult](
     using zt: ZipWith.Aux[LT, RT, F, ZipWithOut],
-    c: Case2[F, LH, RH, ClrResult],
+    c: Case2.Aux[F, LH, RH, ClrResult],
   ): ZipWith.Aux[LH *: LT, RH *: RT, F, ClrResult *: ZipWithOut] =
     new ZipWith[LH *: LT, RH *: RT, F] {
       type Out = ClrResult *: ZipWithOut
       def apply(l: LH *: LT, r: RH *: RT): Out =
-        c.run(l.head, r.head) *: zt(l.tail, r.tail)
+        c(l.head, r.head) *: zt(l.tail, r.tail)
     }
 }

@@ -17,12 +17,12 @@ object FlatMapper {
     }
 
   given flatMapperTupleN[F <: Poly, InH, InT <: Tuple, OutH <: Tuple, OutT <: Tuple, Out0 <: Tuple](
-    using hc: Case1[F, InH, OutH],
+    using hc: Case1.Aux[F, InH, OutH],
     mt: FlatMapper.Aux[F, InT, OutT],
     p: Prepend.Aux[OutH, OutT, Out0],
   ): FlatMapper.Aux[F, InH *: InT, Out0] =
     new FlatMapper[F, InH *: InT] {
       type Out = Out0
-      def apply(t: InH *: InT): Out = p(hc.run(t.head), mt(t.tail))
+      def apply(t: InH *: InT): Out = p(hc(t.head), mt(t.tail))
     }
 }

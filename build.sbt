@@ -111,6 +111,9 @@ lazy val tuple = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file("
       )
     }
   )
+  .jsConfigure(_.enablePlugins(ScalaJSJUnitPlugin))
+  .jvmSettings(libraryDependencies += "com.github.sbt" % "junit-interface" % "0.13.2" % "test")
+  .nativeConfigure(_.enablePlugins(ScalaNativeJUnitPlugin))
 
 lazy val typify = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file("typify"))
   .settings(baseSettings)

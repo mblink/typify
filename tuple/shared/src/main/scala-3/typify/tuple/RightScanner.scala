@@ -16,11 +16,11 @@ object RightScanner {
     type Aux[L, V, F, O] = RightScanner0[L, V, F] { type Out = O }
 
     given tupleRightScanner0[H, H0, T <: Tuple, F, C2Result](
-      using ev: Case2[F, H0, H, C2Result],
+      using ev: Case2.Aux[F, H0, H, C2Result],
     ): RightScanner0.Aux[H *: T, H0, F, C2Result *: H *: T] =
       new RightScanner0[H *: T, H0, F] {
         type Out = C2Result *: H *: T
-        def apply(l: H *: T, h: H0) = ev.run(h, l.head) *: l
+        def apply(l: H *: T, h: H0) = ev(h, l.head) *: l
       }
   }
 

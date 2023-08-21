@@ -13,7 +13,7 @@ object ZipWithKeys {
   inline def apply[K, V](using z: ZipWithKeys[K, V]): ZipWithKeys.Aux[K, V, z.Out] = z
 
   object F extends Poly2 {
-    given kv[K, V]: Case[K, V, K ->> V] = at((_, v) => label[K](v))
+    given kv[K, V]: Case.Aux[K, V, K ->> V] = at((_, v) => label[K](v))
   }
 
   inline given tupleZipWithKeys[K <: Tuple, V <: Tuple](

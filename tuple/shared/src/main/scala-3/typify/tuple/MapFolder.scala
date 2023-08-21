@@ -17,10 +17,10 @@ object MapFolder {
     }
 
   given mapFolderTupleCons[H, T <: Tuple, R, F <: Poly](
-    using hc: Case1[F, H, R],
+    using hc: Case1.Aux[F, H, R],
     tf: MapFolder[T, R, F],
   ): MapFolder[H *: T, R, F] =
     new MapFolder[H *: T, R, F] {
-      def apply(l: H *: T, in: R, op: (R, R) => R): R = op(hc.run(l.head), tf(l.tail, in, op))
+      def apply(l: H *: T, in: R, op: (R, R) => R): R = op(hc(l.head), tf(l.tail, in, op))
     }
 }

@@ -17,11 +17,11 @@ object Mapper {
     }
 
   given mapperTupleCons[F <: Poly, InH, InT <: Tuple, OutH, OutT <: Tuple](
-    using hc: Case1[F, InH, OutH],
+    using hc: Case1.Aux[F, InH, OutH],
     mt: Mapper.Aux[F, InT, OutT],
   ): Mapper.Aux[F, InH *: InT, OutH *: OutT] =
     new Mapper[F, InH *: InT] {
       type Out = OutH *: OutT
-      def apply(l: InH *: InT): Out = hc.run(l.head) *: mt(l.tail)
+      def apply(l: InH *: InT): Out = hc(l.head) *: mt(l.tail)
     }
 }

@@ -13,11 +13,7 @@ trait Partition[L, U] extends DepFn1[L] {
   def filter(l: L): Prefix
   def filterNot(l: L): Suffix
 
-  final def product(l: L): Prefix *: Suffix *: EmptyTuple = filter(l) *: filterNot(l) *: EmptyTuple
-  final def apply(l: L): Out = {
-    val p = product(l)
-    (p.head, p.tail.head)
-  }
+  final def apply(l: L): Out = (filter(l), filterNot(l))
 }
 
 object Partition {

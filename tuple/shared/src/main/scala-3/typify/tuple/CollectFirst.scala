@@ -18,9 +18,9 @@ trait CollectFirstLP {
 object CollectFirst extends CollectFirstLP {
   inline def apply[L, F](using c: CollectFirst[L, F]): CollectFirst.Aux[L, F, c.Out] = c
 
-  given tupleEval[H, T <: Tuple, F, O](using c: Case1[F, H, O]): CollectFirst.Aux[H *: T, F, O] =
+  given tupleEval[H, T <: Tuple, F](using c: Case1[F, H]): CollectFirst.Aux[H *: T, F, c.Result] =
     new CollectFirst[H *: T, F] {
-      type Out = O
-      def apply(l: H *: T) = c.run(l.head)
+      type Out = c.Result
+      def apply(l: H *: T) = c(l.head)
     }
 }

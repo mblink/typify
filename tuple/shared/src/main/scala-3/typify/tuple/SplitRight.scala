@@ -9,12 +9,7 @@ trait SplitRight[L, U] extends DepFn1[L] {
   type Suffix
   final type Out = (Prefix, Suffix)
 
-  def product(l: L): Prefix *: Suffix *: EmptyTuple
-
-  final def apply(l: L): Out = {
-    val p = product(l)
-    (p.head, p.tail.head)
-  }
+  def apply(l: L): Out
 }
 
 object SplitRight {
@@ -31,13 +26,13 @@ object SplitRight {
     new SplitRight[L, U] {
       type Prefix = ReverseT[Tuple.Drop[ReverseT[L], ElemIndex[ReverseT[L], U]]]
       type Suffix = ReverseT[Tuple.Take[ReverseT[L], ElemIndex[ReverseT[L], U]]]
-
       private lazy val n = idxv.value
-      def product(l: L): Prefix *: Suffix *: EmptyTuple = {
+      def apply(l: L): Out = {
         val a = l.toArray.reverse
-        Tuple.fromArray(a.drop(n).reverse).asInstanceOf[Prefix] *:
-          Tuple.fromArray(a.take(n).reverse).asInstanceOf[Suffix] *:
-          EmptyTuple
+        (
+          Tuple.fromArray(a.drop(n).reverse).asInstanceOf[Prefix],
+          Tuple.fromArray(a.take(n).reverse).asInstanceOf[Suffix],
+        )
       }
     }
 }

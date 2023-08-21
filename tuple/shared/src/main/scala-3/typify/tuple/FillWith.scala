@@ -13,7 +13,7 @@ object FillWith {
   inline given fillWithInst[F <: Poly, L <: Tuple]: FillWith[F, L] =
     new FillWith[F, L] {
       def apply(): L =
-        Tuple.fromArray(summonAll[Tuple.Map[L, Case0[F, *]]]
-          .toArray.map(_.asInstanceOf[Case0[F, Any]].run())).asInstanceOf[L]
+        Tuple.fromArray(summonAll[Tuple.Map[L, Case0.Aux[F, *]]]
+          .toArray.map(_.asInstanceOf[Case0.Aux[F, Any]].apply())).asInstanceOf[L]
     }
 }

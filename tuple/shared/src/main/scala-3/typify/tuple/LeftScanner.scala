@@ -17,11 +17,11 @@ object LeftScanner{
     }
 
   given tupleNLeftScanner[H, T <: Tuple, In, F, OutP, ScanOut <: Tuple](
-    using ch: Case2[F, H, In, OutP],
+    using ch: Case2.Aux[F, H, In, OutP],
     st: LeftScanner.Aux[T, OutP, F, ScanOut],
   ): LeftScanner.Aux[H *: T, In, F, In *: ScanOut] =
     new LeftScanner[H *: T, In, F] {
       type Out = In *: ScanOut
-      def apply(l: H *: T, in: In) = in *: st(l.tail, ch.run(l.head, in))
+      def apply(l: H *: T, in: In) = in *: st(l.tail, ch(l.head, in))
     }
 }

@@ -100,6 +100,8 @@ trait TuplePackageCompat {
 
     final def selectMany[Ids <: Tuple](using s: SelectMany[L, Ids]): s.Out = s(l)
 
+    final def selectMany[Ids <: Tuple](ids: Ids)(using s: SelectMany[L, Ids]): s.Out = s(l)
+
     /**
      * Returns the elements of this `Tuple` specified by the range of ids in [A,B[
      * Available only if there is evidence that this `Tuple` contains all elements in that range
@@ -119,8 +121,6 @@ trait TuplePackageCompat {
     final def filterNot[U](using p: Partition[L, U]): p.Suffix  = p.filterNot(l)
 
     final def partition[U](using p: Partition[L, U]): (p.Prefix, p.Suffix) = p(l)
-
-    final def partitionP[U](using p: Partition[L, U]): p.Prefix *: p.Suffix *: EmptyTuple = p.product(l)
 
     /**
      * Returns the first element of type `U` of this `Tuple` plus the remainder of the `Tuple`. An explicit type argument
@@ -231,65 +231,53 @@ trait TuplePackageCompat {
      * Splits this `Tuple` at the `N`th element, returning the prefix and suffix as a pair. An explicit type argument
      * must be provided. Available only if there is evidence that this `Tuple` has at least `N` elements.
      */
-    final def split[N](using s: Split[L, N]): (s.Prefix, s.Suffix) = s(l)
-    final def splitP[N](using s: Split[L, N]): s.Prefix *: s.Suffix *: EmptyTuple = s.product(l)
+    final def split[N](using s: Split[L, N]): s.Out = s(l)
 
     /**
      * Splits this `Tuple` at the `n`th element, returning the prefix and suffix as a pair. Available only if there is
      * evidence that this `Tuple` has at least `n` elements.
      */
-    final def split(n: Int)(using s: Split[L, n.type]): (s.Prefix, s.Suffix) = s(l)
-    final def splitP(n: Int)(using s: Split[L, n.type]): s.Prefix *: s.Suffix *: EmptyTuple = s.product(l)
+    final def split(n: Int)(using s: Split[L, n.type]): s.Out = s(l)
 
     /**
      * Splits this `Tuple` at the `N`th element, returning the reverse of the prefix and suffix as a pair. An explicit
      * type argument must be provided. Available only if there is evidence that this `Tuple` has at least `N` elements.
      */
-    final def reverse_split[N](using s: ReverseSplit[L, N]): (s.Prefix, s.Suffix) = s(l)
-
-    final def reverse_splitP[N](using s: ReverseSplit[L, N]): s.Prefix *: s.Suffix *: EmptyTuple = s.product(l)
+    final def reverse_split[N](using s: ReverseSplit[L, N]): s.Out = s(l)
 
     /**
      * Splits this `Tuple` at the `n`th element, returning the reverse of the prefix and suffix as a pair. Available
      * only if there is evidence that this `Tuple` has at least `n` elements.
      */
-    final def reverse_split(n: Int)(using s: ReverseSplit[L, n.type]): (s.Prefix, s.Suffix) = s(l)
-
-    final def reverse_splitP(n: Int)(using s: ReverseSplit[L, n.type]): s.Prefix *: s.Suffix *: EmptyTuple = s.product(l)
+    final def reverse_split(n: Int)(using s: ReverseSplit[L, n.type]): s.Out = s(l)
 
     /**
      * Splits this `Tuple` at the first occurrence of an element of type `U`, returning the prefix and suffix as a pair.
      * An explicit type argument must be provided. Available only if there is evidence that this `Tuple` has an element
      * of type `U`.
      */
-    final def splitLeft[U](using s: SplitLeft[L, U]): (s.Prefix, s.Suffix) = s(l)
-    final def splitLeftP[U](using s: SplitLeft[L, U]): s.Prefix *: s.Suffix *: EmptyTuple = s.product(l)
+    final def splitLeft[U](using s: SplitLeft[L, U]): s.Out = s(l)
 
     /**
      * Splits this `Tuple` at the first occurrence of an element of type `U`, returning reverse of the prefix and suffix
      * as a pair. An explicit type argument must be provided. Available only if there is evidence that this `Tuple` has
      * an element of type `U`.
      */
-    final def reverse_splitLeft[U](using s: ReverseSplitLeft[L, U]): (s.Prefix, s.Suffix) = s(l)
-
-    final def reverse_splitLeftP[U](using s: ReverseSplitLeft[L, U]): s.Prefix *: s.Suffix *: EmptyTuple = s.product(l)
+    final def reverse_splitLeft[U](using s: ReverseSplitLeft[L, U]): s.Out = s(l)
 
     /**
      * Splits this `Tuple` at the last occurrence of an element of type `U`, returning the prefix and suffix as a pair.
      * An explicit type argument must be provided. Available only if there is evidence that this `Tuple` has an element
      * of type `U`.
      */
-    final def splitRight[U](using s: SplitRight[L, U]): (s.Prefix, s.Suffix) = s(l)
-    final def splitRightP[U](using s: SplitRight[L, U]): s.Prefix *: s.Suffix *: EmptyTuple = s.product(l)
+    final def splitRight[U](using s: SplitRight[L, U]): s.Out = s(l)
 
     /**
      * Splits this `Tuple` at the last occurrence of an element of type `U`, returning reverse of the prefix and suffix
      * as a pair. An explicit type argument must be provided. Available only if there is evidence that this `Tuple` has
      * an element of type `U`.
      */
-    final def reverse_splitRight[U](using s: ReverseSplitRight[L, U]): (s.Prefix, s.Suffix) = s(l)
-
-    final def reverse_splitRightP[U](using s: ReverseSplitRight[L, U]): s.Prefix *: s.Suffix *: EmptyTuple = s.product(l)
+    final def reverse_splitRight[U](using s: ReverseSplitRight[L, U]): s.Out = s(l)
 
     /**
      * Permutes this `Tuple` into the same order as another `Tuple`. An explicit type argument must be supplied.
@@ -421,7 +409,7 @@ trait TuplePackageCompat {
     /**
      * Compute the length of this `Tuple`.
      */
-    final def length(using len: Length[L]) : len.Out = len()
+    final def length(using len: Length[L]): len.Out = len()
 
     /**
      * Compute the length of this `Tuple` as a runtime Int value.
@@ -456,13 +444,13 @@ trait TuplePackageCompat {
      * Converts this `Tuple` to a `M` of elements typed as the least upper bound of the types of the elements
      * of this `Tuple`.
      */
-    final def to[M[_]](using t: ToTraversable[L, M]) : t.Out = t(l)
+    final def to[M[_]](using t: ToTraversable[L, M]): t.Out = t(l)
 
     /**
      * Converts this `Tuple` to an ordinary `List` of elements typed as the least upper bound of the types of the elements
      * of this `Tuple`.
      */
-    final def toList[Lub](using tl: ToList[L, Lub]): tl.Out = tl(l)
+    final def toListLub[Lub](using tl: ToList[L, Lub]): tl.Out = tl(l)
 
     /**
      * Converts this `Tuple` to an `Array` of elements typed as the least upper bound of the types of the elements
@@ -472,7 +460,7 @@ trait TuplePackageCompat {
      * particular, the inferred type will be too precise (ie. `Product with Serializable with CC` for a typical case class
      * `CC`) which interacts badly with the invariance of `Array`s.
      */
-    final def toArray[Lub](using ta: ToArray[L, Lub]) : ta.Out = ta(l)
+    final def toArrayLub[Lub](using ta: ToArray[L, Lub]): ta.Out = ta(l)
 
     /**
      * Displays all elements of this Tuple in a string using start, end, and separator strings.
