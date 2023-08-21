@@ -5,6 +5,25 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 lazy val scala213 = "2.13.10"
 lazy val scala3 = "3.3.0"
 
+ThisBuild / crossScalaVersions := Seq(scala213, scala3)
+
+// GitHub Actions config
+val javaVersions = Seq(8, 11, 17).map(v => JavaSpec.temurin(v.toString))
+
+ThisBuild / githubWorkflowJavaVersions := javaVersions
+ThisBuild / githubWorkflowArtifactUpload := false
+ThisBuild / githubWorkflowBuildMatrixFailFast := Some(false)
+ThisBuild / githubWorkflowTargetBranches := Seq("master")
+
+val isJava8 = s"matrix.java == '${javaVersions.find(_.version == "8").get.render}'"
+
+ThisBuild / githubWorkflowBuild ++= Seq(
+  WorkflowStep.Sbt(List("mimaReportBinaryIssues"), name = Some("Binary compatibility"), cond = Some(isJava8)),
+  WorkflowStep.Sbt(List("docs/mdoc"), name = Some("Build docs"), cond = Some(isJava8)),
+)
+
+ThisBuild / githubWorkflowPublishTargetBranches := Seq()
+
 def foldScalaV[A](scalaVersion: String)(_213: => A, _3: => A): A =
   CrossVersion.partialVersion(scalaVersion) match {
     case Some((2, 13)) => _213
