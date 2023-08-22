@@ -72,18 +72,19 @@ lazy val root = project.in(file("."))
   )
   .disablePlugins(MimaPlugin)
 
-lazy val cats = Def.setting { "org.typelevel" %%% "cats-core" % "2.9.0" }
+lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.9.0")
 lazy val circe = "io.circe" %% "circe-core" % "0.14.5"
 lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.6"
+lazy val munit = Def.setting("org.scalameta" %% "munit" % "1.0.0-M8" % Test)
 lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC9"
-lazy val shapeless = Def.setting { "com.chuusai" %%% "shapeless" % "2.3.10" }
-lazy val scalacheck = Def.setting { "org.scalacheck" %%% "scalacheck" % "1.17.0" % "test" }
+lazy val shapeless = Def.setting("com.chuusai" %%% "shapeless" % "2.3.10")
+lazy val scalacheck = Def.setting("org.scalacheck" %%% "scalacheck" % "1.17.0" % Test)
 
 lazy val tuple = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file("tuple"))
   .settings(baseSettings)
   .settings(
     name := "typify-tuple",
-    libraryDependencies ++= Seq(scalacheck.value),
+    libraryDependencies ++= Seq(munit.value, scalacheck.value),
     libraryDependencies ++= foldScalaV(scalaVersion.value)(
       Seq(
         shapeless.value,
