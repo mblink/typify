@@ -8,7 +8,7 @@ trait Transposer[L] extends DepFn1[L]
 object Transposer {
   type Aux[L, O] = Transposer[L] { type Out = O }
 
-  inline def apply[L](implicit t: Transposer[L]): Transposer.Aux[L, t.Out] = t
+  inline def apply[L](using t: Transposer[L]): Transposer.Aux[L, t.Out] = t
 
   given emptyTupleTransposer: Transposer.Aux[EmptyTuple, EmptyTuple] =
     new Transposer[EmptyTuple] {

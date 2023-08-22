@@ -10,8 +10,8 @@ trait Updater[T, F] extends DepFn2[T, F]
 object Updater {
   type Aux[T, F, O] = Updater[T, F] { type Out = O }
 
-  inline def apply[T, F](implicit u: Updater[T, F]): Updater.Aux[T, F, u.Out] = u
-  inline def apply[T, F](t: T, f: F)(implicit u: Updater[T, F]): u.Out = u(t, f)
+  inline def apply[T, F](using u: Updater[T, F]): Updater.Aux[T, F, u.Out] = u
+  inline def apply[T, F](t: T, f: F)(using u: Updater[T, F]): u.Out = u(t, f)
 
   inline given updaterInst[T <: Tuple, F](
     using idx: ValueOf[ElemIndexWithFallback[T, F]]

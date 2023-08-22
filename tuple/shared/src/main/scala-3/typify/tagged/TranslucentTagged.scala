@@ -15,7 +15,7 @@ object TranslucentTagged {
   inline def apply[T]: Of[T] = new Of[T]
 
   extension [A, T](x: TranslucentTagged[A, T]) {
-    inline final def tag(implicit t: ValueOf[T]): T = t.value
-    inline final def label(implicit t: ValueOf[T]): T = t.value
+    inline final def tag(using t: ValueOf[T]): T = t.value
+    inline final def label(using t: ValueOf[T]): T = t.value
   }
 }

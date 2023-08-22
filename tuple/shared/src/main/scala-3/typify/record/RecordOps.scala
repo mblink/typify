@@ -81,31 +81,31 @@ final class TypifyRecordOps[T <: Tuple](private val t: T) extends AnyVal {
   /**
    * Returns the keys of this record as a `Tuple` of singleton typed values.
    */
-  final def keys(implicit k: Keys[T]): k.Out = k()
+  final def keys(using k: Keys[T]): k.Out = k()
 
   /**
    * Returns a `Tuple` of the values of this record.
    */
-  final def values(implicit v: Values[T]): v.Out = v(t)
+  final def values(using v: Values[T]): v.Out = v(t)
 
   /**
    * Returns a `Tuple` made of the key-value pairs of this record.
    */
-  final def fields(implicit f: Fields[T]): f.Out = f(t)
+  final def fields(using f: Fields[T]): f.Out = f(t)
 
   /**
    * Returns a `Map` whose keys and values are typed as the Lub of the keys
    * and values of this record.
    */
-  final def toMap[K, V](implicit tm: ToMap.Aux[T, K, V]): Map[K, V] = tm(t)
+  final def toMap[K, V](using tm: ToMap.Aux[T, K, V]): Map[K, V] = tm(t)
 
   /**
    * Maps a higher rank function across the values of this record.
    */
-  final def mapValues(f: Poly)(implicit m: MapValues[f.type, T]): m.Out = m(t)
+  final def mapValues(f: Poly)(using m: MapValues[f.type, T]): m.Out = m(t)
 
   /**
     * Align the keys on the order of Tuple of keys K
     */
-  final def alignByKeys[K <: Tuple](implicit a: AlignByKeys[T, K]): a.Out = a(t)
+  final def alignByKeys[K <: Tuple](using a: AlignByKeys[T, K]): a.Out = a(t)
 }

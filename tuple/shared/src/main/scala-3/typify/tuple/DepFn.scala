@@ -20,9 +20,9 @@ abstract class Case[F, L <: Tuple] extends Serializable {
   val value: L => Result
 
   final def apply(t: L) = value(t)
-  final def apply()(implicit ev: EmptyTuple =:= L) = value(EmptyTuple)
-  final def apply[T](t: T)(implicit ev: (T *: EmptyTuple) =:= L) = value(t *: EmptyTuple)
-  final def apply[T, U](t: T, u: U)(implicit ev: (T *: U *: EmptyTuple) =:= L) = value(t *: u *: EmptyTuple)
+  final def apply()(using ev: EmptyTuple =:= L) = value(EmptyTuple)
+  final def apply[T](t: T)(using ev: (T *: EmptyTuple) =:= L) = value(t *: EmptyTuple)
+  final def apply[T, U](t: T, u: U)(using ev: (T *: U *: EmptyTuple) =:= L) = value(t *: u *: EmptyTuple)
 }
 
 object Case {
@@ -105,21 +105,3 @@ trait LiftFunction1LP extends Poly1 {
 class >->[T, R](f: T => R) extends LiftFunction1LP {
   final given subT[U <: T]: Case.Aux[U, R *: EmptyTuple] = at(f(_) *: EmptyTuple)
 }
-
-// trait LiftULP extends Poly {
-//   implicit def default[L <: HList] = new ProductCase[L] {
-//     type Result = HNil
-//     val value = (l: L) => HNil
-//   }
-// }
-
-// /**
-//  * Base class for lifting a `Poly` to a `Poly` over the universal domain, yielding a `Tuple` with the result as it's
-//  * only element if the argument is in the original functions domain, `EmptyTuple` otherwise.
-//  */
-// class LiftU[P <: Poly](p: P)  extends LiftULP {
-//   implicit def defined[L <: HList](implicit caseT: Case[P, L]) = new ProductCase[L] {
-//     type Result = caseT.Result *: HNil
-//     val value = (l: L) => caseT(l) *: HNil
-//   }
-// }

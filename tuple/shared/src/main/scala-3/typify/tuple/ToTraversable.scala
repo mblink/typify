@@ -3,10 +3,10 @@ package typify.tuple
 import scala.collection.{Factory, mutable}
 
 type ToArray[L, Lub] = ToTraversable.Aux[L, Array, Lub]
-def ToArray[L, Lub](implicit t: ToArray[L, Lub]): ToArray[L, Lub] = t
+inline def ToArray[L, Lub](using t: ToArray[L, Lub]): ToArray[L, Lub] = t
 
 type ToList[L, Lub] = ToTraversable.Aux[L, List, Lub]
-def ToList[L, Lub](implicit t: ToList[L, Lub]): ToList[L, Lub] = t
+inline def ToList[L, Lub](using t: ToList[L, Lub]): ToList[L, Lub] = t
 
 /**
  * Type class supporting conversion of this `Tuple` to a collection of type `M` with elements typed

@@ -8,7 +8,7 @@ trait Unifier[T] extends DepFn1[T]
 object Unifier {
   type Aux[T, O] = Unifier[T] { type Out = O }
 
-  inline def apply[T](implicit u: Unifier[T]): Unifier.Aux[T, u.Out] = u
+  inline def apply[T](using u: Unifier[T]): Unifier.Aux[T, u.Out] = u
 
   given unifierEmptyTuple: Unifier.Aux[EmptyTuple, EmptyTuple] =
     new Unifier[EmptyTuple] {

@@ -31,7 +31,7 @@ sealed trait ZipOneLP {
 }
 
 object ZipOne extends ZipOneLP {
-  inline def apply[H <: Tuple, T <: Tuple](implicit z: ZipOne[H, T]): ZipOne.Aux[H, T, z.Out] = z
+  inline def apply[H <: Tuple, T <: Tuple](using z: ZipOne[H, T]): ZipOne.Aux[H, T, z.Out] = z
 
   given zipOne0: ZipOne.Aux[EmptyTuple, EmptyTuple, EmptyTuple] =
     new ZipOne[EmptyTuple, EmptyTuple] {

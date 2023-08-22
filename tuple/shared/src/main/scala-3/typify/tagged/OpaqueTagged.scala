@@ -12,7 +12,7 @@ object OpaqueTagged {
     inline final def subst[F[_], @specialized A](fa: F[A]): F[OpaqueTagged[A, T]] = fa
     inline final def unsubst[@specialized A, F[_]](fa: F[OpaqueTagged[A, T]]): F[A] = fa
     inline final def untag[@specialized A](a: OpaqueTagged[A, T]): A = unsubst[A, [a] =>> a](a)
-    inline final def tag(implicit t: ValueOf[T]): T = t.value
+    inline final def tag(using t: ValueOf[T]): T = t.value
   }
 
   inline def apply[T]: Of[T] = new Of[T]
@@ -20,10 +20,10 @@ object OpaqueTagged {
   extension [T, A](x: OpaqueTagged[A, T]) {
     inline final def map[B](f: A => B): OpaqueTagged[B, T] = f(x)
     inline final def untag: A = x
-    inline final def tag(implicit t: ValueOf[T]): T = t.value
+    inline final def tag(using t: ValueOf[T]): T = t.value
   }
 
-  inline implicit def valueOfOpaqueTagged[A, T](implicit a: ValueOf[A]): ValueOf[OpaqueTagged[A, T]] =
+  given valueOfOpaqueTagged[A, T](using a: ValueOf[A]): ValueOf[OpaqueTagged[A, T]] =
     new ValueOf[OpaqueTagged[A, T]](a.value)
 
   inline def deriving[TC[_], A, T](using inline tc: TC[A]): TC[OpaqueTagged[A, T]] =

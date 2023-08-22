@@ -13,7 +13,7 @@ trait IsNonEmptyTuple[L <: Tuple] extends Serializable {
 }
 
 object IsNonEmptyTuple {
-  def apply[L <: Tuple](implicit n: IsNonEmptyTuple[L]): IsNonEmptyTuple.Aux[L, n.H, n.T] = n
+  def apply[L <: Tuple](using n: IsNonEmptyTuple[L]): IsNonEmptyTuple.Aux[L, n.H, n.T] = n
 
   type Aux[L <: Tuple, H0, T0 <: Tuple] = IsNonEmptyTuple[L] { type H = H0; type T = T0 }
 

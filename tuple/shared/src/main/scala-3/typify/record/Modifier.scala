@@ -10,7 +10,7 @@ trait Modifier[T <: Tuple, K, A, B] extends DepFn2[T, A => B]
 object Modifier {
   type Aux[T <: Tuple, K, A, B, O] = Modifier[T, K, A, B] { type Out = O }
 
-  inline def apply[T <: Tuple, K, A, B](implicit m: Modifier[T, K, A, B]): Modifier.Aux[T, K, A, B, m.Out] = m
+  inline def apply[T <: Tuple, K, A, B](using m: Modifier[T, K, A, B]): Modifier.Aux[T, K, A, B, m.Out] = m
 
   inline given modifierInst[T <: Tuple, K, A, B](
     using ev: FieldValue[T, K] <:< A,

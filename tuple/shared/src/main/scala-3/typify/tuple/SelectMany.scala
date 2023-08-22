@@ -14,7 +14,7 @@ trait SelectMany[L, Ids] extends DepFn1[L]
 object SelectMany {
   type Aux[L, Ids, O] = SelectMany[L, Ids] { type Out = O }
 
-  inline def apply[L, Ids](implicit s: SelectMany[L, Ids]): SelectMany.Aux[L, Ids, s.Out] = s
+  inline def apply[L, Ids](using s: SelectMany[L, Ids]): SelectMany.Aux[L, Ids, s.Out] = s
 
   inline given tupleSelectMany[L <: Tuple, Ids <: Tuple]: SelectMany.Aux[L, Ids, SelectManyT[L, Ids]] =
     new SelectMany[L, Ids] {
