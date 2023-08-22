@@ -64,12 +64,9 @@ sealed trait Poly { self =>
 }
 
 trait Poly0 extends Poly { self =>
-  final type Case = Case0[self.type]
-  object Case {
-    final type Aux[R] = Case0.Aux[self.type, R]
-  }
+  final type Case0[R] = typify.tuple.Case0.Aux[self.type, R]
 
-  final inline def at[R](r: => R): Case.Aux[R] = Case0[self.type, R](r)
+  final inline def at[R](r: => R): Case0[R] = typify.tuple.Case0[self.type, R](r)
 }
 
 trait Poly1 extends Poly { self =>

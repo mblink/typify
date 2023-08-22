@@ -2526,10 +2526,10 @@ class TupleTests {
   @Test
   def testPolyFill = {
     object zero extends Poly0 {
-      given zeroInt: Case.Aux[Int] = at[Int](0)
+      given zeroInt: Case0[Int] = at[Int](0)
     }
 
-    given emptyString: zero.Case.Aux[String] = zero.at[String]("")
+    given emptyString: zero.Case0[String] = zero.at[String]("")
 
     val out = Tuple.fillWith[Int *: String *: Int *: EmptyTuple](zero)
     assertEquals(out, 0 *: "" *: 0 *: EmptyTuple)

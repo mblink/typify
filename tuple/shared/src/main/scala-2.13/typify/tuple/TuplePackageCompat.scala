@@ -236,30 +236,27 @@ trait TuplePackageCompat {
   final type DepFn0 = shapeless.DepFn0
   final type DepFn1[T] = shapeless.DepFn1[T]
   final type DepFn2[T, U] = shapeless.DepFn2[T, U]
-  final type Poly = shapeless.Poly
 
-  trait Poly0 extends shapeless.Poly {
-    final type Case[A] = shapeless.PolyDefns.Case0.Aux[this.type, A]
-    @inline final def at[A](f: () => A): Case[A] =
-      new shapeless.PolyDefns.Case0[this.type] {
-        type Result = A
-        val value = (_: EmptyTuple) => f()
-      }
-  }
-  trait Poly1 extends shapeless.Poly {
-    final type Case[A, B] = shapeless.PolyDefns.Case1.Aux[this.type, A, B]
-    @inline final def at[A, B](f: A => B): Case[A, B] =
-      new shapeless.PolyDefns.Case1[this.type, A] {
-        type Result = B
-        val value = (l: A *: EmptyTuple) => f(l.head)
-      }
-  }
-  trait Poly2 extends shapeless.Poly {
-    final type Case[A, B, C] = shapeless.PolyDefns.Case2.Aux[this.type, A, B, C]
-    @inline final def at[A, B, C](f: (A, B) => C): Case[A, B, C] =
-      new shapeless.PolyDefns.Case2[this.type, A, B] {
-        type Result = C
-        val value = (l: A *: B *: EmptyTuple) => f(l.head, l.tail.head)
-      }
-  }
+  final type Case[F, L <: Tuple] = shapeless.poly.Case[F, L]
+  final val Case: shapeless.poly.Case.type = shapeless.poly.Case
+
+  final type Case0[F] = shapeless.poly.Case0[F]
+  final val Case0: shapeless.poly.Case0.type = shapeless.poly.Case0
+
+  final type Case1[F, A] = shapeless.poly.Case1[F, A]
+  final val Case1: shapeless.poly.Case1.type = shapeless.poly.Case1
+
+  final type Case2[F, A, B] = shapeless.poly.Case2[F, A, B]
+  final val Case2: shapeless.poly.Case2.type = shapeless.poly.Case2
+
+  final type Poly = shapeless.Poly
+  final val Poly: shapeless.Poly.type = shapeless.Poly
+
+  final type Poly0 = shapeless.Poly0
+
+  final type Poly1 = shapeless.Poly1
+  final val Poly1: shapeless.Poly1.type = shapeless.Poly1
+
+  final type Poly2 = shapeless.Poly2
+  final val Poly2: shapeless.Poly2.type = shapeless.Poly2
 }
