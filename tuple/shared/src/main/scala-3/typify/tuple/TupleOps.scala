@@ -170,7 +170,7 @@ final class TypifyTupleOps[L <: Tuple](private val l: L) extends AnyVal {
    * Replaces the first element of type `U` of this `Tuple` with the result of its transformation to a `V` via the
    * supplied function. Available only if there is evidence that this `Tuple` has an element of type `U`.
    */
-  final def updateWith[U, V, Out <: Tuple](f: U => V)(using m: Modifier.Aux[L, U, V, (U, Out)]): Out = m(l, f)._2
+  final def updateTypeWith[U, V, Out <: Tuple](f: U => V)(using m: Modifier.Aux[L, U, V, (U, Out)]): Out = m(l, f)._2
 
   /**
    * Replaces the `N`th element of this `Tuple` with the result of calling the supplied function on it.
