@@ -690,61 +690,17 @@ class RecordTests extends FunSuite {
     assertEquals(true, v2)
   }
 
-  // test("FieldPoly") {
-  //   object f extends FieldPoly {
-  //     given atFoo = atField[Int]("foo")(_ + 1)
-  //   }
+  test("FieldPoly") {
+    object f extends FieldPoly {
+      given atFoo: Case.Aux["foo" ->> Int, "foo" ->> Int] = atField[Int]("foo")(_ + 1)
+    }
 
-  //   val r = "foo" ->> 23
+    val r = "foo" ->> 23
+    val r1 = f(r)
 
-  //   val r1 = f(r)
-
-  //   val fooType = "foo".witness
-
-  //   typed[fooType.T ->> Int](r1)
-  //   assertEquals(24, r1)
-  // }
-
-
-  // test("FieldPolyOnRecord") {
-  //   import poly._
-
-  //   object f extends FieldPoly {
-  //     implicit def atFoo = atField[Int]("foo")(_ + 1)
-  //   }
-
-  //   val r = ("foo" ->> 23) *: ("bar" ->> true) *: EmptyTuple
-
-  //   val r1 = everywhere(f)(r)
-
-  //   val v1 = r1("foo")
-  //   typed[Int](v1)
-  //   assertEquals(24, v1)
-
-  //   val v2 = r1("bar")
-  //   typed[Boolean](v2)
-  //   assertEquals(true, v2)
-  // }
-
-  // test("FieldPolyNested") {
-  //   import poly._
-
-  //   object f extends FieldPoly {
-  //     implicit def atFoo = atField[Int]("foo")(_ + 1)
-  //   }
-
-  //   val r = List(List(List(("foo" ->> 23) *: ("bar" ->> true) *: EmptyTuple)))
-
-  //   val List(List(List(r1))) = everywhere(f)(r)
-
-  //   val v1 = r1("foo")
-  //   typed[Int](v1)
-  //   assertEquals(24, v1)
-
-  //   val v2 = r1("bar")
-  //   typed[Boolean](v2)
-  //   assertEquals(true, v2)
-  // }
+    typed["foo" ->> Int](r1)
+    assertEquals(24, r1: Int)
+  }
 
   test("SelectDynamic") {
     val r = ("foo" ->> 23) *: ("bar" ->> true) *: EmptyTuple
