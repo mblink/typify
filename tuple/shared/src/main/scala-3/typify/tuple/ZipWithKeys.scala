@@ -5,7 +5,7 @@ import typify.record.{->>, label}
 /**
  * Type class supporting zipping a `Tuple` of values with a `Tuple` of keys to create a record.
  */
-trait ZipWithKeys[K, V] extends DepFn1[V]
+trait ZipWithKeys[K, V] extends DepFn1[V] with Serializable
 
 object ZipWithKeys {
   type Aux[K, V, O] = ZipWithKeys[K, V] { type Out = O }

@@ -6,10 +6,8 @@ package typify.tuple
  * elements of type `T` in this `Tuple`.
  *
  * Also available if `M` contains types absent in this `Tuple`.
- *
- * @author Olivier Blanvillain
  */
-trait Diff[L, M] extends DepFn1[L]
+trait Diff[L, M] extends DepFn1[L] with Serializable
 
 sealed trait DiffLP {
   final type Aux[L, M, O] = Diff[L, M] { type Out = O }

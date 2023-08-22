@@ -3,7 +3,7 @@ package typify.record
 import scala.deriving.Mirror
 import typify.tuple.ZipWithT
 
-trait LabelledGeneric[A] {
+trait LabelledGeneric[A] extends Serializable {
   type Repr
   def from(r: Repr): A
   def to(a: A): Repr

@@ -10,7 +10,7 @@ type KeysT[T <: Tuple] <: Tuple = T match {
 /**
  * Type class supporting collecting the keys of a record as a `Tuple`.
  */
-trait Keys[T <: Tuple] extends DepFn0 { final type Out = KeysT[T] }
+trait Keys[T <: Tuple] extends DepFn0 with Serializable { final type Out = KeysT[T] }
 
 object Keys {
   type Aux[T <: Tuple, Out0] = Keys[T] { type Out = Out0 }

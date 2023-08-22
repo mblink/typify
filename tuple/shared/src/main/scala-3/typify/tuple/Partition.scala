@@ -5,7 +5,7 @@ import scala.util.NotGiven
 /**
  * Type class supporting partitioning this `Tuple` into those elements of type `U` and the remainder.
  */
-trait Partition[L, U] extends DepFn1[L] {
+trait Partition[L, U] extends DepFn1[L] with Serializable {
   type Prefix
   type Suffix
   final type Out = (Prefix, Suffix)

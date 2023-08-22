@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting transposing this `Tuple`.
  */
-trait Transposer[L] extends DepFn1[L]
+trait Transposer[L] extends DepFn1[L] with Serializable
 
 object Transposer {
   type Aux[L, O] = Transposer[L] { type Out = O }

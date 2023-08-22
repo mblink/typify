@@ -10,7 +10,7 @@ type FieldsT[T <: Tuple] <: Tuple = T match {
 /**
  * Type class supporting converting this record to a `Tuple` of key-value pairs.
  */
-trait Fields[T <: Tuple] extends DepFn1[T] { final type Out = FieldsT[T] }
+trait Fields[T <: Tuple] extends DepFn1[T] with Serializable { final type Out = FieldsT[T] }
 
 object Fields {
   type Aux[T <: Tuple, O] = Fields[T] { type Out = O }

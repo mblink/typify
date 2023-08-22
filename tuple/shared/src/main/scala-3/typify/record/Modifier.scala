@@ -5,7 +5,7 @@ import typify.tuple.DepFn2
 /**
  * Type class supporting modification of a record field by given function.
  */
-trait Modifier[T <: Tuple, K, A, B] extends DepFn2[T, A => B]
+trait Modifier[T <: Tuple, K, A, B] extends DepFn2[T, A => B] with Serializable
 
 object Modifier {
   type Aux[T <: Tuple, K, A, B, O] = Modifier[T, K, A, B] { type Out = O }

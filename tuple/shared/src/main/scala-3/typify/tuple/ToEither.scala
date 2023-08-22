@@ -10,7 +10,7 @@ type ToEitherT[T <: Tuple] = T match {
 /**
  * Type class computing the `Either` type corresponding to this `Tuple`.
  */
-trait ToEither[T] {
+trait ToEither[T] extends Serializable {
   type Out
 }
 

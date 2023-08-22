@@ -5,7 +5,7 @@ import compiletime.ops.int.{-, %}
 /**
  * Type class supporting rotating a `Tuple` right.
  */
-trait RotateRight[L, N] extends DepFn1[L]
+trait RotateRight[L, N] extends DepFn1[L] with Serializable
 
 sealed trait RotateRightLP {
   final type Aux[L, N, O] = RotateRight[L, N] { type Out = O }

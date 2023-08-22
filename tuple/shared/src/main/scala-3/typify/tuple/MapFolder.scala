@@ -4,7 +4,7 @@ package typify.tuple
  * Type class supporting mapping a polymorphic function over this `Tuple` and then folding the result using a
  * monomorphic function value.
  */
-trait MapFolder[L <: Tuple, R, F] {
+trait MapFolder[L <: Tuple, R, F] extends Serializable {
   def apply(l: L, in: R, op: (R, R) => R): R
 }
 

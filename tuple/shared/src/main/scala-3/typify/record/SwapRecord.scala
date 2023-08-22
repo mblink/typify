@@ -10,7 +10,7 @@ type SwapRecordT[L <: Tuple] <: Tuple = L match {
 /**
  * Type class supporting swapping the keys and values in a record of type `L`.
  */
-trait SwapRecord[L <: Tuple] extends DepFn0 { final type Out = SwapRecordT[L] }
+trait SwapRecord[L <: Tuple] extends DepFn0 with Serializable { final type Out = SwapRecordT[L] }
 
 object SwapRecord {
   type Aux[L <: Tuple, O] = SwapRecord[L] { type Out = O }

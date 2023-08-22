@@ -6,7 +6,7 @@ import scala.util.NotGiven
  * Type class supporting unification of all elements that are subtypes of `B` in this `Tuple` to `B`, with all other
  * elements left unchanged.
  */
-trait SubtypeUnifier[T, B] extends DepFn1[T]
+trait SubtypeUnifier[T, B] extends DepFn1[T] with Serializable
 
 object SubtypeUnifier {
   type Aux[T, B, O] = SubtypeUnifier[T, B] { type Out = O }

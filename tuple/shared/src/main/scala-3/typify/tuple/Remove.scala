@@ -13,7 +13,7 @@ type RemoveT[L <: Tuple, E] <: Tuple = L match {
  * Type class supporting removal of an element from this `Tuple`. Available only if this `Tuple` contains an
  * element of type `E`.
  */
-trait Remove[L, E] extends DepFn1[L] {
+trait Remove[L, E] extends DepFn1[L] with Serializable {
   def reinsert(out: Out): L
 }
 

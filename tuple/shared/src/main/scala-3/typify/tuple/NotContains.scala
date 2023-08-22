@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class witnessing that `L` doesn't contain elements of type `U`
  */
-trait NotContains[L, U]
+trait NotContains[L, U] extends Serializable
 
 sealed trait NotContainsLP {
   protected final val singleton = new NotContains[Any, Any] {}

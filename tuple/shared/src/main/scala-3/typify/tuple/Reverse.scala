@@ -8,7 +8,7 @@ type ReverseT[T <: Tuple] <: Tuple = T match {
 /**
  * Type class supporting reversing this `Tuple`.
  */
-trait Reverse[T] extends DepFn1[T]
+trait Reverse[T] extends DepFn1[T] with Serializable
 
 object Reverse {
   type Aux[T, O] = Reverse[T] { type Out = O }

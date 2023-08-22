@@ -8,7 +8,7 @@ type MapConsT[A, M <: Tuple] <: Tuple = M match {
 /**
  * Type class supporting consing an element onto each row of this `Tuple` of `Tuple`s.
  */
-trait MapCons[A, M] extends DepFn2[A, M]
+trait MapCons[A, M] extends DepFn2[A, M] with Serializable
 
 object MapCons {
   type Aux[A, M, O] = MapCons[A, M] { type Out = O }

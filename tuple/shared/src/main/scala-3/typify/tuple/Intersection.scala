@@ -7,7 +7,7 @@ package typify.tuple
  *
  * Also available if `M` contains types absent in this `Tuple`.
  */
-trait Intersection[L, M] extends DepFn1[L]
+trait Intersection[L, M] extends DepFn1[L] with Serializable
 
 object Intersection {
   type Aux[L, M, O] = Intersection[L, M] { type Out = O }

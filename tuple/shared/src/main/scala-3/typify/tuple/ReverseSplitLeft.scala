@@ -4,7 +4,7 @@ package typify.tuple
  * Type class supporting splitting this `Tuple` at the first occurrence of an element of type `U` returning the reverse
  * prefix and suffix as a pair. Available only if this `Tuple` contains an element of type `U`.
  */
-trait ReverseSplitLeft[L, U] extends DepFn1[L] {
+trait ReverseSplitLeft[L, U] extends DepFn1[L] with Serializable {
   type Prefix
   type Suffix
   final type Out = (Prefix, Suffix)

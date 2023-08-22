@@ -5,7 +5,7 @@ import scala.compiletime.summonAll
 /**
  * Type class supporting producing a `Tuple` filled from a `Poly` of type `F`.
  */
-trait FillWith[F, L] extends DepFn0 { final type Out = L }
+trait FillWith[F, L] extends DepFn0 with Serializable { final type Out = L }
 
 object FillWith {
   inline def apply[F, L](using f: FillWith[F, L]): FillWith[F, L] = f

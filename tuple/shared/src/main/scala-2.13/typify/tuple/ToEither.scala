@@ -1,6 +1,6 @@
 package typify.tuple
 
-trait ToEither[T] {
+trait ToEither[T] extends Serializable {
   type Out
 }
 

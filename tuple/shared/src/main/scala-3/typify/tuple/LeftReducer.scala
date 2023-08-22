@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting left-reducing a polymorphic binary function over this `Tuple`.
  */
-trait LeftReducer[L <: Tuple, F] extends DepFn1[L]
+trait LeftReducer[L <: Tuple, F] extends DepFn1[L] with Serializable
 
 object LeftReducer {
   type Aux[L <: Tuple, F, O] = LeftReducer[L, F] { type Out = O }

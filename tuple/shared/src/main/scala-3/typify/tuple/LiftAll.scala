@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Typeclass witnessing that all the elements of a `Tuple` have instances of the given typeclass `F`.
  */
-trait LiftAll[F[_], T] {
+trait LiftAll[F[_], T] extends Serializable {
   type Out
   def instances: Out
 }

@@ -9,7 +9,7 @@ type ZipConstT[C, L <: Tuple] <: Tuple = L match {
  * Type class supporting zipping a `Tuple` with a constant, resulting in a `Tuple` of `Tuple2`s of the form
  * ({element from input `Tuple`}, {supplied constant})
  */
-trait ZipConst[C, L] extends DepFn2[C, L]
+trait ZipConst[C, L] extends DepFn2[C, L] with Serializable
 
 object ZipConst {
   type Aux[C, L, O] = ZipConst[C, L] { type Out = O }

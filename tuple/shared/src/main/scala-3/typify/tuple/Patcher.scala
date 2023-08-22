@@ -5,7 +5,7 @@ import compiletime.ops.int.{+, >=}
 /**
  * Type class supporting the patching of a `Tuple`.
  */
-trait Patcher[N, M, L, In] extends DepFn2[L, In]
+trait Patcher[N, M, L, In] extends DepFn2[L, In] with Serializable
 
 object Patcher {
   type Aux[N, M, L, In, O] = Patcher[N, M, L, In] { type Out = O }

@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting reifying a `Tuple` of singleton types.
  */
-trait Reify[T] extends DepFn0 { type Out }
+trait Reify[T] extends DepFn0 with Serializable { type Out }
 
 object Reify {
   inline def apply[T](using r: Reify[T]): Reify.Aux[T, r.Out] = r

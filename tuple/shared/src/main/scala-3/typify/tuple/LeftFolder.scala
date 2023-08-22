@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting left-folding a polymorphic binary function over this `Tuple`.
  */
-trait LeftFolder[L <: Tuple, In, F] extends DepFn2[L, In]
+trait LeftFolder[L <: Tuple, In, F] extends DepFn2[L, In] with Serializable
 
 object LeftFolder {
   type Aux[L <: Tuple, In, F, O] = LeftFolder[L, In, F] { type Out = O }

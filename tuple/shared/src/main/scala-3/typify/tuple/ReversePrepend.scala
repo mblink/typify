@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting prepending `L` in reverse order to `R`.
  */
-trait ReversePrepend[L, R] extends DepFn2[L, R]
+trait ReversePrepend[L, R] extends DepFn2[L, R] with Serializable
 
 object ReversePrepend {
   type Aux[L, R, O] = ReversePrepend[L, R] { type Out = O }

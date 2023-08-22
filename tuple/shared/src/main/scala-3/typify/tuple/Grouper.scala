@@ -12,7 +12,7 @@ type GrouperT[L <: Tuple, N <: Int, Step <: Int] <: Tuple =
  * Typeclass supporting grouping this `Tuple` into tuples of `N` items each, at `Step` apart.
  * If `Step` equals `N` then the groups do not overlap.
  */
-trait Grouper[L, N, Step] extends DepFn1[L]
+trait Grouper[L, N, Step] extends DepFn1[L] with Serializable
 
 object Grouper {
   type Aux[L, N, Step, O] = Grouper[L, N, Step] { type Out = O }

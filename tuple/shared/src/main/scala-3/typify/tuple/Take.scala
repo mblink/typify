@@ -6,7 +6,7 @@ import compiletime.ops.int.>=
  * Type class supporting retrieval of the first `N` elements of this `Tuple`. Available only if this `Tuple` has at
  * least `N` elements.
  */
-trait Take[T, N] extends DepFn1[T]
+trait Take[T, N] extends DepFn1[T] with Serializable
 
 object Take {
   type Aux[T, N, O] = Take[T, N] { type Out = O }

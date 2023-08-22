@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class witnessing that a `Tuple` can be collected with a `Poly` of type `F` to produce a `Tuple`
  */
-trait Collect[I, F] extends DepFn1[I]
+trait Collect[I, F] extends DepFn1[I] with Serializable
 
 sealed trait CollectLP {
   final type Aux[L, F, O] = Collect[L, F] { type Out = O }

@@ -3,7 +3,7 @@ package typify.record
 import scala.compiletime.{erasedValue, summonInline}
 import scala.reflect.TypeTest
 
-trait FromMap[R] {
+trait FromMap[R] extends Serializable {
   def apply[K, V](m: Map[K, V]): Option[R]
 }
 

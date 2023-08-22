@@ -10,7 +10,7 @@ type RangeT[N <: Int, M <: Int] <: Tuple = N match {
 /**
  * Type class supporting the patching of a `Tuple`.
  */
-trait Range[N, M] extends DepFn0
+trait Range[N, M] extends DepFn0 with Serializable
 
 object Range {
   type Aux[N, M, O] = Range[N, M] { type Out = O }

@@ -5,7 +5,7 @@ import typify.tuple.DepFn1
 /**
  * Type class reordering record `T` by the `Tuple` of keys `K`.
  */
-trait AlignByKeys[T, K] extends DepFn1[T]
+trait AlignByKeys[T, K] extends DepFn1[T] with Serializable
 
 object AlignByKeys {
   type Aux[T, K, O] = AlignByKeys[T, K] { type Out = O }

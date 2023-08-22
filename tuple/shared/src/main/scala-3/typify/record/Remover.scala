@@ -6,7 +6,7 @@ import typify.tuple.DepFn1
 /**
  * Type class supporting record field removal.
  */
-trait Remover[T, K] extends DepFn1[T]
+trait Remover[T, K] extends DepFn1[T] with Serializable
 
 type ReversePrependTuple[L <: Tuple, M <: Tuple] <: Tuple = L match {
   case EmptyTuple => M

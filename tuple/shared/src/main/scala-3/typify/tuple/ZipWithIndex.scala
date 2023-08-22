@@ -11,7 +11,7 @@ type ZipWithIndexT0[L <: Tuple, I <: Int] <: Tuple = L match {
  * Type class supporting zipping a `Tuple` with its element indices, resulting in a `Tuple` of `Tuple2`s of the form
  * ({element from input tuple}, {element index})
  */
-trait ZipWithIndex[L] extends DepFn1[L]
+trait ZipWithIndex[L] extends DepFn1[L] with Serializable
 
 object ZipWithIndex {
   type Aux[L, O] = ZipWithIndex[L] { type Out = O }

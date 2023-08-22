@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting permuting this `Tuple` into the same order as another `Tuple` with the same element types.
  */
-trait Align[L, M] extends (L => M)
+trait Align[L, M] extends (L => M) with Serializable
 
 object Align {
   inline def apply[L, M](using a: Align[L, M]): Align[L, M] = a

@@ -4,7 +4,7 @@ package typify.tuple
  * Type class supporting replacement of the `N`th element of this `Tuple` with the result of calling `F` on it.
  * Available only if this `Tuple` contains at least `N` elements.
  */
-trait ModifierAt[L, N, U, V] extends DepFn2[L, U => V]
+trait ModifierAt[L, N, U, V] extends DepFn2[L, U => V] with Serializable
 
 object ModifierAt {
   type Aux[L, N, U, V, O] = ModifierAt[L, N, U, V] { type Out = O }

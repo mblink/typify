@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting right-folding a polymorphic binary function over this `Tuple`.
  */
-trait RightFolder[L <: Tuple, In, F] extends DepFn2[L, In]
+trait RightFolder[L <: Tuple, In, F] extends DepFn2[L, In] with Serializable
 
 object RightFolder {
   type Aux[L <: Tuple, In, F, O] = RightFolder[L, In, F] { type Out = O }

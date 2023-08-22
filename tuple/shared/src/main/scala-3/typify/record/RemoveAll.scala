@@ -5,7 +5,7 @@ import typify.tuple.DepFn1
 /**
  * Type class supporting removal and re-insertion of a `Tuple` of elements (possibly unlabelled).
  */
-trait RemoveAll[L, A] extends DepFn1[L] {
+trait RemoveAll[L, A] extends DepFn1[L] with Serializable {
   def reinsert(out: Out): L
 }
 

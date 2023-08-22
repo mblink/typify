@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting access to the all elements of this `Tuple` of type different than `U`.
  */
-trait FilterNot[L, U] extends DepFn1[L]
+trait FilterNot[L, U] extends DepFn1[L] with Serializable
 
 object FilterNot {
   type Aux[L, U, O] = FilterNot[L, U] { type Out = O }

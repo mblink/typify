@@ -2,7 +2,7 @@ package typify.tuple
 
 import scala.deriving.Mirror
 
-trait Generic[A] {
+trait Generic[A] extends Serializable {
   type Repr
   def to(a: A): Repr
   def from(r: Repr): A

@@ -9,7 +9,7 @@ type SelectManyT[L <: Tuple, Ids <: Tuple] <: Tuple = Ids match {
  * Type class supporting access to the elements of this `Tuple` specified by `Ids`. Available only if this `Tuple`
  * contains all elements specified in `Ids`.
  */
-trait SelectMany[L, Ids] extends DepFn1[L]
+trait SelectMany[L, Ids] extends DepFn1[L] with Serializable
 
 object SelectMany {
   type Aux[L, Ids, O] = SelectMany[L, Ids] { type Out = O }

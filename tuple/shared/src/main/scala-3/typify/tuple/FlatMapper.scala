@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting flatmapping a higher ranked function of type `F` over this `Tuple`.
  */
-trait FlatMapper[F, In <: Tuple] extends DepFn1[In] { type Out <: Tuple }
+trait FlatMapper[F, In <: Tuple] extends DepFn1[In] with Serializable { type Out <: Tuple }
 
 object FlatMapper {
   type Aux[F, In <: Tuple, O <: Tuple] = FlatMapper[F, In] { type Out = O }

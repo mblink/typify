@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting unification of this `Tuple`.
  */
-trait Unifier[T] extends DepFn1[T]
+trait Unifier[T] extends DepFn1[T] with Serializable
 
 object Unifier {
   type Aux[T, O] = Unifier[T] { type Out = O }

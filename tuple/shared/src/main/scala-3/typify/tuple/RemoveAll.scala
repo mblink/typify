@@ -6,7 +6,7 @@ package typify.tuple
  *
  * The elements of `SL` do not have to be contiguous in this `Tuple`.
  */
-trait RemoveAll[L, SL] extends DepFn1[L] {
+trait RemoveAll[L, SL] extends DepFn1[L] with Serializable {
   def reinsert(out: Out): L
 }
 

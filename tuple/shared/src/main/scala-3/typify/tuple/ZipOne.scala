@@ -4,7 +4,7 @@ package typify.tuple
  * Type class supporting zipping this `Tuple` with a `Tuple` of `Tuple`s returning a `Tuple` of `Tuple`s with each
  * element of this `Tuple` prepended to the corresponding `Tuple` element of the argument `Tuple`.
  */
-trait ZipOne[H, T] extends DepFn2[H, T]
+trait ZipOne[H, T] extends DepFn2[H, T] with Serializable
 
 sealed trait ZipOneLP {
   final type Aux[H, T, O] = ZipOne[H, T] { type Out = O }

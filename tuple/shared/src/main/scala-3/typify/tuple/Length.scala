@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting computing the singleton `Int` corresponding to the length of this `Tuple`.
  */
-trait Length[T] extends DepFn0 { type Out <: Int }
+trait Length[T] extends DepFn0 with Serializable { type Out <: Int }
 
 object Length {
   type Aux[T, O <: Int] = Length[T] { type Out = O }

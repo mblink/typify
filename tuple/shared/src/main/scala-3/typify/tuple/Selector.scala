@@ -4,7 +4,7 @@ package typify.tuple
  * Type class supporting access to the first element of type `U` in this `Tuple`. Available only if this `Tuple`
  * contains an element of type `U`.
  */
-sealed trait Selector[T <: Tuple, A] extends (T => A)
+sealed trait Selector[T <: Tuple, A] extends (T => A) with Serializable
 
 object Selector {
   inline def apply[T <: Tuple, A](using s: Selector[T, A]): Selector[T, A] = s

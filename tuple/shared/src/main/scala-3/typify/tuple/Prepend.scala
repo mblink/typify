@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting prepending `L` to `R`.
  */
-trait Prepend[L, R] extends DepFn2[L, R]
+trait Prepend[L, R] extends DepFn2[L, R] with Serializable
 
 object Prepend {
   type Aux[L, R, O] = Prepend[L, R] { type Out = O }

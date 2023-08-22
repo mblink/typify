@@ -5,7 +5,7 @@ import compiletime.ops.int.{-, >=}
 /**
  * Type class supporting the slicing of a `Tuple`.
  */
-trait Slice[N, U, L] extends DepFn1[L]
+trait Slice[N, U, L] extends DepFn1[L] with Serializable
 
 object Slice {
   type Aux[N, U, L, O] = Slice[N, U, L] { type Out = O }

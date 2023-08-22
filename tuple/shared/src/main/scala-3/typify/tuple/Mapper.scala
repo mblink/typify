@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting mapping a higher ranked function over this `Tuple`.
  */
-trait Mapper[F, In <: Tuple] extends DepFn1[In] { type Out <: Tuple }
+trait Mapper[F, In <: Tuple] extends DepFn1[In] with Serializable { type Out <: Tuple }
 
 object Mapper {
   type Aux[F, In <: Tuple, O <: Tuple] = Mapper[F, In] { type Out = O }

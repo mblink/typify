@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting right scanning of this `Tuple` with a binary polymorphic function.
  */
-trait RightScanner[L, In, F] extends DepFn2[L, In]
+trait RightScanner[L, In, F] extends DepFn2[L, In] with Serializable
 
 object RightScanner {
   type Aux[L, In, F, O] = RightScanner[L, In, F] { type Out = O }

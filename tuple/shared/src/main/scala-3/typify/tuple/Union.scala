@@ -5,7 +5,7 @@ package typify.tuple
  * If type `T` appears n times in this `Tuple` and m > n times in `M`, the resulting `Tuple` contains the first n elements
  * of type `T` in this `Tuple`, followed by the last m - n element of type `T` in `M`.
  */
-trait Union[L, M] extends DepFn2[L, M]
+trait Union[L, M] extends DepFn2[L, M] with Serializable
 
 object Union {
   type Aux[L, M, O] = Union[L, M] { type Out = O }

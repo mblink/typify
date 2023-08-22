@@ -5,7 +5,7 @@ import compiletime.ops.int.{-, >=, Max}
 /**
  * Type class supporting padding a `Tuple` of type `L` to length `N`, padded with elements of type `A`.
  */
-trait PadTo[N, A, L] extends DepFn2[A, L]
+trait PadTo[N, A, L] extends DepFn2[A, L] with Serializable
 
 object PadTo {
   type Aux[N, A, L, O] = PadTo[N, A, L] { type Out = O }

@@ -8,7 +8,7 @@ type ConstMapperT[C, T <: Tuple] <: Tuple = T match {
 /**
  * Type class supporting mapping a constant valued function over this `Tuple`.
  */
-trait ConstMapper[C, T <: Tuple] extends DepFn2[C, T] { type Out <: Tuple }
+trait ConstMapper[C, T <: Tuple] extends DepFn2[C, T] with Serializable { type Out <: Tuple }
 
 object ConstMapper {
   type Aux[C, T <: Tuple, O <: Tuple] = ConstMapper[C, T] { type Out = O }

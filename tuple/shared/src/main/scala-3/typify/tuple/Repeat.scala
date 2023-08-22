@@ -10,7 +10,7 @@ type RepeatT[L <: Tuple, N <: Int] = N match {
 /**
  * Typeclass supporting repeating a `Tuple` of type `L` `N` times.
  */
-trait Repeat[L, N] extends DepFn1[L]
+trait Repeat[L, N] extends DepFn1[L] with Serializable
 
 object Repeat {
   type Aux[L, N, O] = Repeat[L, N] { type Out = O }

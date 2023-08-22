@@ -12,7 +12,7 @@ inline def ToList[L, Lub](using t: ToList[L, Lub]): ToList[L, Lub] = t
  * Type class supporting conversion of this `Tuple` to a collection of type `M` with elements typed
  * as the least upper bound Lub of the types of the elements of this `Tuple`.
  */
-trait ToTraversable[L, M[_]] extends DepFn1[L] {
+trait ToTraversable[L, M[_]] extends DepFn1[L] with Serializable {
   type Lub
   def builder(): mutable.Builder[Lub, M[Lub]]
   def append[LLub](l: L, b: mutable.Builder[LLub, M[LLub]], f: Lub => LLub): Unit

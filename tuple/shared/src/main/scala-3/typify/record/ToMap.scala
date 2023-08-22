@@ -6,7 +6,7 @@ import typify.tuple.{DepFn1, Lub}
  * Type class supporting converting this record to a `Map` whose keys and values
  * are typed as the Lub of the keys and values of this record.
  */
-trait ToMap[L] extends DepFn1[L] {
+trait ToMap[L] extends DepFn1[L] with Serializable {
   type Key
   type Value
   final type Out = Map[Key, Value]

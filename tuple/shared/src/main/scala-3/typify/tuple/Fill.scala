@@ -11,7 +11,7 @@ type FillT[N <: Int, A] <: Tuple = N match {
 /**
  * Type class supporting producing a `Tuple` of length `N` filled with elements of type `A`.
  */
-trait Fill[N, A] extends DepFn1[A]
+trait Fill[N, A] extends DepFn1[A] with Serializable
 
 object Fill {
   type Aux[N, A, O] = Fill[N, A] { type Out = O }

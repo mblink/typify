@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class witnessing that the result of wrapping each element of `Tuple` `L` in type constructor `F` is `Out`.
  */
-trait Mapped[T, F[_]] {
+trait Mapped[T, F[_]] extends Serializable {
   type Out
 }
 

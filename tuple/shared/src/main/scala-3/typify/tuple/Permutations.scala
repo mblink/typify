@@ -3,7 +3,7 @@ package typify.tuple
 /**
  * Type class supporting the calculation of every permutation of this `Tuple`
  */
-trait Permutations[L] extends DepFn1[L]
+trait Permutations[L] extends DepFn1[L] with Serializable
 
 object Permutations {
   type Aux[L, O] = Permutations[L] { type Out = O }

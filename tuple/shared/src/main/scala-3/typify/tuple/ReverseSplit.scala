@@ -6,7 +6,7 @@ import compiletime.ops.int.>=
  * Type class supporting splitting this `Tuple` at the `N`th element returning the reverse prefix and suffix as a pair.
  * Available only if this `Tuple` has at least `N` elements.
  */
-trait ReverseSplit[L, N] extends DepFn1[L] {
+trait ReverseSplit[L, N] extends DepFn1[L] with Serializable {
   type Prefix
   type Suffix
   final type Out = (Prefix, Suffix)

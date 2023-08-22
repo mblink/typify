@@ -5,7 +5,7 @@ import typify.tuple.{Case2, DepFn2}
 /**
  * Type class support record merging with a polymorphic function.
  */
-trait MergeWith[L, M, F] extends DepFn2[L, M]
+trait MergeWith[L, M, F] extends DepFn2[L, M] with Serializable
 
 sealed trait MergeWithLP {
   final type Aux[L, M, F, O] = MergeWith[L, M, F] { type Out = O }

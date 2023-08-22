@@ -10,7 +10,7 @@ type ValuesT[T <: Tuple] <: Tuple = T match {
 /**
  * Type class supporting collecting the values of a record as a `Tuple`.
  */
-trait Values[T <: Tuple] extends DepFn1[T] { final type Out = ValuesT[T] }
+trait Values[T <: Tuple] extends DepFn1[T] with Serializable { final type Out = ValuesT[T] }
 
 object Values {
   type Aux[T <: Tuple, O] = Values[T] { type Out = O }

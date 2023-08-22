@@ -5,7 +5,7 @@ package typify.tuple
  * correspondingly typed function arguments returning the result of each application as a `Tuple`. Available only if
  * there is evidence that the corresponding function and argument elements have compatible types.
  */
-trait ZipApply[FL, AL] extends DepFn2[FL, AL]
+trait ZipApply[FL, AL] extends DepFn2[FL, AL] with Serializable
 
 object ZipApply {
   type Aux[FL, AL, O] = ZipApply[FL, AL] { type Out = O }

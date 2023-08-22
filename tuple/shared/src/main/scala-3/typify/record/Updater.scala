@@ -5,7 +5,7 @@ import typify.tuple.{AppendT, ElemIndexWithFallback, DepFn2, IfEq}
 /**
  * Type class supporting record update and extension.
  */
-trait Updater[T, F] extends DepFn2[T, F]
+trait Updater[T, F] extends DepFn2[T, F] with Serializable
 
 object Updater {
   type Aux[T, F, O] = Updater[T, F] { type Out = O }

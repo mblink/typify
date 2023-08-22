@@ -10,7 +10,7 @@ type ZipWithT[T1 <: Tuple, T2 <: Tuple, F[_, _]] <: Tuple = (T1, T2) match {
 /**
  * Type class supporting zipping a `Tuple` with another `Tuple` using a `Poly` resulting in a `Tuple`
  */
-trait ZipWith[L, R, F] extends DepFn2[L, R]
+trait ZipWith[L, R, F] extends DepFn2[L, R] with Serializable
 
 object ZipWith {
   type Aux[L, R, F, O] = ZipWith[L, R, F] { type Out = O }
