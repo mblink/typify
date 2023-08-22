@@ -1615,109 +1615,109 @@ class TupleTests {
     assertTypedEquals[(Boolean *: Int *: EmptyTuple, String *: EmptyTuple)]((true *: 1 *: EmptyTuple, "foo" *: EmptyTuple), lbi)
   }
 
-  // @Test
-  // def testUnion: Unit = {
-  //   type L1 = String *: Long *: EmptyTuple
-  //   val l1: L1 = "foo" *: 3L *: EmptyTuple
+  @Test
+  def testUnion: Unit = {
+    type L1 = String *: Long *: EmptyTuple
+    val l1: L1 = "foo" *: 3L *: EmptyTuple
 
-  //   type L2 = Int *: String *: Boolean *: EmptyTuple
-  //   val l2: L2 = 2 *: "bar" *: true *: EmptyTuple
+    type L2 = Int *: String *: Boolean *: EmptyTuple
+    val l2: L2 = 2 *: "bar" *: true *: EmptyTuple
 
-  //   type L3 = Int *: Int *: EmptyTuple
-  //   val l3: L3 = 1 *: 2 *: EmptyTuple
+    type L3 = Int *: Int *: EmptyTuple
+    val l3: L3 = 1 *: 2 *: EmptyTuple
 
-  //   type L4 = Int *: Int *: Int *: EmptyTuple
-  //   val l4: L4 = 4 *: 5 *: 6 *: EmptyTuple
+    type L4 = Int *: Int *: Int *: EmptyTuple
+    val l4: L4 = 4 *: 5 *: 6 *: EmptyTuple
 
-  //   val lnil = l1.union[EmptyTuple](EmptyTuple)
-  //   assertTypedEquals[L1](l1, lnil)
+    val lnil = l1.union[EmptyTuple](EmptyTuple)
+    assertTypedEquals[L1](l1, lnil)
 
-  //   val lself = l1.union(l1)
-  //   assertTypedEquals[L1](l1, lself)
+    val lself = l1.union(l1)
+    assertTypedEquals[L1](l1, lself)
 
-  //   val l12 = l1.union(l2)
-  //   assertTypedEquals[String *: Long *: Int *: Boolean *: EmptyTuple]("foo" *: 3L *: 2 *: true *: EmptyTuple, l12)
+    val l12 = l1.union(l2)
+    assertTypedEquals[String *: Long *: Int *: Boolean *: EmptyTuple]("foo" *: 3L *: 2 *: true *: EmptyTuple, l12)
 
-  //   val l21 = l2.union(l1)
-  //   assertTypedEquals[Int *: String *: Boolean *: Long *: EmptyTuple](2 *: "bar" *: true *: 3L *: EmptyTuple, l21)
+    val l21 = l2.union(l1)
+    assertTypedEquals[Int *: String *: Boolean *: Long *: EmptyTuple](2 *: "bar" *: true *: 3L *: EmptyTuple, l21)
 
 
-  //   illTyped { """summon[Union.Aux[Int *: EmptyTuple, Int *: EmptyTuple, Int *: Int *: EmptyTuple]]"""}
+    illTyped { """summon[Union.Aux[Int *: EmptyTuple, Int *: EmptyTuple, Int *: Int *: EmptyTuple]]"""}
 
-  //   val ldup1 = (l3).union(l4)
-  //   assertTypedEquals[Int *: Int *: Int *: EmptyTuple](1 *: 2 *: 6 *: EmptyTuple, ldup1)
+    val ldup1 = (l3).union(l4)
+    assertTypedEquals[Int *: Int *: Int *: EmptyTuple](1 *: 2 *: 6 *: EmptyTuple, ldup1)
 
-  //   val ldup2 = (l4).union(l3)
-  //   assertTypedEquals[Int *: Int *: Int *: EmptyTuple](4 *: 5 *: 6 *: EmptyTuple, ldup2)
-  // }
+    val ldup2 = (l4).union(l3)
+    assertTypedEquals[Int *: Int *: Int *: EmptyTuple](4 *: 5 *: 6 *: EmptyTuple, ldup2)
+  }
 
-  // @Test
-  // def testIntersection: Unit = {
-  //   type L1 = String *: Long *: Int *: EmptyTuple
-  //   val l1: L1 = "foo" *: 1L *: 3 *: EmptyTuple
+  @Test
+  def testIntersection: Unit = {
+    type L1 = String *: Long *: Int *: EmptyTuple
+    val l1: L1 = "foo" *: 1L *: 3 *: EmptyTuple
 
-  //   type L2 = Int *: String *: Boolean *: EmptyTuple
-  //   val l2: L2 = 2 *: "bar" *: true *: EmptyTuple
+    type L2 = Int *: String *: Boolean *: EmptyTuple
+    val l2: L2 = 2 *: "bar" *: true *: EmptyTuple
 
-  //   type L3 = Int *: String *: Int *: EmptyTuple
-  //   val l3: L3 = 4 *: "foo" *: 5 *: EmptyTuple
+    type L3 = Int *: String *: Int *: EmptyTuple
+    val l3: L3 = 4 *: "foo" *: 5 *: EmptyTuple
 
-  //   val lnil = l1.intersect[EmptyTuple]
-  //   assertTypedEquals[EmptyTuple](EmptyTuple, lnil)
+    val lnil = l1.intersect[EmptyTuple]
+    assertTypedEquals[EmptyTuple](EmptyTuple, lnil)
 
-  //   val lself = l1.intersect[L1]
-  //   assertTypedEquals[L1](l1, lself)
+    val lself = l1.intersect[L1]
+    assertTypedEquals[L1](l1, lself)
 
-  //   val l12 = l1.intersect[L2]
-  //   assertTypedEquals[String *: Int *: EmptyTuple]("foo" *: 3 *: EmptyTuple, l12)
+    val l12 = l1.intersect[L2]
+    assertTypedEquals[String *: Int *: EmptyTuple]("foo" *: 3 *: EmptyTuple, l12)
 
-  //   val l21 = l2.intersect[L1]
-  //   assertTypedEquals[Int *: String *: EmptyTuple](2 *: "bar" *: EmptyTuple, l21)
+    val l21 = l2.intersect[L1]
+    assertTypedEquals[Int *: String *: EmptyTuple](2 *: "bar" *: EmptyTuple, l21)
 
-  //   illTyped { """summon[Intersection.Aux[Int *: EmptyTuple, Int *: EmptyTuple, EmptyTuple]]"""}
+    illTyped { """summon[Intersection.Aux[Int *: EmptyTuple, Int *: EmptyTuple, EmptyTuple]]"""}
 
-  //   val ldup1 = (l3).intersect[Int *: EmptyTuple]
-  //   assertTypedEquals[Int *: EmptyTuple](4 *: EmptyTuple, ldup1)
+    val ldup1 = (l3).intersect[Int *: EmptyTuple]
+    assertTypedEquals[Int *: EmptyTuple](4 *: EmptyTuple, ldup1)
 
-  //   val ldup2 = (l3).intersect[Int *: Int *: EmptyTuple]
-  //   assertTypedEquals[Int *: Int *: EmptyTuple](4 *: 5 *: EmptyTuple, ldup2)
+    val ldup2 = (l3).intersect[Int *: Int *: EmptyTuple]
+    assertTypedEquals[Int *: Int *: EmptyTuple](4 *: 5 *: EmptyTuple, ldup2)
 
-  //   val ldup3 = (l3).intersect[String *: EmptyTuple]
-  //   assertTypedEquals[String *: EmptyTuple]("foo" *: EmptyTuple, ldup3)
-  // }
+    val ldup3 = (l3).intersect[String *: EmptyTuple]
+    assertTypedEquals[String *: EmptyTuple]("foo" *: EmptyTuple, ldup3)
+  }
 
-  // @Test
-  // def testDiff: Unit = {
-  //   type L1 = String *: Long *: Int *: EmptyTuple
-  //   val l1: L1 = "foo" *: 1L *: 3 *: EmptyTuple
+  @Test
+  def testDiff: Unit = {
+    type L1 = String *: Long *: Int *: EmptyTuple
+    val l1: L1 = "foo" *: 1L *: 3 *: EmptyTuple
 
-  //   type L2 = Int *: String *: Boolean *: EmptyTuple
-  //   val l2: L2 = 2 *: "bar" *: true *: EmptyTuple
+    type L2 = Int *: String *: Boolean *: EmptyTuple
+    val l2: L2 = 2 *: "bar" *: true *: EmptyTuple
 
-  //   type L3 = Int *: Boolean *: Int *: EmptyTuple
-  //   val l3: L3 = 4 *: false *: 5 *: EmptyTuple
+    type L3 = Int *: Boolean *: Int *: EmptyTuple
+    val l3: L3 = 4 *: false *: 5 *: EmptyTuple
 
-  //   val lnil = l1.diff[EmptyTuple]
-  //   assertTypedEquals[L1](l1, lnil)
+    val lnil = l1.diff[EmptyTuple]
+    assertTypedEquals[L1](l1, lnil)
 
-  //   val lself = l1.diff[L1]
-  //   assertTypedEquals[EmptyTuple](EmptyTuple, lself)
+    val lself = l1.diff[L1]
+    assertTypedEquals[EmptyTuple](EmptyTuple, lself)
 
-  //   val l12 = l1.diff[L2]
-  //   assertTypedEquals[Long *: EmptyTuple](1L *: EmptyTuple, l12)
+    val l12 = l1.diff[L2]
+    assertTypedEquals[Long *: EmptyTuple](1L *: EmptyTuple, l12)
 
-  //   val l21 = l2.diff[L1]
-  //   assertTypedEquals[Boolean *: EmptyTuple](true *: EmptyTuple, l21)
+    val l21 = l2.diff[L1]
+    assertTypedEquals[Boolean *: EmptyTuple](true *: EmptyTuple, l21)
 
-  //   val ldup1 = (l3).diff[Int *: EmptyTuple]
-  //   assertTypedEquals[Boolean *: Int *: EmptyTuple](false *: 5 *: EmptyTuple, ldup1)
+    val ldup1 = (l3).diff[Int *: EmptyTuple]
+    assertTypedEquals[Boolean *: Int *: EmptyTuple](false *: 5 *: EmptyTuple, ldup1)
 
-  //   val ldup2 = (l3).diff[Int *: Int *: EmptyTuple]
-  //   assertTypedEquals[Boolean *: EmptyTuple](false *: EmptyTuple, ldup2)
+    val ldup2 = (l3).diff[Int *: Int *: EmptyTuple]
+    assertTypedEquals[Boolean *: EmptyTuple](false *: EmptyTuple, ldup2)
 
-  //   val ldup3 = (l3).diff[Boolean *: EmptyTuple]
-  //   assertTypedEquals[Int *: Int *: EmptyTuple](4 *: 5 *: EmptyTuple, ldup3)
-  // }
+    val ldup3 = (l3).diff[Boolean *: EmptyTuple]
+    assertTypedEquals[Int *: Int *: EmptyTuple](4 *: 5 *: EmptyTuple, ldup3)
+  }
 
   @Test
   def testReinsert: Unit = {

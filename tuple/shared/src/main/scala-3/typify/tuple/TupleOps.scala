@@ -134,6 +134,30 @@ final class TypifyTupleOps[L <: Tuple](private val l: L) extends AnyVal {
   final def removeAll[SL <: Tuple](using r: RemoveAll[L, SL]): r.Out = r(l)
 
   /**
+   * Returns the union between this `Tuple` and another `Tuple`. In case of duplicate types, this operation is a
+   * order-preserving multi-set union. If type `T` appears n times in this `Tuple` and m > n times in `M`, the
+   * resulting `Tuple` contains the first n elements of type `T` in this `Tuple`, followed by the last m - n element
+   * of type `T` in `M`.
+   */
+  final def union[M](m: M)(using u: Union[L, M]): u.Out = u(l, m)
+
+  /**
+   * Returns the intersection between this `Tuple` and another `Tuple`. In case of duplicate types, this operation is a
+   * multiset intersection. If type `T` appears n times in this `Tuple` and m < n times in `M`, the resulting `Tuple`
+   * contains the first m elements of type `T` in this `Tuple`.
+   * Also available if `M` contains types absent in this `Tuple`.
+   */
+  final def intersect[M](using i: Intersection[L, M]): i.Out = i(l)
+
+  /**
+   * Returns the difference between this `Tuple` and another `Tuple`. In case of duplicate types, this operation is a
+   * multiset difference. If type `T` appears n times in this `Tuple` and m < n times in `M`, the resulting `Tuple`
+   * contains the last n - m elements of type `T` in this `Tuple`.
+   * Also available if `M` contains types absent in this `Tuple`.
+   */
+  final def diff[M](using d: Diff[L, M]): d.Out = d(l)
+
+  /**
    * Reinserts an element `U` into this `Tuple` to return another `Tuple` `O`.
    */
   final def reinsert[O]: ReinsertAux[L, O] = new ReinsertAux[L, O](l)
