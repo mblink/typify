@@ -25,7 +25,7 @@ trait ExtractorLP {
 object Extractor extends ExtractorLP {
   inline def apply[L, E](using e: Extractor[L, E]): Extractor[L, E] = e
 
-  given hnil[L <: Tuple, E <: Tuple](using ev: EmptyTuple =:= E): Extractor[L, E] =
+  given emptyTuple[L, E](using ev: EmptyTuple =:= E): Extractor[L, E] =
     new Extractor[L, E] {
       def apply(c: L): E = EmptyTuple
     }

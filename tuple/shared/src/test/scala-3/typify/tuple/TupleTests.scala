@@ -112,7 +112,7 @@ class TupleTests extends FunSuite {
     val r2 = l.tail.head
     assertTypedEquals[String]("foo", r2)
 
-    assertEquals(2.0, l.tail.tail.head, Double.MinPositiveValue)
+    assertEqualsDouble(2.0, l.tail.tail.head, Double.MinPositiveValue)
 
     illTyped("""
       EmptyTuple.head
@@ -857,7 +857,7 @@ class TupleTests extends FunSuite {
 
     val at1 = sn1(1)
     typed[Double](at1)
-    assertEquals(3.0, at1, Double.MinPositiveValue)
+    assertEqualsDouble(3.0, at1, Double.MinPositiveValue)
 
     val at2 = sn1(2)
     assertTypedEquals[String]("foo", at2)
@@ -891,7 +891,7 @@ class TupleTests extends FunSuite {
 
     val at1 = sn1(1)
     typed[Double](at1)
-    assertEquals(3.0, at1, Double.MinPositiveValue)
+    assertEqualsDouble(3.0, at1, Double.MinPositiveValue)
 
     val at2 = sn1(2)
     assertTypedEquals[String]("foo", at2)
@@ -1131,7 +1131,7 @@ class TupleTests extends FunSuite {
     assertTypedEquals[String]("foo", ss)
 
     val sd = sl.select[Double]
-    assertEquals(2.0, sd, Double.MinPositiveValue)
+    assertEqualsDouble(2.0, sd, Double.MinPositiveValue)
   }
 
   test("SelectMany") {
@@ -1241,7 +1241,7 @@ class TupleTests extends FunSuite {
 
     val (d, r4) = sl.replace(3.0)
     typed[Double](d)
-    assertEquals(2.0, d, Double.MinPositiveValue)
+    assertEqualsDouble(2.0, d, Double.MinPositiveValue)
     assertTypedEquals[Int *: Boolean *: String *: Double *: EmptyTuple](1 *: true *: "foo" *: 3.0 *: EmptyTuple, r4)
 
     val (i2, r5) = sl.replaceType[Int]('*')
@@ -1262,7 +1262,7 @@ class TupleTests extends FunSuite {
     val (d2, r8) = sl.replaceType[Double]('*')
     typed[Double](d2)
     typed[Char](r8(3))
-    assertEquals(2.0, d2, Double.MinPositiveValue)
+    assertEqualsDouble(2.0, d2, Double.MinPositiveValue)
     assertTypedEquals[Int *: Boolean *: String *: Char *: EmptyTuple](1 *: true *: "foo" *: '*' *: EmptyTuple, r8)
 
     val fruits = a *: p *: a *: f *: EmptyTuple

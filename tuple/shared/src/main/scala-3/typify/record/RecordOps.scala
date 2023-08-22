@@ -1,5 +1,6 @@
 package typify.record
 
+import scala.language.dynamics
 import typify.tuple.Poly
 
 final class TypifyRecordOps[T <: Tuple](private val t: T) extends AnyVal {
@@ -31,7 +32,10 @@ final class TypifyRecordOps[T <: Tuple](private val t: T) extends AnyVal {
    * Replaces the value of field k with a value of the same type. Only available if this record has a field with
    * keyType equal to the singleton type K and valueType equal to V.
    */
-  final def replace[K <: Singleton, V](k: K, v: V)(using s: Selector.Aux[T, K, V], u: Updater[T, K ->> V]): u.Out = u(t, label[K](v))
+  final def replace[K <: Singleton, V](k: K, v: V)(
+    using s: Selector[T, K] { type Out <: V },
+    u: Updater[T, K ->> V],
+  ): u.Out = u(t, label[K](v))
 
   /**
    * Updates a field having a value with type A by given function.
@@ -108,4 +112,19 @@ final class TypifyRecordOps[T <: Tuple](private val t: T) extends AnyVal {
     * Align the keys on the order of Tuple of keys K
     */
   final def alignByKeys[K <: Tuple](using a: AlignByKeys[T, K]): a.Out = a(t)
+
+  /**
+   * Returns a wrapped version of this record that provides `selectDynamic` access to fields.
+   */
+  final def record: TypifyDynamicRecordOps[T] = new TypifyDynamicRecordOps[T](t)
+}
+
+/**
+ * Record wrapper providing `selectDynamic` access to fields.
+ */
+final class TypifyDynamicRecordOps[T <: Tuple](t: T) extends Dynamic {
+  /**
+   * Allows dynamic-style access to fields of the record whose keys are `Strings`.
+   */
+  def selectDynamic(k: String)(implicit s: Selector[T, k.type]): s.Out = s(t)
 }

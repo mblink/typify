@@ -26,9 +26,14 @@ final class PatchAux[L, N, M](private val l: L) extends AnyVal {
 
 final class TypifyTupleOps[L <: Tuple](private val l: L) extends AnyVal {
   /**
+   * Prepend the argument element to this `Tuple`.
+   */
+  final def +:[H](h: H): H *: L = h *: l
+
+  /**
    * Append the argument element to this `Tuple`.
    */
-  final def :+[T](t: T)(using p: Prepend[L, T *: Tuple]): p.Out = p(l, t *: EmptyTuple)
+  final def :+[T](t: T)(using p: Prepend[L, T *: EmptyTuple]): p.Out = p(l, t *: EmptyTuple)
 
   /**
    * Append the argument `Tuple` to this `Tuple`.

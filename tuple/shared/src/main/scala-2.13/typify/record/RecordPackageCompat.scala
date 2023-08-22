@@ -19,6 +19,7 @@ private[typify] trait RecordPackageCompat {
     @inline final def apply[V](v: V): K ->> V = shapeless.labelled.field[K].apply[V](v)
   }
 
+  @inline final def field[K]: LabelPartialAp[K] = new LabelPartialAp[K]
   @inline final def label[K]: LabelPartialAp[K] = new LabelPartialAp[K]
 
   @inline final implicit def toTypifySingletonOps[K <: Singleton](k: K): TypifySingletonOps[K] = new TypifySingletonOps[K](k)
