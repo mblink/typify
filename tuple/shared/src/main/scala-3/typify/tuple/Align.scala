@@ -13,7 +13,7 @@ object Align {
       def apply(l: EmptyTuple): EmptyTuple = l
     }
 
-  given tupleNAlign[L <: Tuple, MH, MT <: Tuple, R <: Tuple](
+  given tupleNAlign[L <: Tuple, MH, MT <: Tuple, R](
     using r: Remove.Aux[L, MH, (MH, R)],
     at: Align[R, MT],
   ): Align[L, MH *: MT] =
