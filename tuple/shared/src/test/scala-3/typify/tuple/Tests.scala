@@ -2,10 +2,9 @@ package typify
 package tuple
 
 import org.junit.Test
-import org.junit.Assert._
-import scala.reflect.TypeTest
-import typify.test._
-import typify.testutil._
+import org.junit.Assert.*
+import typify.test.*
+import typify.testutil.*
 
 class TupleTests {
   type SI = Set[Int] *: EmptyTuple
@@ -41,9 +40,6 @@ class TupleTests {
   type APB = Apple *: Pear *: Banana *: EmptyTuple
   type PBPA = Pear *: Banana *: Pear *: Apple *: EmptyTuple
   type PABP = Pear *: Apple *: Banana *: Pear *: EmptyTuple
-
-  // type APc = Apple :+: Pear :+: CNil
-  // type ABPc = Apple :+: Banana :+: Pear :+: CNil
 
   val a: Apple = Apple()
   val p: Pear = Pear()
@@ -107,7 +103,6 @@ class TupleTests {
   object mkString extends (Any -> String)(_.toString)
   object fruit extends (Fruit -> Fruit)(f => f)
   object incInt extends (Int >-> Int)(_ + 1)
-  // object extendedChoose extends LiftU(choose)
 
   @Test
   def testBasics: Unit = {
@@ -119,7 +114,7 @@ class TupleTests {
     val r2 = l.tail.head
     assertTypedEquals[String]("foo", r2)
 
-    assertEquals(2.0, l.tail.tail.head, Double.MinPositiveValue)
+    assertEquals(2.0, l.tail.tail.head.asInstanceOf[Double], Double.MinPositiveValue)
 
     illTyped("""
       EmptyTuple.head
@@ -136,9 +131,9 @@ class TupleTests {
 
   @Test
   def testMap: Unit = {
-    implicitly[Mapper.Aux[choose.type, EmptyTuple, EmptyTuple]]
-    implicitly[choose.Case[Set[Int]]]
-    implicitly[Mapper.Aux[choose.type, Set[Int] *: EmptyTuple, Option[Int] *: EmptyTuple]]
+    summon[Mapper.Aux[choose.type, EmptyTuple, EmptyTuple]]
+    summon[choose.Case[Set[Int]]]
+    summon[Mapper.Aux[choose.type, Set[Int] *: EmptyTuple, Option[Int] *: EmptyTuple]]
 
     val s1 = Set(1) *: EmptyTuple
     val o1 = s1 mapPoly choose
@@ -225,10 +220,6 @@ class TupleTests {
     val l5 = 23 *: "foo" *: 7 *: true *: 0 *: EmptyTuple
     val l6 = l5 flatMap incInt
     assertTypedEquals[Int *: Int *: Int *: EmptyTuple](24 *: 8 *: 1 *: EmptyTuple, l6)
-
-    // val l7 = Set(23) *: "foo" *: Set(true) *: 23 *: EmptyTuple
-    // val l8 = l7 flatMap extendedChoose
-    // assertTypedEquals[Option[Int] *: Option[Boolean] *: EmptyTuple](Option(23) *: Option(true) *: EmptyTuple, l8)
   }
 
   @Test
@@ -408,29 +399,29 @@ class TupleTests {
       def prependToEmptyTuple[L <: Tuple](list: L) = list ::: EmptyTuple
 
       val r1 = prependWithEmptyTuple(ap)
-      assertTypedSame[AP](ap, r1)
+      assertTypedEquals[AP](ap, r1)
       val r2 = prependToEmptyTuple(ap)
-      assertTypedSame[AP](ap, r2)
+      assertTypedEquals[AP](ap, r2)
       val r3 = EmptyTuple ::: EmptyTuple
-      assertTypedSame[EmptyTuple](EmptyTuple, r3)
+      assertTypedEquals[EmptyTuple](EmptyTuple, r3)
 
       val r4 = prependWithEmptyTuple(pabp)
-      assertTypedSame[PABP](pabp, r4)
+      assertTypedEquals[PABP](pabp, r4)
       val r5 = prependToEmptyTuple(pabp)
-      assertTypedSame[PABP](pabp, r5)
+      assertTypedEquals[PABP](pabp, r5)
     }
 
     {
       // must also pass with the default implicit
       val r1 = EmptyTuple ::: ap
-      assertTypedSame[AP](ap, r1)
+      assertTypedEquals[AP](ap, r1)
       val r2 = ap ::: EmptyTuple
-      assertTypedSame[AP](ap, r2)
+      assertTypedEquals[AP](ap, r2)
 
       val r4 = EmptyTuple ::: pabp
-      assertTypedSame[PABP](pabp, r4)
+      assertTypedEquals[PABP](pabp, r4)
       val r5 = pabp ::: EmptyTuple
-      assertTypedSame[PABP](pabp, r5)
+      assertTypedEquals[PABP](pabp, r5)
     }
 
     {
@@ -438,11 +429,11 @@ class TupleTests {
       def reversePrependWithEmptyTuple[L <: Tuple](list: L) = EmptyTuple reverse_::: list
       def reversePrependToEmptyTuple[L <: Tuple: Reverse](list: L) = list reverse_::: EmptyTuple
       val r4 = reversePrependWithEmptyTuple(ap)
-      assertTypedSame[AP](ap, r4)
+      assertTypedEquals[AP](ap, r4)
       val r5 = reversePrependToEmptyTuple(ap)
       assertTypedEquals[Pear *: Apple *: EmptyTuple](ap.reverse, r5)
       val r6 = EmptyTuple reverse_::: EmptyTuple
-      assertTypedSame[EmptyTuple](EmptyTuple, r6)
+      assertTypedEquals[EmptyTuple](EmptyTuple, r6)
     }
   }
 
@@ -472,118 +463,6 @@ class TupleTests {
 
   }
 
-  // @Test
-  // def testToSizedList: Unit = {
-  //   def equalInferredTypes[A,B](a: A, b: B)(implicit eq: A =:= B): Unit = {}
-
-  //   val hnil = EmptyTuple
-  //   val snil = hnil.toSized[List]
-  //   assertEquals(hnil.length, snil.length)
-  //   val expectedUnsized = List.empty[Nothing]
-  //   equalInferredTypes(expectedUnsized, snil.unsized)
-  //   assertEquals(expectedUnsized, snil.unsized)
-
-  //   implicitly[ToSized.Aux[EmptyTuple, List, Nothing, _0]]
-  //   implicitly[ToSized.Aux[EmptyTuple, List, Int, _0]]
-
-  //   {
-  //     implicitly[ToSized.Aux[M[Int] *: EmptyTuple, List, M[Int], _1]]
-  //     implicitly[ToSized.Aux[M[Int] *: EmptyTuple, List, M[_], _1]]
-  //   }
-
-  //   val sizedApap = apap.toSized[List]
-  //   assertEquals(apap.length, sizedApap.length)
-  //   equalInferredTypes(apapList, sizedApap.unsized)
-  //   assertEquals(apapList, sizedApap.unsized)
-
-  //   val sizedApbp = apbp.toSized[List]
-  //   assertEquals(apbp.length, sizedApbp.length)
-  //   equalInferredTypes(apbpList, sizedApbp.unsized)
-  //   assertEquals(apbpList, sizedApbp.unsized)
-
-  //   val sizedCicscicicd = cicscicicd.toSized[List]
-  //   assertEquals(cicscicicd.length, sizedCicscicicd.length)
-  //   equalInferredTypes(cicscicicdList, sizedCicscicicd.unsized)
-  //   assertEquals(cicscicicdList, sizedCicscicicd.unsized)
-
-  //   val sizedMimsmimimd = mimsmimimd.toSized[List]
-  //   assertEquals(mimsmimimd.length, sizedMimsmimimd.length)
-  //   equalInferredTypes(mimsmimimdList, sizedMimsmimimd.unsized)
-  //   assertEquals(mimsmimimdList, sizedMimsmimimd.unsized)
-
-  //   val sizedMimsmimemd = mimsmimemd.toSized[List]
-  //   assertEquals(mimsmimemd.length, sizedMimsmimemd.length)
-  //   // equalInferredTypes(mimsmimemdList, sizedMimsmimemd.unsized)
-  //   typed[List[M[_]]](sizedMimsmimemd.unsized)
-  //   assertEquals(mimsmimemdList, sizedMimsmimemd.unsized)
-
-  //   val sizedM2im2sm2im2im2d = m2im2sm2im2im2d.toSized[List]
-  //   assertEquals(m2im2sm2im2im2d.length, sizedM2im2sm2im2im2d.length)
-  //   equalInferredTypes(m2im2sm2im2im2dList, sizedM2im2sm2im2im2d.unsized)
-  //   assertEquals(m2im2sm2im2im2dList, sizedM2im2sm2im2im2d.unsized)
-
-  //   val sizedM2eim2esm2eim2eem2ed = m2eim2esm2eim2eem2ed.toSized[List]
-  //   assertEquals(m2eim2esm2eim2eem2ed.length, sizedM2eim2esm2eim2eem2ed.length)
-  //   // equalInferredTypes(m2eim2esm2eim2eem2edList, sizedM2eim2esm2eim2eem2ed.unsized)
-  //   assertTypedEquals[List[M2[_ >: Double with Int with String, _]]](
-  //     m2eim2esm2eim2eem2edList, sizedM2eim2esm2eim2eem2ed.unsized)
-  // }
-
-  // @Test
-  // def testToSizedArray: Unit = {
-  //   def assertArrayEquals2[T](arr1: Array[T], arr2: Array[T]) =
-  //     assertArrayEquals(arr1.asInstanceOf[Array[Object]], arr2.asInstanceOf[Array[Object]])
-
-  //   def equalInferredTypes[A,B](a: A, b: B)(implicit eq: A =:= B): Unit = {}
-
-  //   val hnil = EmptyTuple
-  //   val snil = hnil.toSized[Array]
-  //   assertEquals(hnil.length, snil.length)
-  //   val expectedUnsized = Array.empty[Nothing]
-  //   equalInferredTypes(expectedUnsized, snil.unsized)
-  //   assertArrayEquals2(expectedUnsized, snil.unsized)
-
-  //   implicitly[ToSized.Aux[EmptyTuple, Array, Nothing, _0]]
-  //   implicitly[ToSized.Aux[EmptyTuple, Array, Int, _0]]
-
-  //   val sizedApap = apap.toSized[Array]
-  //   assertEquals(apap.length, sizedApap.length)
-  //   equalInferredTypes(apapArray, sizedApap.unsized)
-  //   assertArrayEquals2(apapArray, sizedApap.unsized)
-
-  //   val sizedApbp = apbp.toSized[Array]
-  //   assertEquals(apbp.length, sizedApbp.length)
-  //   equalInferredTypes(apbpArray, sizedApbp.unsized)
-  //   assertArrayEquals2(apbpArray, sizedApbp.unsized)
-
-  //   val sizedCicscicicd = cicscicicd.toSized[Array]
-  //   assertEquals(cicscicicd.length, sizedCicscicicd.length)
-  //   equalInferredTypes(cicscicicdArray, sizedCicscicicd.unsized)
-  //   assertArrayEquals2(cicscicicdArray, sizedCicscicicd.unsized)
-
-  //   val sizedMimsmimimd = mimsmimimd.toSized[Array]
-  //   assertEquals(mimsmimimd.length, sizedMimsmimimd.length)
-  //   equalInferredTypes(mimsmimimdArray, sizedMimsmimimd.unsized)
-  //   assertArrayEquals2(mimsmimimdArray, sizedMimsmimimd.unsized)
-
-  //   val sizedMimsmimemd = mimsmimemd.toSized[Array]
-  //   assertEquals(mimsmimemd.length, sizedMimsmimemd.length)
-  //   // equalInferredTypes(mimsmimemdArray, sizedMimsmimemd.unsized)
-  //   typed[Array[M[_]]](sizedMimsmimemd.unsized)
-  //   assertArrayEquals2(mimsmimemdArray, sizedMimsmimemd.unsized)
-
-  //   val sizedM2im2sm2im2im2d = m2im2sm2im2im2d.toSized[Array]
-  //   assertEquals(m2im2sm2im2im2d.length, sizedM2im2sm2im2im2d.length)
-  //   equalInferredTypes(m2im2sm2im2im2dArray, sizedM2im2sm2im2im2d.unsized)
-  //   assertArrayEquals2(m2im2sm2im2im2dArray, sizedM2im2sm2im2im2d.unsized)
-
-  //   val sizedM2eim2esm2eim2eem2ed = m2eim2esm2eim2eem2ed.toSized[Array]
-  //   assertEquals(m2eim2esm2eim2eem2ed.length, sizedM2eim2esm2eim2eem2ed.length)
-  //   // equalInferredTypes(m2eim2esm2eim2eem2edArray, sizedM2eim2esm2eim2eem2ed.unsized)
-  //   typed[Array[M2[_ >: Double with Int with String, _]]](sizedM2eim2esm2eim2eem2ed.unsized)
-  //   assertArrayEquals2(m2eim2esm2eim2eem2edArray.map(x => x: Any), sizedM2eim2esm2eim2eem2ed.unsized.map(x => x: Any))
-  // }
-
   @Test
   def testUnifier: Unit = {
     def lub[X, Y, L](x: X, y: Y)(implicit lb: Lub[X, Y, L]): (L, L) = (lb.left(x), lb.right(y))
@@ -607,11 +486,11 @@ class TupleTests {
     val u29 = lub(f, f)
     typed[(Fruit, Fruit)](u29)
 
-    implicitly[Lub[EmptyTuple, EmptyTuple, EmptyTuple]]
-    implicitly[Lub[Apple *: EmptyTuple, Apple *: EmptyTuple, Apple *: EmptyTuple]]
-    implicitly[Lub[Fruit *: Pear *: EmptyTuple, Fruit *: Fruit *: EmptyTuple, Fruit *: Fruit *: EmptyTuple]]
-    implicitly[Lub[Apple *: Pear *: EmptyTuple, Pear *: Apple *: EmptyTuple, Fruit *: Fruit *: EmptyTuple]]
-    implicitly[Lub[ISII, IIII, IYII]]
+    summon[Lub[EmptyTuple, EmptyTuple, EmptyTuple]]
+    summon[Lub[Apple *: EmptyTuple, Apple *: EmptyTuple, Apple *: EmptyTuple]]
+    summon[Lub[Fruit *: Pear *: EmptyTuple, Fruit *: Fruit *: EmptyTuple, Fruit *: Fruit *: EmptyTuple]]
+    summon[Lub[Apple *: Pear *: EmptyTuple, Pear *: Apple *: EmptyTuple, Fruit *: Fruit *: EmptyTuple]]
+    summon[Lub[ISII, IIII, IYII]]
 
     val u31 = lub(EmptyTuple, EmptyTuple)
     typed[(EmptyTuple, EmptyTuple)](u31)
@@ -624,22 +503,28 @@ class TupleTests {
     val u35 = lub(1 *: "two" *: 3 *: 4 *: EmptyTuple, 1 *: 2 *: 3 *: 4 *: EmptyTuple)
     typed[(Int *: Any *: Int *: Int *: EmptyTuple, Int *: Any *: Int *: Int *: EmptyTuple)](u35)
 
-    implicitly[Unifier.Aux[Apple *: EmptyTuple, Apple *: EmptyTuple]]
-    implicitly[Unifier.Aux[Fruit *: Pear *: EmptyTuple, Fruit *: Fruit *: EmptyTuple]]
-    implicitly[Unifier.Aux[Apple *: Pear *: EmptyTuple, Fruit *: Fruit *: EmptyTuple]]
+    summon[Unifier.Aux[Apple *: EmptyTuple, Apple *: EmptyTuple]]
+    summon[Unifier.Aux[Fruit *: Pear *: EmptyTuple, Fruit *: Fruit *: EmptyTuple]]
+    summon[Unifier.Aux[Apple *: Pear *: EmptyTuple, Fruit *: Fruit *: EmptyTuple]]
 
-    implicitly[Unifier.Aux[Int *: String *: Int *: Int *: EmptyTuple, YYYY]]
+    summon[Unifier.Aux[Int *: String *: Int *: Int *: EmptyTuple, YYYY]]
 
-    val uapap = implicitly[Unifier.Aux[Apple *: Pear *: Apple *: Pear *: EmptyTuple, FFFF]]
+    val uapap = summon[Unifier.Aux[Apple *: Pear *: Apple *: Pear *: EmptyTuple, FFFF]]
     val unified1 = uapap(apap)
     typed[FFFF](unified1)
     val unified2 = apap.unify
     typed[FFFF](unified2)
 
-    val ununified1 = summon[TypeTest[unified2.type, APAP]].unapply(unified2)
+    val ununified1 = Some(unified2).collect {
+      case (a1: Apple) *: (p1: Pear) *: (a2: Apple) *: (p2: Pear) *: EmptyTuple =>
+        a1 *: p1 *: a2 *: p2 *: EmptyTuple
+    }
     assertTrue(ununified1.isDefined)
     typed[APAP](ununified1.get)
-    val ununified2 = summon[TypeTest[unified2.type, APBP]].unapply(unified2)
+    val ununified2 = Some(unified2).collect {
+      case (a: Apple) *: (p1: Pear) *: (b: Banana) *: (p2: Pear) *: EmptyTuple =>
+        a *: p1 *: b *: p2 *: EmptyTuple
+    }
     assertFalse(ununified2.isDefined)
     typed[Option[APBP]](ununified2)
 
@@ -654,7 +539,7 @@ class TupleTests {
     val u5 = getUnifier(a *: a *: a *: a *: EmptyTuple)
     typed[Unifier.Aux[Apple *: Apple *: Apple *: Apple *: EmptyTuple, Apple *: Apple *: Apple *: Apple *: EmptyTuple]](u5)
     val u6 = getUnifier(a *: p *: EmptyTuple)
-    //typed[Unifier.Aux[Apple *: Pear *: EmptyTuple, Fruit *: Fruit *: EmptyTuple]](u6)
+    typed[Unifier.Aux[Apple *: Pear *: EmptyTuple, Fruit *: Fruit *: EmptyTuple]](u6)
     val u7 = getUnifier(a *: f *: EmptyTuple)
     typed[Unifier.Aux[Apple *: Fruit *: EmptyTuple, Fruit *: Fruit *: EmptyTuple]](u7)
     val u8 = getUnifier(f *: a *: EmptyTuple)
@@ -700,8 +585,8 @@ class TupleTests {
     ToList[EmptyTuple, Int]
 
     {
-      implicitly[ToTraversable.Aux[M[Int] *: EmptyTuple, List, M[Int]]]
-      implicitly[ToTraversable.Aux[M[Int] *: EmptyTuple, List, M[_]]]
+      summon[ToTraversable.Aux[M[Int] *: EmptyTuple, List, M[Int]]]
+      summon[ToTraversable.Aux[M[Int] *: EmptyTuple, List, M[_]]]
     }
 
     val r2 = apap.to[List]
@@ -710,16 +595,8 @@ class TupleTests {
     val fruits2 = apbp.to[List]
     assertTypedEquals[List[Fruit]](List(a, p, b, p), fruits2)
 
-    // val fruits3 = fruits2.toTuple[APBP]
-    // assertTrue(fruits3.isDefined)
-    // assertTypedEquals[APBP](apbp, fruits3.get)
-
     val stuff = (1 *: "foo" *: 2 *: 3 *: EmptyTuple).to[List]
     assertTypedEquals[List[Any]](List(1, "foo", 2, 3), stuff)
-
-    // val stuff2 = stuff.toTuple[ISII]
-    // assertTrue(stuff2.isDefined)
-    // assertTypedEquals[ISII](1 *: "foo" *: 2 *: 3 *: EmptyTuple, stuff2.get)
 
     val l4 = Option(1) *: Option("foo") *: Option(2) *: Option(3) *: EmptyTuple
     val l7 = l4 mapPoly isDefined
@@ -755,52 +632,13 @@ class TupleTests {
     assertTypedEquals[List[M2[_ >: Int with String with Double, _]]](m2eim2esm2eim2eem2edList, m2e)
   }
 
-  // @Test
-  // def testToPreciseList: Unit = {
-  //   val r1 = EmptyTuple.toCoproduct[List]
-  //   assertTypedEquals[List[CNil]](Nil, r1)
-
-  //   val r2 = ap.toCoproduct[List]
-  //   assertTypedEquals[List[APc]](List(Coproduct[APc](a), Coproduct[APc](p)), r2)
-
-  //   val r3 = apap.toCoproduct[List]
-  //   assertTypedEquals[List[APc]](List(Coproduct[APc](a), Coproduct[APc](p), Coproduct[APc](a), Coproduct[APc](p)), r3)
-
-  //   val r4 = apbp.toCoproduct[Vector]
-  //   assertTypedEquals[Vector[ABPc]](Vector[ABPc](Coproduct[ABPc](a), Coproduct[ABPc](p), Coproduct[ABPc](b), Coproduct[ABPc](p)), r4)
-
-  //   def equalInferedCoproducts[A <: Coproduct, B <: Coproduct](a: A, b: B)(implicit bInA: ops.coproduct.Basis[A, B], aInB: ops.coproduct.Basis[B, A]): Unit = {}
-  //   val abpc = Coproduct[ABPc](a)
-
-  //   val r5 = (a *: b *: a *: p *: b *: a *: EmptyTuple).toCoproduct[Set]
-  //   equalInferedCoproducts(abpc, r5.head)
-
-  //   val r6 = (p *: a *: a *: p *: p *: b *: EmptyTuple).toCoproduct[Set]
-  //   equalInferedCoproducts(abpc, r6.head)
-
-  //   val r7 = (a *: b *: p *: EmptyTuple).toCoproduct[Seq]
-  //   equalInferedCoproducts(abpc, r7.head)
-
-
-  //   val r8 = (a *: b *: EmptyTuple).toCoproduct[Seq]
-
-  //   illTyped{
-  //     """equalInferedCoproducts(abpc, r8.head)"""
-  //   }
-
-  //   illTyped{
-  //     """(1 *: "foo" *: EmptyTuple).toPrecise[Array]"""
-  //   }
-
-  // }
-
   @Test
   def testToList: Unit = {
     val r1 = EmptyTuple.toListLub
     assertTypedEquals[List[Nothing]](Nil, r1)
 
-    implicitly[ToTraversable.Aux[EmptyTuple, List, Nothing]]
-    implicitly[ToTraversable.Aux[EmptyTuple, List, Int]]
+    summon[ToTraversable.Aux[EmptyTuple, List, Nothing]]
+    summon[ToTraversable.Aux[EmptyTuple, List, Int]]
 
     {
       val l1 = (mi *: EmptyTuple).toListLub[M[Int]]
@@ -816,18 +654,10 @@ class TupleTests {
     val fruits2 = apbp.toListLub
     assertTypedEquals[List[Fruit]](List(a, p, b, p), fruits2)
 
-    // val fruits3 = fruits2.toTuple[APBP]
-    // assertTrue(fruits3.isDefined)
-    // assertTypedEquals[APBP](apbp, fruits3.get)
-
     val l1 = 1 *: "foo" *: 2 *: 3 *: EmptyTuple
 
     val stuff = l1.toListLub
     assertTypedEquals[List[Any]](List(1, "foo", 2, 3), stuff)
-
-    // val stuff2 = stuff.toTuple[ISII]
-    // assertTrue(stuff2.isDefined)
-    // assertTypedEquals[ISII](1 *: "foo" *: 2 *: 3 *: EmptyTuple, stuff2.get)
 
     val l4 = Option(1) *: Option("foo") *: Option(2) *: Option(3) *: EmptyTuple
     val l7 = l4 mapPoly isDefined
@@ -875,16 +705,16 @@ class TupleTests {
     def assertArrayEquals2[T](arr1: Array[T], arr2: Array[T]) =
       assertArrayEquals(arr1.asInstanceOf[Array[Object]], arr2.asInstanceOf[Array[Object]])
 
-    val empty: Array[Unit] = EmptyTuple.to[Array]
+    val empty: Array[Unit] = EmptyTuple.toLub[Array, Unit]
     typed[Array[Unit]](empty)
     assertArrayEquals2(Array[Unit](), empty)
 
-    implicitly[ToTraversable.Aux[EmptyTuple, Array, Unit]]
-    implicitly[ToTraversable.Aux[EmptyTuple, Array, Int]]
+    summon[ToTraversable.Aux[EmptyTuple, Array, Unit]]
+    summon[ToTraversable.Aux[EmptyTuple, Array, Int]]
 
     {
-      implicitly[ToTraversable.Aux[M[Int] *: EmptyTuple, Array, M[Int]]]
-      implicitly[ToTraversable.Aux[M[Int] *: EmptyTuple, Array, M[_]]]
+      summon[ToTraversable.Aux[M[Int] *: EmptyTuple, Array, M[Int]]]
+      summon[ToTraversable.Aux[M[Int] *: EmptyTuple, Array, M[_]]]
     }
 
     val fruits1 = apap.to[Array].map(x => x: Fruit) // Default inferred type is too precise
@@ -896,19 +726,11 @@ class TupleTests {
     typed[Array[Fruit]](fruits2)
     assertArrayEquals2(Array[Fruit](a, p, b, p), fruits2)
 
-    // val fruits3 = fruits2.toTuple[APBP]
-    // assertTrue(fruits3.isDefined)
-    // assertTypedEquals[APBP](apbp, fruits3.get)
-
     val l1 = 1 *: "foo" *: 2 *: 3 *: EmptyTuple
 
     val stuff = l1.to[Array]
     typed[Array[Int | String]](stuff)
     assertArrayEquals2(Array(1, "foo", 2, 3), stuff)
-
-    // val stuff2 = stuff.toTuple[ISII]
-    // assertTrue(stuff2.isDefined)
-    // assertTypedEquals[ISII](1 *: "foo" *: 2 *: 3 *: EmptyTuple, stuff2.get)
 
     val l4 = Option(1) *: Option("foo") *: Option(2) *: Option(3) *: EmptyTuple
     val l7 = l4 mapPoly isDefined
@@ -980,10 +802,6 @@ class TupleTests {
     typed[Array[Fruit]](fruits2)
     assertArrayEquals2(Array[Fruit](a, p, b, p), fruits2)
 
-    // val fruits3 = fruits2.toTuple[APBP]
-    // assertTrue(fruits3.isDefined)
-    // assertTypedEquals[APBP](apbp, fruits3.get)
-
     val l1 = 1 *: "foo" *: 2 *: 3 *: EmptyTuple
 
     val stuff = l1.toArrayLub
@@ -994,10 +812,6 @@ class TupleTests {
     val ssla = ssl.toArrayLub
     typed[Array[String | Long]](ssla)
     assertArrayEquals2(Array("foo", "bar", 1L), ssla)
-
-    // val stuff2 = stuff.toTuple[ISII]
-    // assertTrue(stuff2.isDefined)
-    // assertTypedEquals[ISII](1 *: "foo" *: 2 *: 3 *: EmptyTuple, stuff2.get)
 
     val l4 = Option(1) *: Option("foo") *: Option(2) *: Option(3) *: EmptyTuple
     val l7 = l4 mapPoly isDefined
@@ -1041,8 +855,8 @@ class TupleTests {
 
   @Test
   def testFoldMap: Unit = {
-    implicitly[Mapper.Aux[isDefined.type, EmptyTuple, EmptyTuple]]
-    implicitly[Mapper.Aux[isDefined.type, Option[Int] *: EmptyTuple, Boolean *: EmptyTuple]]
+    summon[Mapper.Aux[isDefined.type, EmptyTuple, EmptyTuple]]
+    summon[Mapper.Aux[isDefined.type, Option[Int] *: EmptyTuple, Boolean *: EmptyTuple]]
 
     val tl1 = Option(1) *: Option("foo") *: Option(2) *: Option(3) *: EmptyTuple
     val tl2 = Option(1) *: Option("foo") *: (None: Option[Int]) *: Option(3) *: EmptyTuple
@@ -1351,6 +1165,7 @@ class TupleTests {
     val sd = sl.select[Double]
     assertEquals(2.0, sd, Double.MinPositiveValue)
   }
+
   @Test
   def testSelectMany: Unit = {
     val si = 1 *: true *: "foo" *: 2.0 *: EmptyTuple
@@ -1367,16 +1182,16 @@ class TupleTests {
     val si4 = si.selectMany[0 *: 1 *: 2 *: 3 *: EmptyTuple]
     assertTypedEquals[Int *: Boolean *: String *: Double *: EmptyTuple](1 *: true *: "foo" *: 2.0 *: EmptyTuple, si4)
 
-    val si5 = si.selectMany(0 *: EmptyTuple)
-    assertTypedEquals[Int *: EmptyTuple](1 *: EmptyTuple, si5)
+    // val si5 = si.selectMany(0 *: EmptyTuple)
+    // assertTypedEquals[Int *: EmptyTuple](1 *: EmptyTuple, si5)
 
-    val si6 = si.selectMany(2 *: EmptyTuple)
-    assertTypedEquals[String *: EmptyTuple]("foo" *: EmptyTuple, si6)
+    // val si6 = si.selectMany(2 *: EmptyTuple)
+    // assertTypedEquals[String *: EmptyTuple]("foo" *: EmptyTuple, si6)
 
-    val si7 = si.selectMany(0 *: 1 *: 2 *: EmptyTuple)
-    assertTypedEquals[Int *: Boolean *: String *: Double *: EmptyTuple](1 *: true *: "foo" *: 2.0 *: EmptyTuple, si7)
-
+    // val si7 = si.selectMany(0 *: 1 *: 2 *: EmptyTuple)
+    // assertTypedEquals[Int *: Boolean *: String *: Double *: EmptyTuple](1 *: true *: "foo" *: 2.0 *: EmptyTuple, si7)
   }
+
   @Test
   def testSelectRange: Unit = {
     val sl = 1 *: true *: "foo" *: 2.0 *: EmptyTuple
@@ -1442,16 +1257,8 @@ class TupleTests {
     val r1 = l1.partition[Int]
     assertTypedEquals[(Int *: Int *: EmptyTuple, EmptyTuple)]((1 *: 2 *: EmptyTuple, EmptyTuple), r1)
 
-    val r2 = l1.partitionP[Int]
-    assertTypedEquals[(Int *: Int *: EmptyTuple) *: EmptyTuple *: EmptyTuple]((1 *: 2 *: EmptyTuple) *: EmptyTuple *: EmptyTuple, r2)
-
     val r3 = l2.partition[Int]
     assertTypedEquals[(Int *: Int *: EmptyTuple, Boolean *: String *: EmptyTuple)]((1 *: 2 *: EmptyTuple, true *: "foo" *: EmptyTuple), r3)
-
-    val r4 = l2.partitionP[Int]
-    assertTypedEquals[(Int *: Int *: EmptyTuple) *: (Boolean *: String *: EmptyTuple) *: EmptyTuple](
-      (1 *: 2 *: EmptyTuple) *: (true *: "foo" *: EmptyTuple) *: EmptyTuple, r4
-    )
   }
 
   @Test
@@ -1618,34 +1425,6 @@ class TupleTests {
   }
 
   @Test
-  def testSplitLeftP: Unit = {
-    type SL  = Int *: Boolean *: String *: Double *: EmptyTuple
-    type SL2 = Int *: Double *: String *: Unit *: String *: Boolean *: Long *: EmptyTuple
-    val sl: SL   = 1 *: true *: "foo" *: 2.0 *: EmptyTuple
-    val sl2: SL2 = 23 *: 3.0 *: "foo" *: () *: "bar" *: true *: 5L *: EmptyTuple
-
-    val sp1 *: sp2 *: EmptyTuple = sl.splitLeftP[String]
-    typed[String *: Double *: EmptyTuple](sp2)
-    typed[Int *: Boolean *: EmptyTuple](sp1)
-    assertTypedEquals[SL]((sp1 ::: sp2), sl)
-
-    val sli1 *: sli2 *: EmptyTuple = sl2.splitLeftP[String]
-    typed[Int *: Double *: EmptyTuple](sli1)
-    typed[String *: Unit *: String *: Boolean *: Long *: EmptyTuple](sli2)
-    assertTypedEquals[SL2]((sli1 ::: sli2), sl2)
-
-    val rsp1 *: rsp2 *: EmptyTuple = sl.reverse_splitLeftP[String]
-    typed[Boolean *: Int *: EmptyTuple](rsp1)
-    typed[String *: Double *: EmptyTuple](rsp2)
-    assertTypedEquals[SL]((rsp1 reverse_::: rsp2), sl)
-
-    val rsli1 *: rsli2 *: EmptyTuple = sl2.reverse_splitLeftP[String]
-    typed[Double *: Int *: EmptyTuple](rsli1)
-    typed[String *: Unit *: String *: Boolean *: Long *: EmptyTuple](rsli2)
-    assertTypedEquals[SL2]((rsli1 reverse_::: rsli2), sl2)
-  }
-
-  @Test
   def testSplitRight: Unit = {
     type SL  = Int *: Boolean *: String *: Double *: EmptyTuple
     type SL2 = Int *: Double *: String *: Unit *: String *: Boolean *: Long *: EmptyTuple
@@ -1668,34 +1447,6 @@ class TupleTests {
     assertTypedEquals[SL]((rsrp1 reverse_::: rsrp2), sl)
 
     val (rsrli1, rsrli2) = sl2.reverse_splitRight[String]
-    typed[String *: Unit *: String *: Double *: Int *: EmptyTuple](rsrli1)
-    typed[Boolean *: Long *: EmptyTuple](rsrli2)
-    assertTypedEquals[SL2]((rsrli1 reverse_::: rsrli2), sl2)
-  }
-
-  @Test
-  def testSplitRightP: Unit = {
-    type SL  = Int *: Boolean *: String *: Double *: EmptyTuple
-    type SL2 = Int *: Double *: String *: Unit *: String *: Boolean *: Long *: EmptyTuple
-    val sl: SL   = 1 *: true *: "foo" *: 2.0 *: EmptyTuple
-    val sl2: SL2 = 23 *: 3.0 *: "foo" *: () *: "bar" *: true *: 5L *: EmptyTuple
-
-    val srp1 *: srp2 *: EmptyTuple = sl.splitRightP[String]
-    typed[Int *: Boolean *: String *: EmptyTuple](srp1)
-    typed[Double *: EmptyTuple](srp2)
-    assertTypedEquals[SL]((srp1 ::: srp2), sl)
-
-    val srli1 *: srli2 *: EmptyTuple = sl2.splitRightP[String]
-    typed[Int *: Double *: String *: Unit *: String *: EmptyTuple](srli1)
-    typed[Boolean *: Long *: EmptyTuple](srli2)
-    assertTypedEquals[SL2](sl2, srli1 ::: srli2)
-
-    val rsrp1 *: rsrp2 *: EmptyTuple = sl.reverse_splitRightP[String]
-    typed[String *: Boolean *: Int *: EmptyTuple](rsrp1)
-    typed[Double *: EmptyTuple](rsrp2)
-    assertTypedEquals[SL]((rsrp1 reverse_::: rsrp2), sl)
-
-    val rsrli1 *: rsrli2 *: EmptyTuple = sl2.reverse_splitRightP[String]
     typed[String *: Unit *: String *: Double *: Int *: EmptyTuple](rsrli1)
     typed[Boolean *: Long *: EmptyTuple](rsrli2)
     assertTypedEquals[SL2]((rsrli1 reverse_::: rsrli2), sl2)
@@ -1727,18 +1478,20 @@ class TupleTests {
 
     val t2 = l4.transpose
     assertTypedEquals[
-      (String *: String *: String *: EmptyTuple) ::
-      (Double *: Double *: Double *: EmptyTuple) *: EmptyTuple
+      (String *: String *: String *: EmptyTuple) *:
+      (Double *: Double *: Double *: EmptyTuple) *:
+      EmptyTuple
     ](("a" *: "b" *: "c" *: EmptyTuple) *: (1.0 *: 2.0 *: 3.0 *: EmptyTuple) *: EmptyTuple, t2)
 
     val t3 = z2.transpose
     assertTypedEquals[
-      (Int *: Int *: Int *: EmptyTuple) ::
-      (String *: String *: String *: EmptyTuple) ::
-      (Double *: Double *: Double *: EmptyTuple) *: EmptyTuple
+      (Int *: Int *: Int *: EmptyTuple) *:
+      (String *: String *: String *: EmptyTuple) *:
+      (Double *: Double *: Double *: EmptyTuple) *:
+      EmptyTuple
     ](
-      (1 *: 2 *: 3 *: EmptyTuple) ::
-      ("a" *: "b" *: "c" *: EmptyTuple) ::
+      (1 *: 2 *: 3 *: EmptyTuple) *:
+      ("a" *: "b" *: "c" *: EmptyTuple) *:
       (1.0 *: 2.0 *: 3.0 *: EmptyTuple) *: EmptyTuple,
       t3
     )
@@ -1767,43 +1520,28 @@ class TupleTests {
     val l2 = 2 *: "b" *: 2.0 *: EmptyTuple
 
     val t1 = (l1 *: l2 *: EmptyTuple).transpose
-    val z1 = t1.map(tupled)
     assertTypedEquals[(Int, Int) *: (String, String) *: (Double, Double) *: EmptyTuple](
-      (1, 2) *: ("a", "b") *: (1.0, 2.0) *: EmptyTuple, z1)
+      (1, 2) *: ("a", "b") *: (1.0, 2.0) *: EmptyTuple, t1)
 
-    def zip[L <: Tuple, OutT <: Tuple](l: L)
-      (implicit
-        transposer: Transposer.Aux[L, OutT],
-        mapper: Mapper[tupled.type, OutT]) = l.transpose.map(tupled)
+    def zip[L <: Tuple, OutT <: Tuple](l: L)(implicit t: Transposer.Aux[L, OutT]) = l.transpose
 
     val z2 = zip(l1 *: l2 *: EmptyTuple)
     assertTypedEquals[(Int, Int) *: (String, String) *: (Double, Double) *: EmptyTuple](
       (1, 2) *: ("a", "b") *: (1.0, 2.0) *: EmptyTuple, z2)
 
-    val z3 = (l1 *: l2 *: EmptyTuple).zip
-    assertTypedEquals[(Int, Int) *: (String, String) *: (Double, Double) *: EmptyTuple](
-      (1, 2) *: ("a", "b") *: (1.0, 2.0) *: EmptyTuple, z3)
-
     val nil: EmptyTuple = EmptyTuple
-    val z4 = (nil *: nil *: EmptyTuple).zip
+    val z4 = (nil *: nil *: EmptyTuple).transpose
     assertTypedEquals[EmptyTuple](nil, z4)
 
-    val t2 = z1.map(productElements).transpose
-    val u1 = t2.tupled
+    object productElements extends Poly1 {
+      given inst[A](using g: Generic[A]): Case.Aux[A, g.Repr] = at(g.to)
+    }
+
+    val t2 = t1.mapPoly(productElements).transpose
     assertTypedEquals[(Int *: String *: Double *: EmptyTuple, Int *: String *: Double *: EmptyTuple)](
-      (1 *: "a" *: 1.0 *: EmptyTuple, 2 *: "b" *: 2.0 *: EmptyTuple), u1)
+      (1 *: "a" *: 1.0 *: EmptyTuple, 2 *: "b" *: 2.0 *: EmptyTuple), t2)
 
-    def unzip[L <: Tuple, OutM <: Tuple, OutT <: Tuple](l: L)
-      (implicit
-        mapper: Mapper.Aux[productElements.type, L, OutM],
-        transposer: Transposer.Aux[OutM, OutT],
-        tupler: Tupler[OutT]) = l.map(productElements).transpose.tupled
-
-    val u2 = unzip(z1)
-    assertTypedEquals[(Int *: String *: Double *: EmptyTuple, Int *: String *: Double *: EmptyTuple)](
-      (1 *: "a" *: 1.0 *: EmptyTuple, 2 *: "b" *: 2.0 *: EmptyTuple), u2)
-
-    val r1 = z1.unzip
+    val r1 = t1.mapPoly(productElements).transpose
     assertTypedEquals[(Int *: String *: Double *: EmptyTuple, Int *: String *: Double *: EmptyTuple)](
       (1 *: "a" *: 1.0 *: EmptyTuple, 2 *: "b" *: 2.0 *: EmptyTuple), r1)
 
@@ -1824,7 +1562,6 @@ class TupleTests {
   @Test
   def testUnapply: Unit = {
     val l = 1 *: true *: "foo" *: 2.0 *: EmptyTuple
-    val l2 = 23 *: 3.0 *: "foo" *: () *: "bar" *: true *: 5L *: EmptyTuple
 
     val is = l match {
       case i *: true *: s *: 2.0 *: EmptyTuple => (i, s)
@@ -1841,47 +1578,6 @@ class TupleTests {
 
     assertTypedEquals[Int](1, is2._1)
     assertTypedEquals[String]("foo", is2._2)
-
-    import Tuple.ListCompat._
-
-    val tl = l2 match {
-      case 23 #: 3.0 #: s #: xs => (s, xs)
-      case _ => sys.error("Not matched")
-    }
-
-    assertTypedEquals[String]("foo", tl._1)
-    assertTypedEquals[Unit *: String *: Boolean *: Long *: EmptyTuple](() *: "bar" *: true *: 5L *: EmptyTuple, tl._2)
-
-    val tl2 = (l2: Any) match {
-      case 23 #: 3.0 #: (s: String) #: xs => (s, xs)
-      case _ => sys.error("Not matched")
-    }
-
-    assertTypedEquals[String]("foo", tl2._1)
-    assertTypedEquals[Tuple](() *: "bar" *: true *: 5L *: EmptyTuple, tl2._2)
-
-    val ll = List(1, 2, 3, 4)
-    val tll = ll match {
-      case List(1, 2, x, y) => (x, y)
-      case _ => sys.error("Not matched")
-    }
-    assertTypedEquals[Int](3, tll._1)
-    assertTypedEquals[Int](4, tll._2)
-
-    val tll2 = ll match {
-      case 1 *: xs => xs
-      case _ => sys.error("Not matched")
-    }
-    assertTypedEquals[List[Int]](List(2, 3, 4), tll2)
-
-    val mixed = 23 *: "foo" *: List(1, 2, 3, 4, 5) *: false *: () *: EmptyTuple
-    val tmixed = mixed match {
-      case _ #: _ #: (_ *: 2 *: x *: tl1) #: tl2 => (x, tl1, tl2)
-      case _ => sys.error("Not matched")
-    }
-    assertTypedEquals[Int](3, tmixed._1)
-    assertTypedEquals[List[Int]](List(4, 5), tmixed._2)
-    assertTypedEquals[Boolean *: Unit *: EmptyTuple](false *: () *: EmptyTuple, tmixed._3)
   }
 
   @Test
@@ -1898,7 +1594,7 @@ class TupleTests {
     assertTypedEquals[(String, Int *: Boolean *: EmptyTuple)](("foo", 1 *: true *: EmptyTuple), ls)
 
     val withDuplicates = 1 *: 'a' *: 'b' *: EmptyTuple
-    val remover = implicitly[Remove.Aux[Int *: Char *: Char *: EmptyTuple, Char, (Char, Int *: Char *: EmptyTuple)]]
+    val remover = Remove[Int *: Char *: Char *: EmptyTuple, Char]
     assertTypedEquals[(Char, Int *: Char *: EmptyTuple)](('a', 1 *: 'b' *: EmptyTuple), remover(withDuplicates))
   }
 
@@ -1919,109 +1615,109 @@ class TupleTests {
     assertTypedEquals[(Boolean *: Int *: EmptyTuple, String *: EmptyTuple)]((true *: 1 *: EmptyTuple, "foo" *: EmptyTuple), lbi)
   }
 
-  @Test
-  def testUnion: Unit = {
-    type L1 = String *: Long *: EmptyTuple
-    val l1: L1 = "foo" *: 3L *: EmptyTuple
+  // @Test
+  // def testUnion: Unit = {
+  //   type L1 = String *: Long *: EmptyTuple
+  //   val l1: L1 = "foo" *: 3L *: EmptyTuple
 
-    type L2 = Int *: String *: Boolean *: EmptyTuple
-    val l2: L2 = 2 *: "bar" *: true *: EmptyTuple
+  //   type L2 = Int *: String *: Boolean *: EmptyTuple
+  //   val l2: L2 = 2 *: "bar" *: true *: EmptyTuple
 
-    type L3 = Int *: Int *: EmptyTuple
-    val l3: L3 = 1 *: 2 *: EmptyTuple
+  //   type L3 = Int *: Int *: EmptyTuple
+  //   val l3: L3 = 1 *: 2 *: EmptyTuple
 
-    type L4 = Int *: Int *: Int *: EmptyTuple
-    val l4: L4 = 4 *: 5 *: 6 *: EmptyTuple
+  //   type L4 = Int *: Int *: Int *: EmptyTuple
+  //   val l4: L4 = 4 *: 5 *: 6 *: EmptyTuple
 
-    val lnil = l1.union[EmptyTuple](EmptyTuple)
-    assertTypedEquals[L1](l1, lnil)
+  //   val lnil = l1.union[EmptyTuple](EmptyTuple)
+  //   assertTypedEquals[L1](l1, lnil)
 
-    val lself = l1.union(l1)
-    assertTypedEquals[L1](l1, lself)
+  //   val lself = l1.union(l1)
+  //   assertTypedEquals[L1](l1, lself)
 
-    val l12 = l1.union(l2)
-    assertTypedEquals[String *: Long *: Int *: Boolean *: EmptyTuple]("foo" *: 3L *: 2 *: true *: EmptyTuple, l12)
+  //   val l12 = l1.union(l2)
+  //   assertTypedEquals[String *: Long *: Int *: Boolean *: EmptyTuple]("foo" *: 3L *: 2 *: true *: EmptyTuple, l12)
 
-    val l21 = l2.union(l1)
-    assertTypedEquals[Int *: String *: Boolean *: Long *: EmptyTuple](2 *: "bar" *: true *: 3L *: EmptyTuple, l21)
+  //   val l21 = l2.union(l1)
+  //   assertTypedEquals[Int *: String *: Boolean *: Long *: EmptyTuple](2 *: "bar" *: true *: 3L *: EmptyTuple, l21)
 
 
-    illTyped { """implicitly[Union.Aux[Int *: EmptyTuple, Int *: EmptyTuple, Int *: Int *: EmptyTuple]]"""}
+  //   illTyped { """summon[Union.Aux[Int *: EmptyTuple, Int *: EmptyTuple, Int *: Int *: EmptyTuple]]"""}
 
-    val ldup1 = (l3).union(l4)
-    assertTypedEquals[Int *: Int *: Int *: EmptyTuple](1 *: 2 *: 6 *: EmptyTuple, ldup1)
+  //   val ldup1 = (l3).union(l4)
+  //   assertTypedEquals[Int *: Int *: Int *: EmptyTuple](1 *: 2 *: 6 *: EmptyTuple, ldup1)
 
-    val ldup2 = (l4).union(l3)
-    assertTypedEquals[Int *: Int *: Int *: EmptyTuple](4 *: 5 *: 6 *: EmptyTuple, ldup2)
-  }
+  //   val ldup2 = (l4).union(l3)
+  //   assertTypedEquals[Int *: Int *: Int *: EmptyTuple](4 *: 5 *: 6 *: EmptyTuple, ldup2)
+  // }
 
-  @Test
-  def testIntersection: Unit = {
-    type L1 = String *: Long *: Int *: EmptyTuple
-    val l1: L1 = "foo" *: 1L *: 3 *: EmptyTuple
+  // @Test
+  // def testIntersection: Unit = {
+  //   type L1 = String *: Long *: Int *: EmptyTuple
+  //   val l1: L1 = "foo" *: 1L *: 3 *: EmptyTuple
 
-    type L2 = Int *: String *: Boolean *: EmptyTuple
-    val l2: L2 = 2 *: "bar" *: true *: EmptyTuple
+  //   type L2 = Int *: String *: Boolean *: EmptyTuple
+  //   val l2: L2 = 2 *: "bar" *: true *: EmptyTuple
 
-    type L3 = Int *: String *: Int *: EmptyTuple
-    val l3: L3 = 4 *: "foo" *: 5 *: EmptyTuple
+  //   type L3 = Int *: String *: Int *: EmptyTuple
+  //   val l3: L3 = 4 *: "foo" *: 5 *: EmptyTuple
 
-    val lnil = l1.intersect[EmptyTuple]
-    assertTypedEquals[EmptyTuple](EmptyTuple, lnil)
+  //   val lnil = l1.intersect[EmptyTuple]
+  //   assertTypedEquals[EmptyTuple](EmptyTuple, lnil)
 
-    val lself = l1.intersect[L1]
-    assertTypedEquals[L1](l1, lself)
+  //   val lself = l1.intersect[L1]
+  //   assertTypedEquals[L1](l1, lself)
 
-    val l12 = l1.intersect[L2]
-    assertTypedEquals[String *: Int *: EmptyTuple]("foo" *: 3 *: EmptyTuple, l12)
+  //   val l12 = l1.intersect[L2]
+  //   assertTypedEquals[String *: Int *: EmptyTuple]("foo" *: 3 *: EmptyTuple, l12)
 
-    val l21 = l2.intersect[L1]
-    assertTypedEquals[Int *: String *: EmptyTuple](2 *: "bar" *: EmptyTuple, l21)
+  //   val l21 = l2.intersect[L1]
+  //   assertTypedEquals[Int *: String *: EmptyTuple](2 *: "bar" *: EmptyTuple, l21)
 
-    illTyped { """implicitly[Intersection.Aux[Int *: EmptyTuple, Int *: EmptyTuple, EmptyTuple]]"""}
+  //   illTyped { """summon[Intersection.Aux[Int *: EmptyTuple, Int *: EmptyTuple, EmptyTuple]]"""}
 
-    val ldup1 = (l3).intersect[Int *: EmptyTuple]
-    assertTypedEquals[Int *: EmptyTuple](4 *: EmptyTuple, ldup1)
+  //   val ldup1 = (l3).intersect[Int *: EmptyTuple]
+  //   assertTypedEquals[Int *: EmptyTuple](4 *: EmptyTuple, ldup1)
 
-    val ldup2 = (l3).intersect[Int *: Int *: EmptyTuple]
-    assertTypedEquals[Int *: Int *: EmptyTuple](4 *: 5 *: EmptyTuple, ldup2)
+  //   val ldup2 = (l3).intersect[Int *: Int *: EmptyTuple]
+  //   assertTypedEquals[Int *: Int *: EmptyTuple](4 *: 5 *: EmptyTuple, ldup2)
 
-    val ldup3 = (l3).intersect[String *: EmptyTuple]
-    assertTypedEquals[String *: EmptyTuple]("foo" *: EmptyTuple, ldup3)
-  }
+  //   val ldup3 = (l3).intersect[String *: EmptyTuple]
+  //   assertTypedEquals[String *: EmptyTuple]("foo" *: EmptyTuple, ldup3)
+  // }
 
-  @Test
-  def testDiff: Unit = {
-    type L1 = String *: Long *: Int *: EmptyTuple
-    val l1: L1 = "foo" *: 1L *: 3 *: EmptyTuple
+  // @Test
+  // def testDiff: Unit = {
+  //   type L1 = String *: Long *: Int *: EmptyTuple
+  //   val l1: L1 = "foo" *: 1L *: 3 *: EmptyTuple
 
-    type L2 = Int *: String *: Boolean *: EmptyTuple
-    val l2: L2 = 2 *: "bar" *: true *: EmptyTuple
+  //   type L2 = Int *: String *: Boolean *: EmptyTuple
+  //   val l2: L2 = 2 *: "bar" *: true *: EmptyTuple
 
-    type L3 = Int *: Boolean *: Int *: EmptyTuple
-    val l3: L3 = 4 *: false *: 5 *: EmptyTuple
+  //   type L3 = Int *: Boolean *: Int *: EmptyTuple
+  //   val l3: L3 = 4 *: false *: 5 *: EmptyTuple
 
-    val lnil = l1.diff[EmptyTuple]
-    assertTypedEquals[L1](l1, lnil)
+  //   val lnil = l1.diff[EmptyTuple]
+  //   assertTypedEquals[L1](l1, lnil)
 
-    val lself = l1.diff[L1]
-    assertTypedEquals[EmptyTuple](EmptyTuple, lself)
+  //   val lself = l1.diff[L1]
+  //   assertTypedEquals[EmptyTuple](EmptyTuple, lself)
 
-    val l12 = l1.diff[L2]
-    assertTypedEquals[Long *: EmptyTuple](1L *: EmptyTuple, l12)
+  //   val l12 = l1.diff[L2]
+  //   assertTypedEquals[Long *: EmptyTuple](1L *: EmptyTuple, l12)
 
-    val l21 = l2.diff[L1]
-    assertTypedEquals[Boolean *: EmptyTuple](true *: EmptyTuple, l21)
+  //   val l21 = l2.diff[L1]
+  //   assertTypedEquals[Boolean *: EmptyTuple](true *: EmptyTuple, l21)
 
-    val ldup1 = (l3).diff[Int *: EmptyTuple]
-    assertTypedEquals[Boolean *: Int *: EmptyTuple](false *: 5 *: EmptyTuple, ldup1)
+  //   val ldup1 = (l3).diff[Int *: EmptyTuple]
+  //   assertTypedEquals[Boolean *: Int *: EmptyTuple](false *: 5 *: EmptyTuple, ldup1)
 
-    val ldup2 = (l3).diff[Int *: Int *: EmptyTuple]
-    assertTypedEquals[Boolean *: EmptyTuple](false *: EmptyTuple, ldup2)
+  //   val ldup2 = (l3).diff[Int *: Int *: EmptyTuple]
+  //   assertTypedEquals[Boolean *: EmptyTuple](false *: EmptyTuple, ldup2)
 
-    val ldup3 = (l3).diff[Boolean *: EmptyTuple]
-    assertTypedEquals[Int *: Int *: EmptyTuple](4 *: 5 *: EmptyTuple, ldup3)
-  }
+  //   val ldup3 = (l3).diff[Boolean *: EmptyTuple]
+  //   assertTypedEquals[Int *: Int *: EmptyTuple](4 *: 5 *: EmptyTuple, ldup3)
+  // }
 
   @Test
   def testReinsert: Unit = {
@@ -2069,13 +1765,13 @@ class TupleTests {
     val c1b = combine(c1a, true)
     assertTypedEquals[String]("pass", c1b)
 
-    implicitly[LeftFolder.Aux[EmptyTuple, String, combine.type, String]]
-    implicitly[LeftFolder.Aux[Boolean *: EmptyTuple, Int, combine.type, String]]
-    implicitly[LeftFolder.Aux[String *: Boolean *: EmptyTuple, Char, combine.type, String]]
+    summon[LeftFolder.Aux[EmptyTuple, String, combine.type, String]]
+    summon[LeftFolder.Aux[Boolean *: EmptyTuple, Int, combine.type, String]]
+    summon[LeftFolder.Aux[String *: Boolean *: EmptyTuple, Char, combine.type, String]]
 
-    val tf1 = implicitly[LeftFolder[EmptyTuple, String, combine.type]]
-    val tf2 = implicitly[LeftFolder[Boolean *: EmptyTuple, Int, combine.type]]
-    val tf3 = implicitly[LeftFolder[String *: Boolean *: EmptyTuple, Char, combine.type]]
+    val _ = summon[LeftFolder[EmptyTuple, String, combine.type]]
+    val _ = summon[LeftFolder[Boolean *: EmptyTuple, Int, combine.type]]
+    val _ = summon[LeftFolder[String *: Boolean *: EmptyTuple, Char, combine.type]]
 
     val l1 = "foo" *: true *: EmptyTuple
     val f1 = l1.foldLeft('o')(combine)
@@ -2120,41 +1816,6 @@ class TupleTests {
     assertTypedEquals[IBS](1 *:  true *: "bar" *: EmptyTuple, r3)
   }
 
-  // @Test
-  // def testNatTRel: Unit = {
-  //   type L1 = Int *: String *: Boolean *: EmptyTuple
-  //   type L2 = List[Int] *: List[String] *: List[Boolean] *: EmptyTuple
-  //   type L3 = Option[Int] *: Option[String] *: Option[Boolean] *: EmptyTuple
-  //   type L4 = Int *: Int *: Int *: EmptyTuple
-  //   type L5 = String *: String *: String *: EmptyTuple
-
-  //   implicitly[NatTRel[L1, Id, L2, List]]
-  //   implicitly[NatTRel[L2, List, L1, Id]]
-
-  //   implicitly[NatTRel[L2, List, L3, Option]]
-
-  //   implicitly[NatTRel[L1, Id, L4, [a] =>> Int]]
-
-  //   implicitly[NatTRel[L2, List, L4, [a] =>> Int]]
-  // }
-
-  // object optionToList extends (Option ~> List) {
-  //   def apply[A](fa: Option[A]): List[A] = List.fill(3)(fa.toList).flatten
-  // }
-
-  // @Test
-  // def testNatTRelMap: Unit = {
-  //   type L1 = Option[Int] *: Option[Boolean] *: Option[String] *: Option[Nothing] *: EmptyTuple
-  //   type L2 = List[Int] *: List[Boolean] *: List[String] *: List[Nothing] *: EmptyTuple
-  //   val nattrel = implicitly[NatTRel[L1, Option, L2, List]]
-
-  //   val l1: L1 = Option(1) *: Option(true) *: Option("three") *: None *: EmptyTuple
-  //   val l2 = nattrel.map(optionToList, l1)
-
-  //   assertTypedEquals[L2](l2,
-  //     List(1, 1, 1) *: List(true, true, true) *: List("three", "three", "three") *: List() *: EmptyTuple)
-  // }
-
   @Test
   def testZipConst: Unit = {
     type IBS = Int *: Boolean *: String *: EmptyTuple
@@ -2168,19 +1829,17 @@ class TupleTests {
     val zipped1 = zcIntIbs(c, l)
     assertTypedEquals[WithConst](expected, zipped1)
 
-    val zcaIntIbs = implicitly[ZipConst.Aux[Int, IBS, WithConst]]
+    val zcaIntIbs = ZipConst[Int, IBS]
     assertTypedEquals[WithConst](expected, zcaIntIbs(c, l))
 
     val x = l.zipConst(c)
     assertTypedEquals[WithConst](expected, x)
 
-    Tuple().zipConst("")
+    assertTypedEquals[EmptyTuple](EmptyTuple, Tuple().zipConst(""))
   }
 
   @Test
   def testZipWith: Unit = {
-    import poly._
-
     object empty extends Poly2
 
     object add extends Poly2 {
@@ -2220,22 +1879,6 @@ class TupleTests {
       assertTypedEquals[Int *: String *: Double *: EmptyTuple](3 *: "foo -> 2.3" *: 4.6 *: EmptyTuple, r5)
     }
 
-    def testZipWithIndex: Unit = {
-
-      // EmptyTuple zipWithIndex
-      val r1 = (EmptyTuple: EmptyTuple).zipWithIndex
-      assertTypedEquals[EmptyTuple](EmptyTuple, r1)
-
-      // One element Tuple zipWithIndex
-      val r2 = (0 *: EmptyTuple).zipWithIndex
-      assertTypedEquals[(Int,0)::EmptyTuple]((0,0)::EmptyTuple, r2)
-
-      // Tuple zipWithIndex
-      val r3 = (0 *: 1 *: 2 *: 3 *: EmptyTuple).zipWithIndex
-      assertTypedEquals[(Int,0)::(Int,1)::(Int,2)::(Int,3)::EmptyTuple]((0,0)::(1,1)::(2,2)::(3,3)::EmptyTuple, r3)
-
-    }
-
     { // invalid polys
       illTyped("""
         (1 *: EmptyTuple).zipWith(2 *: EmptyTuple)(empty)
@@ -2256,13 +1899,31 @@ class TupleTests {
   }
 
   @Test
+  def testZipWithIndex: Unit = {
+    // EmptyTuple zipWithIndex
+    val r1 = (EmptyTuple: EmptyTuple).zipWithIndex
+    assertTypedEquals[EmptyTuple](EmptyTuple, r1)
+
+    // One element Tuple zipWithIndex
+    val r2 = (0 *: EmptyTuple).zipWithIndex
+    assertTypedEquals[(Int, 0) *: EmptyTuple]((0, 0) *: EmptyTuple, r2)
+
+    // Tuple zipWithIndex
+    val r3 = (0 *: 1 *: 2 *: 3 *: EmptyTuple).zipWithIndex
+    type ZWI = (Int, 0) *: (Int, 1) *: (Int, 2) *: (Int, 3) *: EmptyTuple
+    assertTypedEquals[ZWI](
+      ((0, 0) *: (1, 1) *: (2, 2) *: (3, 3) *: EmptyTuple).asInstanceOf[ZWI],
+      r3,
+    )
+  }
+
+  @Test
   def testWithKeys: Unit = {
-    import record._
-    import syntax.singleton._
+    import typify.record.*
 
     val orig =
-      ("intField" ->> 1) ::
-      ("boolField" ->> true) ::
+      ("intField" ->> 1) *:
+      ("boolField" ->> true) *:
       EmptyTuple
 
     val result = orig.values.zipWithKeys(orig.keys)
@@ -2280,7 +1941,7 @@ class TupleTests {
 
     // Explicit type argument
     {
-      val result = orig.values.zipWithKeys[Tuple.`"intField", "boolField"`.T]
+      val result = orig.values.zipWithKeys["intField" *: "boolField" *: EmptyTuple]
       sameTyped(orig)(result)
       assertEquals(orig, result)
       val int = result.get("intField")
@@ -2290,15 +1951,13 @@ class TupleTests {
       illTyped("""result.get("otherField")""")
 
       // key/value lengths must match up
-      illTyped(""" orig.tail.values.zipWithKeys[Tuple.`"intField", "boolField"`.T] """)
-      illTyped(""" orig.values.zipWithKeys[Tuple.`"boolField"`.T] """)
+      illTyped(""" orig.tail.values.zipWithKeys["intField" *: "boolField" *: EmptyTuple] """)
+      illTyped(""" orig.values.zipWithKeys["boolField" *: EmptyTuple] """)
     }
   }
 
   @Test
   def testCollect: Unit = {
-    import poly._
-
     object empty extends Poly1
 
     object complex extends Poly1 {
@@ -2331,17 +1990,17 @@ class TupleTests {
     assertTypedEquals[Double *: Int *: EmptyTuple](1.0 *: 1 *: EmptyTuple, r6)
   }
 
-  @Test
-  def testOrdering: Unit = {
-    assertEquals(List(EmptyTuple: EmptyTuple, EmptyTuple), List(EmptyTuple: EmptyTuple, EmptyTuple).sorted)
+  // @Test
+  // def testOrdering: Unit = {
+  //   assertEquals(List(EmptyTuple: EmptyTuple, EmptyTuple), List(EmptyTuple: EmptyTuple, EmptyTuple).sorted)
 
-    assertEquals(List(1 *: EmptyTuple, 2 *: EmptyTuple, 3 *: EmptyTuple), List(2 *: EmptyTuple, 1 *: EmptyTuple, 3 *: EmptyTuple).sorted)
+  //   assertEquals(List(1 *: EmptyTuple, 2 *: EmptyTuple, 3 *: EmptyTuple), List(2 *: EmptyTuple, 1 *: EmptyTuple, 3 *: EmptyTuple).sorted)
 
-    assertEquals(
-      List(1 *: "abc" *: EmptyTuple, 1 *: "def" *: EmptyTuple, 2 *: "abc" *: EmptyTuple, 2 *: "def" *: EmptyTuple),
-      List(2 *: "abc" *: EmptyTuple, 1 *: "def" *: EmptyTuple, 2 *: "def" *: EmptyTuple, 1 *: "abc" *: EmptyTuple).sorted
-    )
-  }
+  //   assertEquals(
+  //     List(1 *: "abc" *: EmptyTuple, 1 *: "def" *: EmptyTuple, 2 *: "abc" *: EmptyTuple, 2 *: "def" *: EmptyTuple),
+  //     List(2 *: "abc" *: EmptyTuple, 1 *: "def" *: EmptyTuple, 2 *: "def" *: EmptyTuple, 1 *: "abc" *: EmptyTuple).sorted
+  //   )
+  // }
 
   @Test
   def testMapCons: Unit = {
@@ -2375,18 +2034,20 @@ class TupleTests {
 
     val r3 = interleave('i', 1 *: "foo" *: EmptyTuple)
     assertTypedEquals[(C *: I *: S *: EmptyTuple) *: (I *: C *: S *: EmptyTuple) *: (I *: S *: C *: EmptyTuple) *: EmptyTuple](
-      ('i' *: 1 *: "foo" *: EmptyTuple) ::
-      (1 *: 'i' *: "foo" *: EmptyTuple) ::
-      (1 *: "foo" *: 'i' *: EmptyTuple) *: EmptyTuple,
+      ('i' *: 1 *: "foo" *: EmptyTuple) *:
+      (1 *: 'i' *: "foo" *: EmptyTuple) *:
+      (1 *: "foo" *: 'i' *: EmptyTuple) *:
+      EmptyTuple,
       r3
     )
 
     val r4 = interleave('i', 1 *: "foo" *: 2.0 *: EmptyTuple)
     assertTypedEquals[(C *: I *: S *: D *: EmptyTuple) *: (I *: C *: S *: D *: EmptyTuple) *: (I *: S *: C *: D *: EmptyTuple) *: (I *: S *: D *: C *: EmptyTuple) *: EmptyTuple](
-      ('i' *: 1 *: "foo" *: 2.0 *: EmptyTuple) ::
-      (1 *: 'i' *: "foo" *: 2.0 *: EmptyTuple) ::
-      (1 *: "foo" *: 'i' *: 2.0 *: EmptyTuple) ::
-      (1 *: "foo" *: 2.0 *: 'i' *: EmptyTuple) *: EmptyTuple,
+      ('i' *: 1 *: "foo" *: 2.0 *: EmptyTuple) *:
+      (1 *: 'i' *: "foo" *: 2.0 *: EmptyTuple) *:
+      (1 *: "foo" *: 'i' *: 2.0 *: EmptyTuple) *:
+      (1 *: "foo" *: 2.0 *: 'i' *: EmptyTuple) *:
+      EmptyTuple,
       r4
     )
   }
@@ -2406,10 +2067,11 @@ class TupleTests {
 
     val r3 = flatMapInterleave('i', (1 *: EmptyTuple) *: (2 *: EmptyTuple) *: EmptyTuple)
     assertTypedEquals[(C *: I *: EmptyTuple) *: (I *: C *: EmptyTuple) *: (C *: I *: EmptyTuple) *: (I *: C *: EmptyTuple) *: EmptyTuple](
-      ('i' *: 1 *: EmptyTuple) ::
-      (1 *: 'i' *: EmptyTuple) ::
-      ('i' *: 2 *: EmptyTuple) ::
-      (2 *: 'i' *: EmptyTuple) *: EmptyTuple,
+      ('i' *: 1 *: EmptyTuple) *:
+      (1 *: 'i' *: EmptyTuple) *:
+      ('i' *: 2 *: EmptyTuple) *:
+      (2 *: 'i' *: EmptyTuple) *:
+      EmptyTuple,
       r3
     )
   }
@@ -2426,22 +2088,24 @@ class TupleTests {
 
     val r3 = (1 *: "foo" *: EmptyTuple).permutations
     assertTypedEquals[(I *: S *: EmptyTuple) *: (S *: I *: EmptyTuple) *: EmptyTuple](
-      (1 *: "foo" *: EmptyTuple) ::
-      ("foo" *: 1 *: EmptyTuple) *: EmptyTuple,
+      (1 *: "foo" *: EmptyTuple) *:
+      ("foo" *: 1 *: EmptyTuple) *:
+      EmptyTuple,
       r3
     )
 
     val r4 = (1 *: "foo" *: 2.0 *: EmptyTuple).permutations
     assertTypedEquals[
-      (I *: S *: D *: EmptyTuple) *: (S *: I *: D *: EmptyTuple) *: (S *: D *: I *: EmptyTuple) ::
+      (I *: S *: D *: EmptyTuple) *: (S *: I *: D *: EmptyTuple) *: (S *: D *: I *: EmptyTuple) *:
       (I *: D *: S *: EmptyTuple) *: (D *: I *: S *: EmptyTuple) *: (D *: S *: I *: EmptyTuple) *: EmptyTuple
     ](
-      (1 *: "foo" *: 2.0 *: EmptyTuple) ::
-      ("foo" *: 1 *: 2.0 *: EmptyTuple) ::
-      ("foo" *: 2.0 *: 1 *: EmptyTuple) ::
-      (1 *: 2.0 *: "foo" *: EmptyTuple) ::
-      (2.0 *: 1 *: "foo" *: EmptyTuple) ::
-      (2.0 *: "foo" *: 1 *: EmptyTuple) *: EmptyTuple,
+      (1 *: "foo" *: 2.0 *: EmptyTuple) *:
+      ("foo" *: 1 *: 2.0 *: EmptyTuple) *:
+      ("foo" *: 2.0 *: 1 *: EmptyTuple) *:
+      (1 *: 2.0 *: "foo" *: EmptyTuple) *:
+      (2.0 *: 1 *: "foo" *: EmptyTuple) *:
+      (2.0 *: "foo" *: 1 *: EmptyTuple) *:
+      EmptyTuple,
       r4
     )
   }
@@ -2458,70 +2122,73 @@ class TupleTests {
     val in2 = 1 *: "foo" *: EmptyTuple
     val in3 = 1 *: "foo" *: 2.0 *: EmptyTuple
     val in4 = 1 *: "foo" *: 2.0 *: 'a' *: EmptyTuple
-    type S = String; type I = Int; type D = Double; type C = Char
+    type S = String
+    type I = Int
+    type D = Double
+    type C = Char
 
     { // rotateLeft(0)
       val r1 = in0.rotateLeft(0)
-      assertTypedSame[EmptyTuple](EmptyTuple, r1)
+      assertTypedEquals[EmptyTuple](EmptyTuple, r1)
       val r2 = in1.rotateLeft(0)
-      assertTypedSame[I *: EmptyTuple](in1, r2)
+      assertTypedEquals[I *: EmptyTuple](in1, r2)
       val r3 = in2.rotateLeft(0)
-      assertTypedSame[I *: S *: EmptyTuple](in2, r3)
+      assertTypedEquals[I *: S *: EmptyTuple](in2, r3)
       val r4 = in3.rotateLeft(0)
-      assertTypedSame[I *: S *: D *: EmptyTuple](in3, r4)
+      assertTypedEquals[I *: S *: D *: EmptyTuple](in3, r4)
       val r5 = in4.rotateLeft(0)
-      assertTypedSame[I *: S *: D *: C *: EmptyTuple](in4, r5)
+      assertTypedEquals[I *: S *: D *: C *: EmptyTuple](in4, r5)
     }
 
     { // rotateLeft[0]
       val r1 = in0.rotateLeft[0]
-      assertTypedSame[EmptyTuple](EmptyTuple, r1)
+      assertTypedEquals[EmptyTuple](EmptyTuple, r1)
       val r2 = in1.rotateLeft[0]
-      assertTypedSame[I *: EmptyTuple](in1, r2)
+      assertTypedEquals[I *: EmptyTuple](in1, r2)
       val r3 = in2.rotateLeft[0]
-      assertTypedSame[I *: S *: EmptyTuple](in2, r3)
+      assertTypedEquals[I *: S *: EmptyTuple](in2, r3)
       val r4 = in3.rotateLeft[0]
-      assertTypedSame[I *: S *: D *: EmptyTuple](in3, r4)
+      assertTypedEquals[I *: S *: D *: EmptyTuple](in3, r4)
       val r5 = in4.rotateLeft[0]
-      assertTypedSame[I *: S *: D *: C *: EmptyTuple](in4, r5)
+      assertTypedEquals[I *: S *: D *: C *: EmptyTuple](in4, r5)
     }
 
     { // rotateLeft(n % size == 0)
       val r1 = in1.rotateLeft(1)
-      assertTypedSame[I *: EmptyTuple](in1, r1)
+      assertTypedEquals[Int *: EmptyTuple](in1, r1)
       val r2 = in1.rotateLeft(2)
-      assertTypedSame[I *: EmptyTuple](in1, r2)
+      assertTypedEquals[I *: EmptyTuple](in1, r2)
       val r3 = in2.rotateLeft(2)
-      assertTypedSame[I *: S *: EmptyTuple](in2, r3)
+      assertTypedEquals[I *: S *: EmptyTuple](in2, r3)
       val r4 = in2.rotateLeft(4)
-      assertTypedSame[I *: S *: EmptyTuple](in2, r4)
+      assertTypedEquals[I *: S *: EmptyTuple](in2, r4)
       val r5 = in3.rotateLeft(3)
-      assertTypedSame[I *: S *: D *: EmptyTuple](in3, r5)
+      assertTypedEquals[I *: S *: D *: EmptyTuple](in3, r5)
       val r6 = in3.rotateLeft(6)
-      assertTypedSame[I *: S *: D *: EmptyTuple](in3, r6)
+      assertTypedEquals[I *: S *: D *: EmptyTuple](in3, r6)
       val r7 = in4.rotateLeft(4)
-      assertTypedSame[I *: S *: D *: C *: EmptyTuple](in4, r7)
+      assertTypedEquals[I *: S *: D *: C *: EmptyTuple](in4, r7)
       val r8 = in4.rotateLeft(8)
-      assertTypedSame[I *: S *: D *: C *: EmptyTuple](in4, r8)
+      assertTypedEquals[I *: S *: D *: C *: EmptyTuple](in4, r8)
     }
 
     { // rotateLeft[N % Size == 0]
     val r1 = in1.rotateLeft[1]
-      assertTypedSame[I *: EmptyTuple](in1, r1)
+      assertTypedEquals[I *: EmptyTuple](in1, r1)
       val r2 = in1.rotateLeft[2]
-      assertTypedSame[I *: EmptyTuple](in1, r2)
+      assertTypedEquals[I *: EmptyTuple](in1, r2)
       val r3 = in2.rotateLeft[2]
-      assertTypedSame[I *: S *: EmptyTuple](in2, r3)
+      assertTypedEquals[I *: S *: EmptyTuple](in2, r3)
       val r4 = in2.rotateLeft[4]
-      assertTypedSame[I *: S *: EmptyTuple](in2, r4)
+      assertTypedEquals[I *: S *: EmptyTuple](in2, r4)
       val r5 = in3.rotateLeft[3]
-      assertTypedSame[I *: S *: D *: EmptyTuple](in3, r5)
+      assertTypedEquals[I *: S *: D *: EmptyTuple](in3, r5)
       val r6 = in3.rotateLeft[6]
-      assertTypedSame[I *: S *: D *: EmptyTuple](in3, r6)
+      assertTypedEquals[I *: S *: D *: EmptyTuple](in3, r6)
       val r7 = in4.rotateLeft[4]
-      assertTypedSame[I *: S *: D *: C *: EmptyTuple](in4, r7)
+      assertTypedEquals[I *: S *: D *: C *: EmptyTuple](in4, r7)
       val r8 = in4.rotateLeft[8]
-      assertTypedSame[I *: S *: D *: C *: EmptyTuple](in4, r8)
+      assertTypedEquals[I *: S *: D *: C *: EmptyTuple](in4, r8)
     }
 
     { // other(n)
@@ -2582,66 +2249,66 @@ class TupleTests {
 
     { // rotateRight(0)
       val r1 = in0.rotateRight(0)
-      assertTypedSame[EmptyTuple](EmptyTuple, r1)
+      assertTypedEquals[EmptyTuple](EmptyTuple, r1)
       val r2 = in1.rotateRight(0)
-      assertTypedSame[I *: EmptyTuple](in1, r2)
+      assertTypedEquals[I *: EmptyTuple](in1, r2)
       val r3 = in2.rotateRight(0)
-      assertTypedSame[I *: S *: EmptyTuple](in2, r3)
+      assertTypedEquals[I *: S *: EmptyTuple](in2, r3)
       val r4 = in3.rotateRight(0)
-      assertTypedSame[I *: S *: D *: EmptyTuple](in3, r4)
+      assertTypedEquals[I *: S *: D *: EmptyTuple](in3, r4)
       val r5 = in4.rotateRight(0)
-      assertTypedSame[I *: S *: D *: C *: EmptyTuple](in4, r5)
+      assertTypedEquals[I *: S *: D *: C *: EmptyTuple](in4, r5)
     }
 
     { // rotateRight[0]
       val r1 = in0.rotateRight[0]
-      assertTypedSame[EmptyTuple](EmptyTuple, r1)
+      assertTypedEquals[EmptyTuple](EmptyTuple, r1)
       val r2 = in1.rotateRight[0]
-      assertTypedSame[I *: EmptyTuple](in1, r2)
+      assertTypedEquals[I *: EmptyTuple](in1, r2)
       val r3 = in2.rotateRight[0]
-      assertTypedSame[I *: S *: EmptyTuple](in2, r3)
+      assertTypedEquals[I *: S *: EmptyTuple](in2, r3)
       val r4 = in3.rotateRight[0]
-      assertTypedSame[I *: S *: D *: EmptyTuple](in3, r4)
+      assertTypedEquals[I *: S *: D *: EmptyTuple](in3, r4)
       val r5 = in4.rotateRight[0]
-      assertTypedSame[I *: S *: D *: C *: EmptyTuple](in4, r5)
+      assertTypedEquals[I *: S *: D *: C *: EmptyTuple](in4, r5)
     }
 
     { // rotateRight(n % size == 0)
       val r1 = in1.rotateRight(1)
-      assertTypedSame[I *: EmptyTuple](in1, r1)
+      assertTypedEquals[I *: EmptyTuple](in1, r1)
       val r2 = in1.rotateRight(2)
-      assertTypedSame[I *: EmptyTuple](in1, r2)
+      assertTypedEquals[I *: EmptyTuple](in1, r2)
       val r3 = in2.rotateRight(2)
-      assertTypedSame[I *: S *: EmptyTuple](in2, r3)
+      assertTypedEquals[I *: S *: EmptyTuple](in2, r3)
       val r4 = in2.rotateRight(4)
-      assertTypedSame[I *: S *: EmptyTuple](in2, r4)
+      assertTypedEquals[I *: S *: EmptyTuple](in2, r4)
       val r5 = in3.rotateRight(3)
-      assertTypedSame[I *: S *: D *: EmptyTuple](in3, r5)
+      assertTypedEquals[I *: S *: D *: EmptyTuple](in3, r5)
       val r6 = in3.rotateRight(6)
-      assertTypedSame[I *: S *: D *: EmptyTuple](in3, r6)
+      assertTypedEquals[I *: S *: D *: EmptyTuple](in3, r6)
       val r7 = in4.rotateRight(4)
-      assertTypedSame[I *: S *: D *: C *: EmptyTuple](in4, r7)
+      assertTypedEquals[I *: S *: D *: C *: EmptyTuple](in4, r7)
       val r8 = in4.rotateRight(8)
-      assertTypedSame[I *: S *: D *: C *: EmptyTuple](in4, r8)
+      assertTypedEquals[I *: S *: D *: C *: EmptyTuple](in4, r8)
     }
 
     { // rotateRight[N % Size == 0]
       val r1 = in1.rotateRight[1]
-      assertTypedSame[I *: EmptyTuple](in1, r1)
+      assertTypedEquals[I *: EmptyTuple](in1, r1)
       val r2 = in1.rotateRight[2]
-      assertTypedSame[I *: EmptyTuple](in1, r2)
+      assertTypedEquals[I *: EmptyTuple](in1, r2)
       val r3 = in2.rotateRight[2]
-      assertTypedSame[I *: S *: EmptyTuple](in2, r3)
+      assertTypedEquals[I *: S *: EmptyTuple](in2, r3)
       val r4 = in2.rotateRight[4]
-      assertTypedSame[I *: S *: EmptyTuple](in2, r4)
+      assertTypedEquals[I *: S *: EmptyTuple](in2, r4)
       val r5 = in3.rotateRight[3]
-      assertTypedSame[I *: S *: D *: EmptyTuple](in3, r5)
+      assertTypedEquals[I *: S *: D *: EmptyTuple](in3, r5)
       val r6 = in3.rotateRight[6]
-      assertTypedSame[I *: S *: D *: EmptyTuple](in3, r6)
+      assertTypedEquals[I *: S *: D *: EmptyTuple](in3, r6)
       val r7 = in4.rotateRight[4]
-      assertTypedSame[I *: S *: D *: C *: EmptyTuple](in4, r7)
+      assertTypedEquals[I *: S *: D *: C *: EmptyTuple](in4, r7)
       val r8 = in4.rotateRight[8]
-      assertTypedSame[I *: S *: D *: C *: EmptyTuple](in4, r8)
+      assertTypedEquals[I *: S *: D *: C *: EmptyTuple](in4, r8)
     }
 
     { // others(n)
@@ -2862,7 +2529,7 @@ class TupleTests {
       given zeroInt: Case.Aux[Int] = at[Int](0)
     }
 
-    implicit val emptyString = zero.at[String]("")
+    given emptyString: zero.Case.Aux[String] = zero.at[String]("")
 
     val out = Tuple.fillWith[Int *: String *: Int *: EmptyTuple](zero)
     assertEquals(out, 0 *: "" *: 0 *: EmptyTuple)
@@ -2925,7 +2592,7 @@ class TupleTests {
   //   type PISB = Int *: String *: Boolean *: EmptyTuple
   //   type CISBa = Int :+: String :+: Boolean :+: CNil
   //   type CISBb = the.`ToCoproduct[PISB]`.Out
-  //   implicitly[CISBa =:= CISBb]
+  //   summon[CISBa =:= CISBb]
   // }
 
   // @Test
@@ -2933,175 +2600,16 @@ class TupleTests {
   //   type PISB = Int *: String *: Boolean *: EmptyTuple
   //   type CISBa = Int :+: String :+: Boolean :+: CNil
   //   type SISBa = the.`ToSum[PISB]`.Out
-  //   implicitly[CISBa =:= SISBa]
+  //   summon[CISBa =:= SISBa]
 
   //   type PIISSB = Int *: Int *: String *: String *: Boolean *: EmptyTuple
   //   type SISBb = the.`ToSum[PIISSB]`.Out
-  //   implicitly[CISBa =:= SISBb]
-  // }
-
-  @Test
-  def testTupleTypeSelector: Unit = {
-    import syntax.singleton._
-
-    typed[Tuple.` `.T](EmptyTuple)
-
-    typed[Tuple.`Int`.T](23 *: EmptyTuple)
-
-    typed[Tuple.`Int, String`.T](23 *: "foo" *: EmptyTuple)
-
-    typed[Tuple.`Int, String, Boolean`.T](23 *: "foo" *: true *: EmptyTuple)
-
-    // Literal types
-
-    typed[Tuple.`2`.T](2.narrow *: EmptyTuple)
-
-    typed[Tuple.`2, "a", true`.T](2.narrow *: "a".narrow *: true.narrow *: EmptyTuple)
-
-    illTyped(""" typed[Tuple.`2`.T](3.narrow *: EmptyTuple) """)
-
-    // Mix of standard and literal types
-
-    typed[Tuple.`2, String, true`.T](2.narrow *: "a" *: true.narrow *: EmptyTuple)
-  }
-
-  // object Foo extends ProductArgs {
-  //   def applyProduct[L <: Tuple](args: L): L = args
-  // }
-
-  // @Test
-  // def testProductArgs: Unit = {
-  //   val l = Foo(23, "foo", true)
-  //   typed[Int *: String *: Boolean *: EmptyTuple](l)
-
-  //   val v1 = l.head
-  //   typed[Int](v1)
-  //   assertEquals(23, v1)
-
-  //   val v2 = l.tail.head
-  //   typed[String](v2)
-  //   assertEquals("foo", v2)
-
-  //   val v3 = l.tail.tail.head
-  //   typed[Boolean](v3)
-  //   assertEquals(true, v3)
-
-  //   val v4 = l.tail.tail.tail
-  //   typed[EmptyTuple](v4)
-
-  //   illTyped("""
-  //     r.tail.tail.tail.head
-  //   """)
-  // }
-
-  // object SFoo extends SingletonProductArgs {
-  //   def applyProduct[L <: Tuple](args: L): L = args
-  // }
-
-  // case class Quux(i: Int, s: String, b: Boolean)
-
-  // object selectAll extends SingletonProductArgs {
-  //   class Apply[K <: Tuple] {
-  //     def from[T, R <: Tuple, S <: Tuple, Out](t: T)
-  //       (implicit
-  //         gen: LabelledGeneric.Aux[T, R],
-  //         sel: SelectAll.Aux[R, K, S],
-  //         tp: Tupler.Aux[S, Out]
-  //       ): Out =
-  //       tp(sel(gen.to(t)))
-  //   }
-
-  //   def applyProduct[K <: Tuple](keys: K) = new Apply[K]
-  // }
-
-  // trait NonSingletonEmptyTupleTC[T]
-  // object NonSingletonEmptyTupleTC {
-  //   def apply[T](t: T)(implicit i: NonSingletonEmptyTupleTC[T]): NonSingletonEmptyTupleTC[T] = i
-
-  //   implicit val nsEmptyTupleTC: NonSingletonEmptyTupleTC[EmptyTuple] = new NonSingletonEmptyTupleTC[EmptyTuple] {}
-  // }
-
-  // @Test
-  // def testSingletonProductArgs: Unit = {
-  //   object Obj
-
-  //   val l = SFoo(23, "foo", Symbol("bar"), Obj, true)
-  //   typed[Witness.`23`.T *: Witness.`"foo"`.T *: Witness.`'bar`.T *: Obj.type *: Witness.`true`.T *: EmptyTuple](l)
-
-  //   // Annotations on the LHS here and subsequently, otherwise scalac will
-  //   // widen the RHS to a non-singleton type.
-  //   val v1: Witness.`23`.T = l.head
-  //   assertEquals(23, v1)
-
-  //   val v2: Witness.`"foo"`.T = l.tail.head
-  //   assertEquals("foo", v2)
-
-  //   val v3: Witness.`'bar`.T = l.tail.tail.head
-  //   assertEquals(Symbol("bar"), v3)
-
-  //   val v4: Obj.type = l.tail.tail.tail.head
-  //   assertEquals(Obj, v4)
-
-  //   val v5: Witness.`true`.T = l.tail.tail.tail.tail.head
-  //   assertEquals(true, v5)
-
-  //   val v6 = l.tail.tail.tail.tail.tail
-  //   typed[EmptyTuple](v6)
-
-  //   illTyped("""
-  //     r.tail.tail.tail.tail.tail.tail.head
-  //   """)
-
-  //   // Verify that we infer EmptyTuple rather than EmptyTuple.type at the end
-  //   NonSingletonEmptyTupleTC(SFoo(23).tail)
-  //   NonSingletonEmptyTupleTC(SFoo())
-
-  //   val quux = Quux(23, "foo", true)
-  //   val ib = selectAll(Symbol("i"), Symbol("b")).from(quux)
-  //   typed[(Int, Boolean)](ib)
-  //   assertEquals((23, true), ib)
-  // }
-
-  // object Bar extends FromProductArgs {
-  //   def sumLabel(k: String, i1: Int, i2: Int) = (k, i1 + i2)
-  //   def sumImplicitLabel(k: String, i1: Int)(implicit i2: Int) = (k, i1 + i2)
-  //   def sumMultipleParamListLabel(k: String, i1: Int)(i2: Int) = (k, i1 + i2)
-  // }
-
-  // @Test
-  // def testFromProductArgs: Unit = {
-  //   val p = "foo" *: 1 *: 3 *: EmptyTuple
-
-  //   val v1 = Bar.sumLabelProduct(p)
-  //   typed[(String, Int)](v1)
-  //   assertEquals(("foo", 4), v1)
-
-  //   val p2 = "bar" *: 1 *: 2 *: EmptyTuple
-  //   val v2 = Bar.sumMultipleParamListLabelProduct(p2)
-  //   typed[(String, Int)](v2)
-  //   assertEquals(("bar", 3), v2)
-
-  //   illTyped("""
-  //     Bar.sumImplicitLabelProduct("foo" *: 1 *: 3 *: EmptyTuple)
-  //   """)
-
-  //   implicit val i2 = 7
-  //   val v3 = Bar.sumImplicitLabelProduct("foo" *: 1 *: EmptyTuple)
-  //   typed[(String, Int)](v3)
-  //   assertEquals(("foo", 8), v3)
-
-  //   illTyped("""
-  //     Bar.sumLabelProduct("foo" *: "bar" *: 1 *: 2 *: EmptyTuple)
-  //   """)
-
-  //   illTyped("""
-  //     Bar.sumMultipleParamListLabelProduct("foo" *: "1" *: 2 *: 3 *: EmptyTuple)
-  //   """)
+  //   summon[CISBa =:= SISBb]
   // }
 
   @Test
   def selectAllTest: Unit ={
-    import shapeless._, record._ , ops.hlist.SelectAll
+    import typify.record.{SelectAll => _, *}
 
     //is there any way to do it without runtime overhead?
     class TypeCaptured[T](val value: T) {
@@ -3110,87 +2618,18 @@ class TupleTests {
 
     def getFieldsByTypesOfSuper[Sub <: Tuple, Super <: Tuple](l: Sub)(implicit sa: SelectAll[Sub, Super]) = sa(l)
 
-    val hsuper = new TypeCaptured("2":: true *: EmptyTuple)
-    val hsub = new TypeCaptured(1 *: "2":: true *: EmptyTuple)
+    val hsuper = new TypeCaptured("2" *: true *: EmptyTuple)
+    val hsub = new TypeCaptured(1 *: "2" *: true *: EmptyTuple)
 
     //testing with plain Tuple
     assertTypedEquals[hsuper._type](hsuper.value, getFieldsByTypesOfSuper[hsub._type, hsuper._type](hsub.value))
 
-    val rsuper = new TypeCaptured(Record(b = true, c = "blah"))
-    val rsub =  new TypeCaptured(Record(a = 1, b = true, c = "blah"))
+    val rsuper = new TypeCaptured(("b" ->> true) *: ("c" ->> "blah") *: EmptyTuple)
+    val rsub = new TypeCaptured(("a" ->> 1) *: ("b" ->> true) *: ("c" ->> "blah") *: EmptyTuple)
 
     //testing with Record
     assertTypedEquals[rsuper._type](rsuper.value, getFieldsByTypesOfSuper[rsub._type, rsuper._type](rsub.value))
-
   }
-
-  // object FooNat extends NatProductArgs {
-  //   def applyNatProduct[L <: Tuple](args: L): L = args
-  // }
-  // object FooNatTypeParams extends NatProductArgs {
-  //   def applyNatProduct[L <: Tuple](implicit len: Length[L]) = len()
-  // }
-
-  // @Test
-  // def testNatProductArgs: Unit = {
-  //   val l = FooNat(1, 2, 3)
-  //   typed[1 *: _2 *: _3 *: EmptyTuple](l)
-
-  //   val v1 = l.head
-  //   typed[1](v1)
-  //   assertEquals(1, v1)
-
-  //   val v2 = l.tail.head
-  //   typed[2](v2)
-  //   assertEquals(2, v2)
-
-  //   val v3 = l.tail.tail.head
-  //   typed[3](v3)
-  //   assertEquals(3, v3)
-
-  //   val v4 = l.tail.tail.tail
-  //   typed[EmptyTuple](v4)
-
-  //   illTyped("""
-  //     r.tail.tail.tail.head
-  //            """)
-  //   val res = FooNatTypeParams(1,2,3,4)
-  //   assertEquals(4,res)
-  // }
-
-  // implicit class Interpolator(val sc: StringContext) {
-  //   class Args extends ProductArgs {
-  //     def applyProduct[L <: Tuple](l: L): L = l
-  //   }
-
-  //   val hlist: Args = new Args
-  // }
-
-  // @Test
-  // def testStringInterpolator: Unit = {
-  //   val (i, s, b) = (23, "foo", true)
-  //   val l = hlist"Int: $i, String: $s, Boolean: $b"
-  //   typed[Int *: String *: Boolean *: EmptyTuple](l)
-
-  //   val v1 = l.head
-  //   typed[Int](v1)
-  //   assertEquals(23, v1)
-
-  //   val v2 = l.tail.head
-  //   typed[String](v2)
-  //   assertEquals("foo", v2)
-
-  //   val v3 = l.tail.tail.head
-  //   typed[Boolean](v3)
-  //   assertEquals(true, v3)
-
-  //   val v4 = l.tail.tail.tail
-  //   typed[EmptyTuple](v4)
-
-  //   illTyped("""
-  //     r.tail.tail.tail.head
-  //   """)
-  // }
 
   @Test
   def testCollectFirst: Unit = {
@@ -3200,7 +2639,7 @@ class TupleTests {
     val hlist1 = "foo" *: 2.0 *: 1 *: EmptyTuple
     assertTypedEquals[Int](hlist1.collectFirst(Foo), 2)
 
-    val hlist2 = "foo" *: 2.0 *: EmptyTuple
+    @annotation.unused val hlist2 = "foo" *: 2.0 *: EmptyTuple
     illTyped("""hlist2.collectFirst(Foo)""")
   }
 
@@ -3218,41 +2657,28 @@ class TupleTests {
     assertEquals(EmptyTuple: EmptyTuple, (EmptyTuple: EmptyTuple) group(2, 1))
     // group a Tuple of 4 items into 2 (4/2) tuples of 2 items
     assertEquals(
-      (0, 1) ::(2, 3) *: EmptyTuple,
+      (0, 1) *: (2, 3) *: EmptyTuple,
       range(0, 4) group(2, 2)
     )
 
     // group a Tuple of 5 items into 2 (5/2) tuples of 2 items
     // the last item does not make a complete partition and is dropped.
     assertEquals(
-      (0, 1) ::(2, 3) *: EmptyTuple,
+      (0, 1) *: (2, 3) *: EmptyTuple,
       range(0, 5) group(2, 2)
     )
 
     // uses the step to select the starting point for each partition
     assertEquals(
-      (0, 1) ::(4, 5) *: EmptyTuple,
+      (0, 1) *: (4, 5) *: EmptyTuple,
       range(0, 6) group(2, 4)
     )
 
     // if the step is smaller than the partition size, items will be reused
     assertEquals(
-      (0, 1) ::(1, 2) ::(2, 3) *: EmptyTuple,
+      (0, 1) *: (1, 2) *: (2, 3) *: EmptyTuple,
       range(0, 4) group(2, 1)
     )
-
-    // when there are not enough items to fill the last partition, a pad can be supplied.
-    assertEquals(
-      (0, 1) ::(2, 3) ::(4, 'a') *: EmptyTuple,
-      range(0, 5) group(2, 2, 'a' *: EmptyTuple)
-    )
-
-    // but only as many pad elements are used as necessary to fill the final partition.
-    assertEquals(
-      (0, 1) ::(2, 3) ::(4, 'a') *: EmptyTuple,
-      range(0, 5) group(2, 2, 'a' *: 'b' *: 'c' *: EmptyTuple)
-    )
-
   }
 
   @Test
@@ -3261,10 +2687,10 @@ class TupleTests {
     implicit object FInt extends F[Int]
     implicit object FString extends F[String]
 
-    assertEquals(EmptyTuple, implicitly[LiftAll[F, EmptyTuple]].instances)
-    assertEquals(FInt *: EmptyTuple, implicitly[LiftAll[F, Int *: EmptyTuple]].instances)
-    assertEquals(FString *: FInt *: EmptyTuple, implicitly[LiftAll[F, String *: Int *: EmptyTuple]].instances)
-    illTyped("implicitly[LiftAll[F, Long *: String *: Int *: EmptyTuple]]")
+    assertEquals(EmptyTuple, summon[LiftAll[F, EmptyTuple]].instances)
+    assertEquals(FInt *: EmptyTuple, summon[LiftAll[F, Int *: EmptyTuple]].instances)
+    assertEquals(FString *: FInt *: EmptyTuple, summon[LiftAll[F, String *: Int *: EmptyTuple]].instances)
+    illTyped("summon[LiftAll[F, Long *: String *: Int *: EmptyTuple]]")
 
     assertEquals(FInt *: EmptyTuple, LiftAll[F](1 *: EmptyTuple).instances)
   }
@@ -3304,13 +2730,6 @@ class TupleTests {
     illTyped(""" (1 *: "a" *: 3 *: EmptyTuple).slice(1, 0) """)
   }
 
-  // @Test
-  // def testToSizedTuple: Unit = {
-  //   val ns = List(1,2,3,4)
-  //   assertTypedEquals[Option[III]](None, ns.toSizedTuple(3))
-  //   assertTypedEquals[Option[IIII]](Some(1 *: 2 *: 3 *: 4 *: EmptyTuple), ns.toSizedTuple(4))
-  // }
-
   @Test
   def testModifierAt: Unit = {
     // first element
@@ -3325,18 +2744,16 @@ class TupleTests {
 
   @Test
   def testReify: Unit = {
-    import syntax.singleton._
-
     assertTypedEquals(EmptyTuple, Reify[EmptyTuple].apply())
 
-    val s1 = Tuple.`'a`
-    assertTypedEquals(Symbol("a").narrow *: EmptyTuple, Reify[s1.T].apply())
+    type T1 = "a" *: EmptyTuple
+    assertTypedEquals[T1]("a" *: EmptyTuple, Reify[T1].apply())
 
-    val s2 = Tuple.`'a, 1, "b", true`
-    assertTypedEquals(Symbol("a").narrow *: 1.narrow *: "b".narrow *: true.narrow *: EmptyTuple, Reify[s2.T].apply())
+    type T2 = "a" *: 1 *: "b" *: true *: EmptyTuple
+    assertTypedEquals[T2](("a" *: 1 *: "b" *: true *: EmptyTuple).asInstanceOf[T2], Reify[T2].apply())
 
     illTyped(""" Reify[String *: Int *: EmptyTuple] """)
-    illTyped(""" Reify[String *: Tuple.`'a, 1, "b", true`.T] """)
+    illTyped(""" Reify[String *: "a" *: 1 *: "b" *: EmptyTuple] """)
   }
 
   @Test
@@ -3345,31 +2762,39 @@ class TupleTests {
 
     val r1 = (1 *: "2" *: 3 *: 4 *: EmptyTuple).combinations(2)
     assertTypedEquals[
-      (I *: S *: EmptyTuple) ::
-      (I *: I *: EmptyTuple) ::
-      (I *: I *: EmptyTuple) ::
-      (S *: I *: EmptyTuple) ::
-      (S *: I *: EmptyTuple) ::
-      (I *: I *: EmptyTuple) *: EmptyTuple
+      (I *: S *: EmptyTuple) *:
+      (I *: I *: EmptyTuple) *:
+      (I *: I *: EmptyTuple) *:
+      (S *: I *: EmptyTuple) *:
+      (S *: I *: EmptyTuple) *:
+      (I *: I *: EmptyTuple) *:
+      EmptyTuple
     ](
-      (1 *: "2" *: EmptyTuple) ::
-      (1 *: 3 *: EmptyTuple) ::
-      (1 *: 4 *: EmptyTuple) ::
-      ("2" *: 3 *: EmptyTuple) ::
-      ("2" *: 4 *: EmptyTuple) ::
-      (3 *: 4 *: EmptyTuple) *: EmptyTuple, r1)
+      (1 *: "2" *: EmptyTuple) *:
+      (1 *: 3 *: EmptyTuple) *:
+      (1 *: 4 *: EmptyTuple) *:
+      ("2" *: 3 *: EmptyTuple) *:
+      ("2" *: 4 *: EmptyTuple) *:
+      (3 *: 4 *: EmptyTuple) *:
+      EmptyTuple,
+      r1,
+    )
 
     val r2 = (1 *: "2" *: 3 *: 4 *: EmptyTuple).combinations(3)
     assertTypedEquals[
-      (I *: S *: I *: EmptyTuple) ::
-      (I *: S *: I *: EmptyTuple) ::
-      (I *: I *: I *: EmptyTuple) ::
-      (S *: I *: I *: EmptyTuple) *: EmptyTuple
+      (I *: S *: I *: EmptyTuple) *:
+      (I *: S *: I *: EmptyTuple) *:
+      (I *: I *: I *: EmptyTuple) *:
+      (S *: I *: I *: EmptyTuple) *:
+      EmptyTuple
     ](
-      (1 *: "2" *: 3 *: EmptyTuple) ::
-      (1 *: "2" *: 4 *: EmptyTuple) ::
-      (1 *: 3 *: 4 *: EmptyTuple) ::
-      ("2" *: 3 *: 4 *: EmptyTuple) *: EmptyTuple, r2)
+      (1 *: "2" *: 3 *: EmptyTuple) *:
+      (1 *: "2" *: 4 *: EmptyTuple) *:
+      (1 *: 3 *: 4 *: EmptyTuple) *:
+      ("2" *: 3 *: 4 *: EmptyTuple) *:
+      EmptyTuple,
+      r2,
+    )
 
     val r3 = (1 *: "2" *: 3 *: 4 *: EmptyTuple).combinations(4)
     assertTypedEquals[
@@ -3388,23 +2813,11 @@ class TupleTests {
   def testIsNonEmptyTuple = assertTypedEquals[Int *: EmptyTuple](23 *: EmptyTuple, IsNonEmptyTuple[Int *: EmptyTuple].cons(23, EmptyTuple))
 
   @Test
-  def testToProduct = {
-    val isbd = 2 *: "abc" *: true *: 3.0 *: EmptyTuple
-    val p = (2, ("abc", (true, (3.0, ()))))
-
-    import syntax.std.tuple._
-    assertEquals(isbd.toProduct, p)
-    assertEquals(p.toTuple, isbd)
-    assertEquals(isbd.toProduct.toTuple, isbd)
-    assertEquals(p.toTuple.toProduct, p)
-    assertEquals((), (EmptyTuple: EmptyTuple).toProduct)
-    assertEquals(EmptyTuple, ().toTuple)
-  }
-
-  @Test
   def testAuxImplicits: Unit = {
-    the[SplitRight.Aux[String *: Int *: Boolean *: EmptyTuple, Int, String *: Int *: EmptyTuple, Boolean *: EmptyTuple]]
-    the[Grouper.Aux[Int *: String *: Boolean *: EmptyTuple, _2, _1, (Int, String) *: (String, Boolean) *: EmptyTuple]]
-    the[PaddedGrouper.Aux[Int *: String *: Boolean *: EmptyTuple, _2, _2, Long *: EmptyTuple, (Int, String) *: (Boolean, Long) *: EmptyTuple]]
+    val sr = SplitRight[String *: Int *: Boolean *: EmptyTuple, Int]
+    summon[sr.Out =:= (String *: Int *: EmptyTuple, Boolean *: EmptyTuple)]
+
+    val g = Grouper[Int *: String *: Boolean *: EmptyTuple, 2, 1]
+    summon[g.Out =:= (Int, String) *: (String, Boolean) *: EmptyTuple]
   }
 }

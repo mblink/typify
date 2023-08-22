@@ -17,8 +17,8 @@ trait ToTraversable[L, M[_]] extends DepFn1[L] {
   def builder(): mutable.Builder[Lub, M[Lub]]
   def append[LLub](l: L, b: mutable.Builder[LLub, M[LLub]], f: Lub => LLub): Unit
 
-  type Out = M[Lub]
-  def apply(l: L): Out = {
+  final type Out = M[Lub]
+  final def apply(l: L): Out = {
     val b = builder()
     append(l, b, identity)
     b.result()

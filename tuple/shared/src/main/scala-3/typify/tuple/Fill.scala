@@ -31,4 +31,13 @@ object Fill {
       type Out = FillT[N, A]
       def apply(a: A): Out = fill(n.value, a, EmptyTuple).asInstanceOf[Out]
     }
+
+  given tupleFill2[N <: Int, M <: Int, A](
+    using fillM: Fill[M, A],
+    fillN: Fill[N, fillM.Out],
+  ): Fill.Aux[(N, M), A, fillN.Out] =
+    new Fill[(N, M), A] {
+      type Out = fillN.Out
+      def apply(a: A): Out = fillN(fillM(a))
+    }
 }

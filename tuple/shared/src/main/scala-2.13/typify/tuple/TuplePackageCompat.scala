@@ -170,6 +170,9 @@ trait TuplePackageCompat {
   final type RotateRight[L <: Tuple, N <: shapeless.Nat] = shapeless.ops.hlist.RotateRight[L, N]
   final val RotateRight: shapeless.ops.hlist.RotateRight.type = shapeless.ops.hlist.RotateRight
 
+  final type Selector[T <: Tuple, A] = shapeless.ops.hlist.Selector[T, A]
+  final val Selector: shapeless.ops.hlist.Selector.type = shapeless.ops.hlist.Selector
+
   final type SelectAll[L <: Tuple, S <: Tuple] = shapeless.ops.hlist.SelectAll[L, S]
   final val SelectAll: shapeless.ops.hlist.SelectAll.type = shapeless.ops.hlist.SelectAll
 
@@ -208,9 +211,6 @@ trait TuplePackageCompat {
 
   final type Transposer[L <: Tuple] = shapeless.ops.hlist.Transposer[L]
   final val Transposer: shapeless.ops.hlist.Transposer.type = shapeless.ops.hlist.Transposer
-
-  final type Selector[T <: Tuple, A] = shapeless.ops.hlist.Selector[T, A]
-  final val Selector: shapeless.ops.hlist.Selector.type = shapeless.ops.hlist.Selector
 
   final type Unifier[T <: Tuple] = shapeless.ops.hlist.Unifier[T]
   final val Unifier: shapeless.ops.hlist.Unifier.type = shapeless.ops.hlist.Unifier

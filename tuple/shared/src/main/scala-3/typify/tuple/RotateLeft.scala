@@ -7,13 +7,13 @@ import compiletime.ops.int.%
  */
 trait RotateLeft[L, N] extends DepFn1[L]
 
-object RotateLeft {
-  type Aux[L, N, O] = RotateLeft[L, N] { type Out = O }
+sealed trait RotateLeftLP {
+  final type Aux[L, N, O] = RotateLeft[L, N] { type Out = O }
 
-  inline def apply[L, N](using r: RotateLeft[L, N]): RotateLeft.Aux[L, N, r.Out] = r
-
-  given tupleRotateLeft[L <: Tuple, N <: Int](using nv: ValueOf[N], sizev: ValueOf[Tuple.Size[L]])
-    : RotateLeft.Aux[L, N, Tuple.Concat[Tuple.Drop[L, N % Tuple.Size[L]], Tuple.Take[L, N % Tuple.Size[L]]]] =
+  final given tupleRotateLeft[L <: Tuple, N <: Int](
+    using nv: ValueOf[N],
+    sizev: ValueOf[Tuple.Size[L]],
+  ): RotateLeft.Aux[L, N, Tuple.Concat[Tuple.Drop[L, N % Tuple.Size[L]], Tuple.Take[L, N % Tuple.Size[L]]]] =
     new RotateLeft[L, N] {
       type Out = Tuple.Concat[Tuple.Drop[L, N % Tuple.Size[L]], Tuple.Take[L, N % Tuple.Size[L]]]
       private lazy val n = nv.value
@@ -23,5 +23,15 @@ object RotateLeft {
         val a = l.toArray
         Tuple.fromArray(a.drop(rem) ++ a.take(rem)).asInstanceOf[Out]
       }
+    }
+}
+
+object RotateLeft extends RotateLeftLP {
+  inline def apply[L, N](using r: RotateLeft[L, N]): RotateLeft.Aux[L, N, r.Out] = r
+
+  given rotateLeftZero[L]: RotateLeft.Aux[L, 0, L] =
+    new RotateLeft[L, 0] {
+      type Out = L
+      def apply(l: L): Out = l
     }
 }

@@ -40,7 +40,7 @@ type Case0[F] = Case[F, EmptyTuple]
 object Case0 {
   type Aux[F, R] = Case0[F] { type Result = R }
 
-  def apply[F, R](f: () => R): Case0.Aux[F, R] = Case(_ => f())
+  def apply[F, R](r: => R): Case0.Aux[F, R] = Case(_ => r)
 }
 
 type Case1[F, A] = Case[F, A *: EmptyTuple]
@@ -57,15 +57,21 @@ object Case2 {
   def apply[F, A, B, R](f: (A, B) => R): Case2.Aux[F, A, B, R] = Case { case (a *: b *: EmptyTuple) => f(a, b) }
 }
 
-sealed trait Poly
+sealed trait Poly { self =>
+  final def apply(using c: Case0[self.type]): c.Result = c()
+  final def apply[A](a: A)(using c: Case1[self.type, A]): c.Result = c(a)
+  final def apply[A, B](a: A, b: B)(using c: Case2[self.type, A, B]): c.Result = c(a, b)
+}
+
 trait Poly0 extends Poly { self =>
   final type Case = Case0[self.type]
   object Case {
     final type Aux[R] = Case0.Aux[self.type, R]
   }
 
-  final inline def at[R](f: () => R): Case.Aux[R] = Case0[self.type, R](f)
+  final inline def at[R](r: => R): Case.Aux[R] = Case0[self.type, R](r)
 }
+
 trait Poly1 extends Poly { self =>
   final type Case[A] = Case1[this.type, A]
   object Case {
@@ -74,6 +80,7 @@ trait Poly1 extends Poly { self =>
 
   final inline def at[A] = [R] => (f: A => R) => Case1[self.type, A, R](f)
 }
+
 trait Poly2 extends Poly { self =>
   final type Case[A, B] = Case2[this.type, A, B]
   object Case {

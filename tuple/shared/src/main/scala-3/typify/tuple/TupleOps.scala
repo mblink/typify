@@ -1,7 +1,7 @@
 package typify.tuple
 
 final class ReinsertAux[L, O](private val l: L) extends AnyVal {
-  final def apply[U](u: U)(using r: Remove.Aux[O, U, (U, L)]): O = r.reinsert((u, l))
+  final def apply[U](u: U)(using r: Remove[O, U], ev: (U, L) =:= r.Out): O = r.reinsert((u, l))
 }
 
 final class ReinsertAllAux[L, O](private val l: L) extends AnyVal {
@@ -176,8 +176,9 @@ final class TypifyTupleOps[L <: Tuple](private val l: L) extends AnyVal {
    * Replaces the `N`th element of this `Tuple` with the result of calling the supplied function on it.
    * Available only if there is evidence that this `Tuple` has `N` elements.
    */
-  // def updateAtWith[V](n: NatWith[({ type λ[n <: Nat] = At[L, n]})#λ])(f: n.instance.Out => V)
-  //   (using m: ModifierAt[L, N, n.instance.Out, V]): m.Out = m(l, f)
+  def updateAtWith[V](n: Int)(f: Tuple.Elem[L, n.type] => V)(
+    using m: ModifierAt[L, n.type, Tuple.Elem[L, n.type], V],
+  ): m.Out = m(l, f)
 
   /**
    * Replaces the first element of type `U` of this `Tuple` with the supplied value of type `V`. An explicit type
@@ -442,6 +443,12 @@ final class TypifyTupleOps[L <: Tuple](private val l: L) extends AnyVal {
   final def to[M[_]](using t: ToTraversable[L, M]): t.Out = t(l)
 
   /**
+   * Converts this `Tuple` to a `M` of elements typed as the least upper bound of the types of the elements
+   * of this `Tuple`.
+   */
+  final def toLub[M[_], Lub](using t: ToTraversable.Aux[L, M, Lub]): t.Out = t(l)
+
+  /**
    * Converts this `Tuple` to an ordinary `List` of elements typed as the least upper bound of the types of the elements
    * of this `Tuple`.
    */
@@ -524,7 +531,7 @@ final class TypifyTupleOps[L <: Tuple](private val l: L) extends AnyVal {
    * Produces a new `Tuple` where a slice of this `Tuple` is replaced by another. Available only if there are at least
    * ``n`` plus ``m`` elements.
    */
-  final def patch[M, In <: Tuple](n: Int, in: In, m: M)(using p: Patcher[n.type, M, L, In]): p.Out = p(l, in)
+  final def patch[In <: Tuple](n: Int, in: In, m: Int)(using p: Patcher[n.type, m.type, L, In]): p.Out = p(l, in)
 
   /**
    * Produces a new `Tuple` where a slice of this `Tuple` is replaced by another. Two explicit type arguments must be

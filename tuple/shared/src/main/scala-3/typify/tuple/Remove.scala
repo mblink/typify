@@ -1,8 +1,11 @@
 package typify.tuple
 
 type RemoveT[L <: Tuple, E] <: Tuple = L match {
-  case E *: t => t
-  case h *: t => h *: RemoveT[t, E]
+  case h *: t => Invariant[h] match {
+    case Invariant[E] => t
+    case _ => h *: RemoveT[t, E]
+  }
+  case EmptyTuple => EmptyTuple
 }
 
 /**

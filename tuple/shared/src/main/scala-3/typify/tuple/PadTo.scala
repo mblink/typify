@@ -1,6 +1,6 @@
 package typify.tuple
 
-import compiletime.ops.int.{-, Max}
+import compiletime.ops.int.{-, >=, Max}
 
 /**
  * Type class supporting padding a `Tuple` of type `L` to length `N`, padded with elements of type `A`.
@@ -13,7 +13,8 @@ object PadTo {
   inline def apply[N, A, L](using p: PadTo[N, A, L]): PadTo.Aux[N, A, L, p.Out] = p
 
   given tuplePadTo[N <: Int, A, L <: Tuple](
-    using n: ValueOf[N],
+    using ev: (N >= Tuple.Size[L]) =:= true,
+    n: ValueOf[N],
     size: ValueOf[Tuple.Size[L]],
   ): PadTo.Aux[N, A, L, Tuple.Concat[L, FillT[Max[0, N - Tuple.Size[L]], A]]] =
     new PadTo[N, A, L] {

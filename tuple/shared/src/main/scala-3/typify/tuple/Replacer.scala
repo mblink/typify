@@ -1,8 +1,10 @@
 package typify.tuple
 
 type ReplaceElem[L <: Tuple, U, V] = L match {
-  case U *: t => V *: t
-  case h *: t => h *: ReplaceElem[t, U, V]
+  case h *: t => Invariant[h] match {
+    case Invariant[U] => V *: t
+    case _ => h *: ReplaceElem[t, U, V]
+  }
 }
 
 type ReplaceAtIndex[L <: Tuple, I <: Int, A] = ReplaceAtIndex0[L, I, A, 0]
