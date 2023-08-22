@@ -18,6 +18,6 @@ object Drop {
   ): Drop.Aux[T, N, Tuple.Drop[T, N]] =
     new Drop[T, N] {
       type Out = Tuple.Drop[T, N]
-      def apply(t: T): Out = Tuple.fromArray(t.toArray.drop(n.value)).asInstanceOf[Out]
+      def apply(t: T): Out = t.drop(n.value).asInstanceOf[Out]
     }
 }

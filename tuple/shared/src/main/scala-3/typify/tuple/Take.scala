@@ -19,6 +19,6 @@ object Take {
   ): Take.Aux[T, N, Tuple.Take[T, N]] =
     new Take[T, N] {
       type Out = Tuple.Take[T, N]
-      def apply(t: T): Out = Tuple.fromArray(t.toArray.take(n.value)).asInstanceOf[Out]
+      def apply(t: T): Out = t.take(n.value).asInstanceOf[Out]
     }
 }
