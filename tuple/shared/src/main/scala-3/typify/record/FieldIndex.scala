@@ -1,13 +1,19 @@
-package typify.record
+package typify
+package record
+
+import compiletime.ops.int.S
 
 /**
  * Match type to find the first index which key `K` appears in a record of type `T`.
  */
 type FieldIndex[T <: Tuple, K] = FieldIndex0[T, K, 0]
 
-type FieldIndex0[T <: Tuple, K, I <: Int] <: Int = T match {
-  case (K ->> _) *: _ => I
-  case _ *: t => FieldIndex0[t, K, compiletime.ops.int.S[I]]
+private[record] type FieldIndex0[T <: Tuple, K, I <: Int] <: Int = T match {
+  case (k ->> _) *: t => typify.Invariant[k] match {
+    case Invariant[K] => I
+    case _ => FieldIndex0[t, K, S[I]]
+  }
+  case _ *: t => FieldIndex0[t, K, S[I]]
 }
 
 /**

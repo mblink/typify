@@ -1,4 +1,5 @@
-package typify.record
+package typify
+package record
 
 import typify.tuple.DepFn1
 
@@ -19,7 +20,10 @@ object Remover {
   inline def apply[T, K](t: T, k: K)(using r: Remover[T, K]): r.Out = r(t)
 
   type RemoveField[T <: Tuple, K] <: Tuple = T match {
-    case (K ->> _) *: t => t
+    case (k ->> v) *: t => Invariant[k] match {
+      case Invariant[K] => t
+      case _ => (k ->> v) *: RemoveField[t, K]
+    }
     case h *: t => h *: RemoveField[t, K]
   }
 

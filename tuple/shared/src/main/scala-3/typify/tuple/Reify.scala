@@ -10,11 +10,6 @@ object Reify {
 
   type Aux[T, O] = Reify[T] { type Out = O }
 
-  type UnValueOf[A] = A match {
-    case ValueOf[b] => b
-    case _ => A
-  }
-
   inline given reifyInst[T <: Tuple]: Reify.Aux[T, T] =
     new Reify[T] {
       type Out = T

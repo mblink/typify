@@ -1,4 +1,5 @@
-package typify.tuple
+package typify
+package tuple
 
 type ReplaceElem[L <: Tuple, U, V] = L match {
   case h *: t => Invariant[h] match {

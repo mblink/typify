@@ -1,4 +1,5 @@
-package typify.tuple
+package typify
+package tuple
 
 type RemoveT[L <: Tuple, E] <: Tuple = L match {
   case h *: t => Invariant[h] match {

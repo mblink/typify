@@ -1,4 +1,5 @@
-package typify.tuple
+package typify
+package tuple
 
 import compiletime.ops.int.S
 
