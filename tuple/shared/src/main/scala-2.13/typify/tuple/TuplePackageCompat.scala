@@ -35,6 +35,9 @@ trait TuplePackageCompat {
   final type ConstMapper[C, T <: Tuple] = shapeless.ops.hlist.ConstMapper[C, T]
   final val ConstMapper: shapeless.ops.hlist.ConstMapper.type = shapeless.ops.hlist.ConstMapper
 
+  final type Diff[L <: Tuple, M <: Tuple] = shapeless.ops.hlist.Diff[L, M]
+  final val Diff: shapeless.ops.hlist.Diff.type = shapeless.ops.hlist.Diff
+
   final type Drop[T <: Tuple, N <: shapeless.Nat] = shapeless.ops.hlist.Drop[T, N]
   final val Drop: shapeless.ops.hlist.Drop.type = shapeless.ops.hlist.Drop
 
@@ -67,6 +70,9 @@ trait TuplePackageCompat {
 
   final type Interleave[A, L <: Tuple] = shapeless.ops.hlist.Interleave[A, L]
   final val Interleave: shapeless.ops.hlist.Interleave.type = shapeless.ops.hlist.Interleave
+
+  final type Intersection[L <: Tuple, M <: Tuple] = shapeless.ops.hlist.Intersection[L, M]
+  final val Intersection: shapeless.ops.hlist.Intersection.type = shapeless.ops.hlist.Intersection
 
   final type IsNonEmptyTuple[T <: Tuple] = shapeless.ops.hlist.IsHCons[T]
   final val IsNonEmptyTuple: shapeless.ops.hlist.IsHCons.type = shapeless.ops.hlist.IsHCons
@@ -106,6 +112,9 @@ trait TuplePackageCompat {
 
   final type ModifierAt[L <: Tuple, N <: shapeless.Nat, U, V] = shapeless.ops.hlist.ModifierAt[L, N, U, V]
   final val ModifierAt: shapeless.ops.hlist.ModifierAt.type = shapeless.ops.hlist.ModifierAt
+
+  final type NotContains[L <: Tuple, U] = shapeless.NotContainsConstraint[L, U]
+  final val NotContains: shapeless.NotContainsConstraint.type = shapeless.NotContainsConstraint
 
   final type PadTo[N, A, L <: Tuple] = shapeless.ops.hlist.PadTo[N, A, L]
   final val PadTo: shapeless.ops.hlist.PadTo.type = shapeless.ops.hlist.PadTo
@@ -214,6 +223,9 @@ trait TuplePackageCompat {
 
   final type Unifier[T <: Tuple] = shapeless.ops.hlist.Unifier[T]
   final val Unifier: shapeless.ops.hlist.Unifier.type = shapeless.ops.hlist.Unifier
+
+  final type Union[L <: Tuple, M <: Tuple] = shapeless.ops.hlist.Union[L, M]
+  final val Union: shapeless.ops.hlist.Union.type = shapeless.ops.hlist.Union
 
   final type ZipApply[FL <: Tuple, AL <: Tuple] = shapeless.ops.hlist.ZipApply[FL, AL]
   final val ZipApply: shapeless.ops.hlist.ZipApply.type = shapeless.ops.hlist.ZipApply

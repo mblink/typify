@@ -1,5 +1,7 @@
 package typify.tuple
 
+import scala.compiletime.summonAll
+
 /**
  * Typeclass witnessing that all the elements of a `Tuple` have instances of the given typeclass `F`.
  */
@@ -18,14 +20,9 @@ object LiftAll {
   def apply[F[_]]: Curried[F] = new Curried[F]
   def apply[F[_], In](using l: LiftAll[F, In]): LiftAll.Aux[F, In, l.Out] = l
 
-  given emptyTupleInst[F[_]]: LiftAll.Aux[F, EmptyTuple, EmptyTuple] = new LiftAll[F, EmptyTuple] {
-    type Out = EmptyTuple
-    def instances = EmptyTuple
-  }
-
-  given tupleConsInst[F[_], H, T <: Tuple, TI <: Tuple](using h: F[H], t: LiftAll.Aux[F, T, TI]): LiftAll.Aux[F, H *: T, F[H] *: TI] =
-    new LiftAll[F, H *: T] {
-      type Out = F[H] *: TI
-      def instances = h *: t.instances
+  inline given tupleLiftAll[F[_], T <: Tuple]: LiftAll.Aux[F, T, Tuple.Map[T, F]] =
+    new LiftAll[F, T] {
+      type Out = Tuple.Map[T, F]
+      val instances = summonAll[Tuple.Map[T, F]]
     }
 }

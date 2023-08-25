@@ -57,6 +57,12 @@ lazy val baseSettings = Seq(
   gitPublishDir := file("/src/maven-repo")
 )
 
+lazy val noPublishSettings = Seq(
+  publish := {},
+  publishLocal := {},
+  gitRelease := {},
+)
+
 lazy val root = project.in(file("."))
   .aggregate((
     tuple.componentProjects ++
@@ -65,11 +71,7 @@ lazy val root = project.in(file("."))
     (if (System.getProperty("java.version").startsWith("1.8")) Seq() else Seq(playjsonTypify))
   ).map(p => p: ProjectReference):_*)
   .settings(baseSettings)
-  .settings(
-    publish := {},
-    publishLocal := {},
-    gitRelease := {},
-  )
+  .settings(noPublishSettings)
   .disablePlugins(MimaPlugin)
 
 lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.9.0")
@@ -161,10 +163,11 @@ lazy val sjsTypify = project.in(file("jsdynamic-typify"))
 
 lazy val docs = project.in(file("typify-docs"))
   .settings(baseSettings)
+  .settings(noPublishSettings)
   .settings(
     mdocOut := file("."),
     scalacOptions -= "-Xfatal-warnings",
-    gitRelease := {}
   )
   .dependsOn(typify.jvm)
   .enablePlugins(MdocPlugin)
+  .disablePlugins(MimaPlugin)

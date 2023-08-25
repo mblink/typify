@@ -13,6 +13,6 @@ object Init {
   given lastNonEmptyTuple[T <: NonEmptyTuple]: Init.Aux[T, Tuple.Init[T]] =
     new Init[T] {
       type Out = Tuple.Init[T]
-      def apply(t: T): Out = Tuple.fromArray(t.toArray.init).asInstanceOf[Out]
+      def apply(t: T): Out = t.init.asInstanceOf[Out]
     }
 }
