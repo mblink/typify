@@ -15,15 +15,14 @@ object ReplaceAt {
 
   given replaceAtTuple[L <: Tuple, N <: Int, V](
     using ev: (Tuple.Size[L] > N) =:= true,
-    n: ValueOf[N],
+    nv: ValueOf[N],
   ): ReplaceAt.Aux[L, N, V, (Tuple.Elem[L, N], ReplaceAtIndex[L, N, V])] =
     new ReplaceAt[L, N, V] {
       type Out = (Tuple.Elem[L, N], ReplaceAtIndex[L, N, V])
+      private lazy val n = nv.value
       def apply(l: L, v: V): Out = {
-        val b = l.toArray.to(collection.mutable.Buffer)
-        val u = b(n.value)
-        b.update(n.value, v.asInstanceOf[Object])
-        (u, Tuple.fromArray(b.to(Array))).asInstanceOf[Out]
+        val a = l.toArray
+        (a(n), Tuple.fromArray(a.patch(n, List(v.asInstanceOf[Object]), 1))).asInstanceOf[Out]
       }
     }
 }

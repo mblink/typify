@@ -17,11 +17,11 @@ object Modifier {
   ): Modifier.Aux[L, U, V, (U, ReplaceElem[L, U, V])] =
     new Modifier[L, U, V] {
       type Out = (U, ReplaceElem[L, U, V])
+      private lazy val i = idx.value
       def apply(l: L, f: U => V): Out = {
-        val b = l.toArray.to(collection.mutable.Buffer)
-        val u = b(idx.value)
-        b.update(idx.value, f(u.asInstanceOf[U]).asInstanceOf[Object])
-        (u, Tuple.fromArray(b.to(Array))).asInstanceOf[Out]
+        val a = l.toArray
+        val u = a(i).asInstanceOf[U]
+        (u, Tuple.fromArray(a.patch(i, List(f(u).asInstanceOf[Object]), 1))).asInstanceOf[Out]
       }
     }
 }

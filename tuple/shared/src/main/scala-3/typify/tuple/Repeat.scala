@@ -25,13 +25,16 @@ object Repeat {
       type Out = RepeatT[L, N]
       def apply(l: L): Out = {
         var i: Int = n.value
-        val b = collection.mutable.Buffer.empty[Object]
-        lazy val a = l.toArray
-        while (i > 0) {
-          b ++= a
-          i -= 1
+        if (i == 0) EmptyTuple.asInstanceOf[Out]
+        else {
+          val b = Array.newBuilder[Object]
+          val a = l.toArray
+          while (i > 0) {
+            b ++= a
+            i -= 1
+          }
+          Tuple.fromArray(b.result()).asInstanceOf[Out]
         }
-        Tuple.fromArray(b.to(Array)).asInstanceOf[Out]
       }
     }
 }

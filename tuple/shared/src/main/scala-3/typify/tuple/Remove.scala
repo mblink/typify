@@ -27,15 +27,12 @@ object Remove {
   ): Remove.Aux[L, E, (E, RemoveT[L, E])] =
     new Remove[L, E] {
       type Out = (E, RemoveT[L, E])
+      private lazy val i = idx.value
       def apply(l: L): Out = {
-        val b = l.toArray.to(collection.mutable.Buffer)
-        val v = b.remove(idx.value)
-        (v, Tuple.fromArray(b.to(Array))).asInstanceOf[Out]
+        val a = l.toArray
+        (a(i), Tuple.fromArray(a.patch(i, Nil, 1))).asInstanceOf[Out]
       }
-      def reinsert(out: Out): L = {
-        val b = out._2.toArray.to(collection.mutable.Buffer)
-        b.insert(idx.value, out._1.asInstanceOf[Object])
-        Tuple.fromArray(b.to(Array)).asInstanceOf[L]
-      }
+      def reinsert(out: Out): L =
+        Tuple.fromArray(out._2.toArray.patch(i, List(out._1.asInstanceOf[Object]), 0)).asInstanceOf[L]
     }
 }

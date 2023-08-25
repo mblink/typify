@@ -13,15 +13,15 @@ object ModifierAt {
 
   given modifierAtTuple[L <: Tuple, N <: Int, U, V](
     using ev: Tuple.Elem[L, N] <:< U,
-    n: ValueOf[N],
+    nv: ValueOf[N],
   ): ModifierAt.Aux[L, N, U, V, (U, ReplaceAtIndex[L, N, V])] =
     new ModifierAt[L, N, U, V] {
       type Out = (U, ReplaceAtIndex[L, N, V])
+      private lazy val n = nv.value
       def apply(l: L, f: U => V): Out = {
-        val b = l.toArray.to(collection.mutable.Buffer)
-        val u = b(n.value)
-        b.update(n.value, f(u.asInstanceOf[U]).asInstanceOf[Object])
-        (u, Tuple.fromArray(b.to(Array))).asInstanceOf[Out]
+        val a = l.toArray
+        val u = a(n).asInstanceOf[U]
+        (u, Tuple.fromArray(a.patch(n, List(f(u).asInstanceOf[Object]), 1))).asInstanceOf[Out]
       }
     }
 }

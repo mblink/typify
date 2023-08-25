@@ -31,11 +31,10 @@ object Replacer {
   ): Replacer.Aux[L, U, V, (U, ReplaceElem[L, U, V])] =
     new Replacer[L, U, V] {
       type Out = (U, ReplaceElem[L, U, V])
+      private lazy val i = idx.value
       def apply(l: L, v: V): Out = {
-        val b = l.toArray.to(collection.mutable.Buffer)
-        val u = b(idx.value)
-        b.update(idx.value, v.asInstanceOf[Object])
-        (u, Tuple.fromArray(b.to(Array))).asInstanceOf[Out]
+        val a = l.toArray
+        (a(i), Tuple.fromArray(a.patch(i, List(v.asInstanceOf[Object]), 1))).asInstanceOf[Out]
       }
     }
 }
