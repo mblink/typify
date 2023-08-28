@@ -2,8 +2,6 @@ package typify
 
 import cats.data.NonEmptyVector
 import cats.Eq
-import cats.instances.option._
-import cats.instances.vector._
 import cats.syntax.eq._
 
 class CursorHistory[A](

@@ -1,8 +1,6 @@
 package typify
 
-import cats.Applicative
-import cats.instances.option._
-import cats.kernel.Eq
+import cats.{Applicative, Eq}
 import cats.syntax.eq._
 import java.io.Serializable
 import scala.annotation.tailrec

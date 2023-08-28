@@ -1,6 +1,5 @@
 package scala.scalajs.js.typify
 
-import cats.instances.option._
 import cats.syntax.either._
 import cats.syntax.option._
 import cats.syntax.traverse._
