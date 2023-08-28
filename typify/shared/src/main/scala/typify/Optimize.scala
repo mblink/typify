@@ -1,6 +1,6 @@
 package typify
 
-import typify.tuple.Tuple
+import formless.tuple.Tuple
 
 trait TWitness[T] { final type Out = T }
 

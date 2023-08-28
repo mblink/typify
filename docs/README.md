@@ -20,9 +20,9 @@ and an optional session id.
 First some imports.
 
 ```scala mdoc:silent
+import formless.tuple._
+import formless.record._
 import typify.{Cursor, CursorHistory, ParseError, Typify}
-import typify.tuple._
-import typify.record._
 ```
 
 Now we can create an instance of Typify  by specifying the failure type we will use and

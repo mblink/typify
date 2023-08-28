@@ -1,5 +1,3 @@
-import typify._
-
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val scala213 = "2.13.10"
@@ -34,7 +32,7 @@ lazy val baseSettings = Seq(
   scalaVersion := scala3,
   crossScalaVersions := Seq(scala213, scala3),
   organization := "typify",
-  version := "8.0.1",
+  version := "9.0.0-LOCAL10",
   resolvers += "bondlink-maven-repo" at "https://raw.githubusercontent.com/mblink/maven-repo/main",
   mimaPreviousArtifacts := Set("typify" %%% name.value % "8.0.0"),
   libraryDependencies ++= foldScalaV(scalaVersion.value)(
@@ -65,7 +63,6 @@ lazy val noPublishSettings = Seq(
 
 lazy val root = project.in(file("."))
   .aggregate((
-    tuple.componentProjects ++
     typify.componentProjects ++
     Seq(circeTypify, json4sTypify, sjsTypify) ++
     (if (System.getProperty("java.version").startsWith("1.8")) Seq() else Seq(playjsonTypify))
@@ -76,60 +73,18 @@ lazy val root = project.in(file("."))
 
 lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.9.0")
 lazy val circe = "io.circe" %% "circe-core" % "0.14.5"
+lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.1.0")
 lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.6"
-lazy val munit = Def.setting("org.scalameta" %% "munit" % "1.0.0-M8" % Test)
 lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC9"
 lazy val shapeless = Def.setting("com.chuusai" %%% "shapeless" % "2.3.10")
 lazy val scalacheck = Def.setting("org.scalacheck" %%% "scalacheck" % "1.17.0" % Test)
-
-lazy val tuple = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file("tuple"))
-  .settings(baseSettings)
-  .settings(
-    name := "typify-tuple",
-    libraryDependencies ++= Seq(munit.value, scalacheck.value),
-    libraryDependencies ++= foldScalaV(scalaVersion.value)(
-      Seq(
-        shapeless.value,
-        scalaOrganization.value % "scala-compiler" % scalaVersion.value % "provided",
-      ),
-      Seq(),
-    ),
-    Test / sourceGenerators += Def.task {
-      val srcManaged = (Test / sourceManaged).value / "generated"
-
-      def gen(scalaF: String, generator: SourceGenerator) = {
-        println(s"Generating ${srcManaged / scalaF} with $generator")
-        IO.write(srcManaged / scalaF, generator())
-        srcManaged / scalaF
-      }
-
-      Seq(
-        gen("Util.scala", SourceGenerator.Util),
-        gen("TupleSelectorTest.scala", SourceGenerator.TupleSelectorTest),
-        gen("RecordSelectorTest.scala", SourceGenerator.RecordSelectorTest),
-        gen("UpdaterTest.scala", SourceGenerator.UpdaterTest),
-        gen("ModifierTest.scala", SourceGenerator.ModifierTest),
-        gen("RenamerTest.scala", SourceGenerator.RenamerTest),
-        gen("RemoverTest.scala", SourceGenerator.RemoverTest),
-      )
-    }
-  )
-  .jsConfigure(_.enablePlugins(ScalaJSJUnitPlugin))
-  .jvmSettings(libraryDependencies += "com.github.sbt" % "junit-interface" % "0.13.2" % "test")
-  .nativeConfigure(_.enablePlugins(ScalaNativeJUnitPlugin))
 
 lazy val typify = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file("typify"))
   .settings(baseSettings)
   .settings(
     name := "typify",
-    libraryDependencies ++= Seq(cats.value, scalacheck.value),
-    libraryDependencies ++= foldScalaV(scalaVersion.value)(
-      Seq(shapeless.value),
-      Seq(),
-    ),
+    libraryDependencies ++= Seq(cats.value, formless.value, scalacheck.value),
   )
-  .dependsOn(tuple)
-  .aggregate(tuple)
 
 lazy val circeTypify = project.in(file("circe-typify"))
   .settings(baseSettings)

@@ -1,9 +1,9 @@
 import cats.data.ValidatedNel
 import cats.syntax.apply._
 import cats.syntax.validated._
+import formless.tuple._
 import scala.annotation.tailrec
 import scala.language.implicitConversions
-import typify.tuple._
 
 package object typify {
   type PV[P, L, A] = Cursor[P] => ValidatedNel[L, A]

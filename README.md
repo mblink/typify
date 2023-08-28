@@ -20,9 +20,9 @@ and an optional session id.
 First some imports.
 
 ```scala
+import formless.tuple._
+import formless.record._
 import typify.{Cursor, CursorHistory, ParseError, Typify}
-import typify.tuple._
-import typify.record._
 ```
 
 Now we can create an instance of Typify  by specifying the failure type we will use and
@@ -39,7 +39,7 @@ import typify.parsedany._
 case class Fail(reason: String, history: CursorHistory[_])
 
 val tp = new Typify[Fail, Any]
-// tp: Typify[Fail, Any] = typify.Typify@6661de91
+// tp: Typify[Fail, Any] = typify.Typify@18b3ee39
 ```
 
 We also need to define an implicit function to convert a typify.ParseError to our failure type.
@@ -52,7 +52,7 @@ case class ParseError(key: String, error: String)
 
 ```scala
 implicit val parse2Error: ParseError[Any] => Fail = pe => Fail(pe.message, pe.cursor.history)
-// parse2Error: Function1[ParseError[Any], Fail] = repl.MdocSession$MdocApp$$Lambda$25921/0x0000000803fa1000@6ed87fe0
+// parse2Error: Function1[ParseError[Any], Fail] = repl.MdocSession$MdocApp$$Lambda$13197/0x0000008003065000@2bbb6404
 ```
 
 Now we can define some validation functions.
@@ -64,18 +64,18 @@ import cats.syntax.validated._
 
 val checkEmail = Typify.validate((_: String, s: String, c: Cursor[Any]) => s.validNel[Fail]
   .ensure(NonEmptyList.of(Fail("Email is invalid", c.history)))(_.contains("@")))
-// checkEmail: Function1[String, PV[Any, Fail, String]] = typify.Typify$$$Lambda$25923/0x0000000803fa7238@3a51591b
+// checkEmail: Function1[String, PV[Any, Fail, String]] = typify.Typify$$$Lambda$13199/0x0000008003069440@23bb1a57
 
 val checkAge = Typify.validate((_: String, i: Int, c: Cursor[Any]) => i.validNel[Fail]
   .ensure(NonEmptyList.of(Fail("Too young", c.history)))(_ > 21))
-// checkAge: Function1[String, PV[Any, Fail, Int]] = typify.Typify$$$Lambda$25923/0x0000000803fa7238@a387fc7
+// checkAge: Function1[String, PV[Any, Fail, Int]] = typify.Typify$$$Lambda$13199/0x0000008003069440@43e05451
 
 val checkSessIdF = ((_: String, i: Int, c: Cursor[Any]) => i.validNel[Fail]
   .ensure(NonEmptyList.of(Fail("Invalid session id", c.history)))(_ > 3000))
-// checkSessIdF: Function3[String, Int, Cursor[Any], Validated[NonEmptyList[Fail], Int]] = repl.MdocSession$MdocApp$$Lambda$25925/0x0000000803fa1cb0@fbeaa3a
+// checkSessIdF: Function3[String, Int, Cursor[Any], Validated[NonEmptyList[Fail], Int]] = repl.MdocSession$MdocApp$$Lambda$13201/0x000000800306c690@595d283
 
 val checkSessId = Typify.optional(checkSessIdF)
-// checkSessId: Function1[String, PV[Any, Fail, Option[Int]]] = typify.Typify$$$Lambda$25926/0x0000000803fa7838@2234f352
+// checkSessId: Function1[String, PV[Any, Fail, Option[Int]]] = typify.Typify$$$Lambda$13202/0x0000008003069a40@757e0d71
 ```
 
 Now we can define in which fields to look for these values under our source value as follows.
@@ -83,9 +83,9 @@ Now we can define in which fields to look for these values under our source valu
 ```scala
 val checkPerson = ("email" ->> checkEmail) *: ("age" ->> checkAge) *: ("session" ->> checkSessId) *: EmptyTuple
 // checkPerson: *:[->>["email", KPV[Any, Fail, String]], *:[->>["age", KPV[Any, Fail, Int]], *:[->>["session", KPV[Any, Fail, Option[Int]]], EmptyTuple]]] = (
-//   typify.Typify$$$Lambda$25923/0x0000000803fa7238@3a51591b,
-//   typify.Typify$$$Lambda$25923/0x0000000803fa7238@a387fc7,
-//   typify.Typify$$$Lambda$25926/0x0000000803fa7838@2234f352
+//   typify.Typify$$$Lambda$13199/0x0000008003069440@23bb1a57,
+//   typify.Typify$$$Lambda$13199/0x0000008003069440@43e05451,
+//   typify.Typify$$$Lambda$13202/0x0000008003069a40@757e0d71
 // )
 ```
 
@@ -157,12 +157,12 @@ operations to compose rules, and do partial validation.
 
 ```scala
 val checkRequiredSess = Typify.validate(checkSessIdF)
-// checkRequiredSess: Function1[String, PV[Any, Fail, Int]] = typify.Typify$$$Lambda$25923/0x0000000803fa7238@132e97cf
+// checkRequiredSess: Function1[String, PV[Any, Fail, Int]] = typify.Typify$$$Lambda$13199/0x0000008003069440@2ae0d8a2
 val checkPersonWithSession = checkPerson.updateWith("session")(_ => checkRequiredSess)
 // checkPersonWithSession: *:[->>["email", KPV[Any, Fail, String]], *:[->>["age", KPV[Any, Fail, Int]], *:[->>["session", Function1[String, PV[Any, Fail, Int]]], EmptyTuple]]] = (
-//   typify.Typify$$$Lambda$25923/0x0000000803fa7238@3a51591b,
-//   typify.Typify$$$Lambda$25923/0x0000000803fa7238@a387fc7,
-//   typify.Typify$$$Lambda$25923/0x0000000803fa7238@132e97cf
+//   typify.Typify$$$Lambda$13199/0x0000008003069440@23bb1a57,
+//   typify.Typify$$$Lambda$13199/0x0000008003069440@43e05451,
+//   typify.Typify$$$Lambda$13199/0x0000008003069440@2ae0d8a2
 // )
 
 val passedWithSession = Cursor.top(passes).parse(checkPersonWithSession)
