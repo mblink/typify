@@ -1,7 +1,7 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-lazy val scala213 = "2.13.10"
-lazy val scala3 = "3.3.0"
+lazy val scala213 = "2.13.12"
+lazy val scala3 = "3.3.1"
 
 ThisBuild / crossScalaVersions := Seq(scala213, scala3)
 
@@ -34,7 +34,8 @@ lazy val baseSettings = Seq(
   organization := "typify",
   version := "9.0.0",
   resolvers += "bondlink-maven-repo" at "https://raw.githubusercontent.com/mblink/maven-repo/main",
-  mimaPreviousArtifacts := Set("typify" %%% name.value % "9.0.0"),
+  mimaPreviousArtifacts := Set(),
+  mimaFailOnNoPrevious := false,
   libraryDependencies ++= foldScalaV(scalaVersion.value)(
     Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.patch)),
     Seq(),
@@ -71,11 +72,11 @@ lazy val root = project.in(file("."))
   .settings(noPublishSettings)
   .disablePlugins(MimaPlugin)
 
-lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.9.0")
-lazy val circe = "io.circe" %% "circe-core" % "0.14.5"
-lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.1.0")
-lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.6"
-lazy val playJson = "com.typesafe.play" %% "play-json" % "2.10.0-RC9"
+lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.10.0")
+lazy val circe = "io.circe" %% "circe-core" % "0.14.6"
+lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.2.0")
+lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.7"
+lazy val playJson = "org.playframework" %% "play-json" % "3.0.2"
 lazy val shapeless = Def.setting("com.chuusai" %%% "shapeless" % "2.3.10")
 lazy val scalacheck = Def.setting("org.scalacheck" %%% "scalacheck" % "1.17.0" % Test)
 
