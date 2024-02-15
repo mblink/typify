@@ -67,5 +67,5 @@ jobs:
         run: sbt '++ ${{ matrix.scala }}' mimaReportBinaryIssues
 
       - name: Build docs
-        if: matrix.java == 'temurin@8'
+        if: matrix.java == 'temurin@17'
         run: sbt '++ ${{ matrix.scala }}' docs/mdoc
