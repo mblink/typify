@@ -6,7 +6,7 @@ lazy val scala3 = "3.3.1"
 ThisBuild / crossScalaVersions := Seq(scala213, scala3)
 
 // GitHub Actions config
-val javaVersions = Seq(8, 11, 17).map(v => JavaSpec.temurin(v.toString))
+val javaVersions = Seq(8, 11, 17, 21).map(v => JavaSpec.temurin(v.toString))
 
 ThisBuild / githubWorkflowJavaVersions := javaVersions
 ThisBuild / githubWorkflowArtifactUpload := false
