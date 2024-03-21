@@ -1,7 +1,7 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-lazy val scala213 = "2.13.12"
-lazy val scala3 = "3.3.1"
+lazy val scala213 = "2.13.13"
+lazy val scala3 = "3.3.3"
 
 ThisBuild / crossScalaVersions := Seq(scala213, scala3)
 
@@ -36,7 +36,7 @@ lazy val baseSettings = Seq(
   resolvers += "bondlink-maven-repo" at "https://raw.githubusercontent.com/mblink/maven-repo/main",
   mimaPreviousArtifacts := Set("typify" %%% name.value % "10.0.0"),
   libraryDependencies ++= foldScalaV(scalaVersion.value)(
-    Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.patch)),
+    Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.patch)),
     Seq(),
   ),
   scalacOptions ++= foldScalaV(scalaVersion.value)(
