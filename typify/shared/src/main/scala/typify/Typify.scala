@@ -4,7 +4,7 @@ import cats.data.ValidatedNel
 import cats.instances.option._
 import cats.syntax.traverse._
 import cats.syntax.validated._
-import formless.tuple._
+import formless.hlist._
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 
@@ -53,10 +53,10 @@ object Typify {
     def get[A](k: String)(implicit cp: CanParse[A, P], e2l: E2L[L, P]): ValidatedNel[L, A] =
       cp.parse(k, c).leftMap(_.map(e2l))
 
-    def parse[I <: Tuple, R <: Tuple](in: I)(implicit rf: PVFolder[P, L, I, R]): ValidatedNel[L, R] =
-      rf(in)(pvEmptyTuple)(c)
+    def parse[I <: HList, R <: HList](in: I)(implicit rf: PVFolder[P, L, I, R]): ValidatedNel[L, R] =
+      rf(in)(pvHNil)(c)
 
-    def parseOption[I <: Tuple, R <: Tuple](in: I)(
+    def parseOption[I <: HList, R <: HList](in: I)(
       implicit rf: PVFolder[P, L, I, R],
       cpop: CanParse[Option[P], P],
       e2l: E2L[L, P]
@@ -67,17 +67,17 @@ object Typify {
           new CursorOps[L, P](c.replace(x, Some(c), CursorOp.WithFocus((_: P) => x))).parse(in)))
       }
 
-    def parseList[I <: Tuple, R <: Tuple](in: I)(implicit rf: PVFolder[P, L, I, R], e2l: E2L[L, P]): ValidatedNel[L, List[R]] =
+    def parseList[I <: HList, R <: HList](in: I)(implicit rf: PVFolder[P, L, I, R], e2l: E2L[L, P]): ValidatedNel[L, List[R]] =
       typify.parseList(c)(
         f => e2l(ParseError(f, s"Could not be interpreted as List")).invalidNel[List[R]],
-        rf(in)(pvEmptyTuple))
+        rf(in)(pvHNil))
   }
 }
 
 class Typify[L, P] { tp =>
   final type PV[A] = typify.PV[P, L, A]
   final type KPV[A] = typify.KPV[P, L, A]
-  final type PVFolder[I <: Tuple, O <: Tuple] = typify.PVFolder[P, L, I, O]
+  final type PVFolder[I <: HList, O <: HList] = typify.PVFolder[P, L, I, O]
 
   object syntax {
     implicit def cursorToCursorOps(c: Cursor[P]): Typify.CursorOps[L, P] = new Typify.CursorOps[L, P](c)
@@ -91,16 +91,16 @@ class Typify[L, P] { tp =>
   final def get[A](c: Cursor[P])(k: String)(implicit cp: CanParse[A, P], e2l: E2L[L, P]): ValidatedNel[L, A] =
     c.get[A](k)
 
-  final def parse[I <: Tuple, R <: Tuple](c: Cursor[P])(in: I)(implicit rf: PVFolder[I, R]): ValidatedNel[L, R] =
+  final def parse[I <: HList, R <: HList](c: Cursor[P])(in: I)(implicit rf: PVFolder[I, R]): ValidatedNel[L, R] =
     c.parse(in)
 
-  final def parseOption[I <: Tuple, R <: Tuple](c: Cursor[P])(in: I)(
+  final def parseOption[I <: HList, R <: HList](c: Cursor[P])(in: I)(
     implicit rf: PVFolder[I, R],
     cpop: CanParse[Option[P], P],
     e2l: E2L[L, P]
   ): ValidatedNel[L, Option[R]] =
     c.parseOption(in)
 
-  final def parseList[I <: Tuple, A, R <: Tuple](c: Cursor[P])(in: I)(implicit rf: PVFolder[I, R], e2l: E2L[L, P]): ValidatedNel[L, List[R]] =
+  final def parseList[I <: HList, A, R <: HList](c: Cursor[P])(in: I)(implicit rf: PVFolder[I, R], e2l: E2L[L, P]): ValidatedNel[L, List[R]] =
     c.parseList(in)
 }

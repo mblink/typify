@@ -1,7 +1,7 @@
 import cats.data.ValidatedNel
 import cats.syntax.apply._
 import cats.syntax.validated._
-import formless.tuple._
+import formless.hlist._
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 
@@ -37,5 +37,5 @@ package object typify {
     }
   }
 
-  def pvEmptyTuple[P, L]: PV[P, L, EmptyTuple] = (_: Cursor[P]) => EmptyTuple.validNel[L]
+  def pvHNil[P, L]: PV[P, L, HNil] = (_: Cursor[P]) => HNil.validNel[L]
 }

@@ -32,9 +32,9 @@ lazy val baseSettings = Seq(
   scalaVersion := scala3,
   crossScalaVersions := Seq(scala213, scala3),
   organization := "typify",
-  version := "10.0.1",
+  version := "11.0.0-RC1",
   resolvers += "bondlink-maven-repo" at "https://raw.githubusercontent.com/mblink/maven-repo/main",
-  mimaPreviousArtifacts := Set("typify" %%% name.value % "10.0.0"),
+  mimaPreviousArtifacts := Set(),
   libraryDependencies ++= foldScalaV(scalaVersion.value)(
     Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.patch)),
     Seq(),
@@ -73,7 +73,7 @@ lazy val root = project.in(file("."))
 
 lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.10.0")
 lazy val circe = "io.circe" %% "circe-core" % "0.14.6"
-lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.2.0")
+lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.3.0")
 lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.7"
 lazy val playJson = "org.playframework" %% "play-json" % "3.0.2"
 lazy val shapeless = Def.setting("com.chuusai" %%% "shapeless" % "2.3.10")
