@@ -34,7 +34,7 @@ lazy val baseSettings = Seq(
   organization := "typify",
   version := "11.0.0-RC1",
   resolvers += "bondlink-maven-repo" at "https://raw.githubusercontent.com/mblink/maven-repo/main",
-  mimaPreviousArtifacts := Set("typify" %%% name.value % "10.0.0"),
+  mimaPreviousArtifacts := Set(),
   libraryDependencies ++= foldScalaV(scalaVersion.value)(
     Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.patch)),
     Seq(),
