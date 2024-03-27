@@ -20,7 +20,7 @@ and an optional session id.
 First some imports.
 
 ```scala mdoc:silent
-import formless.tuple._
+import formless.hlist._
 import formless.record._
 import typify.{Cursor, CursorHistory, ParseError, Typify}
 ```
@@ -75,7 +75,7 @@ val checkSessId = Typify.optional(checkSessIdF)
 Now we can define in which fields to look for these values under our source value as follows.
 
 ```scala mdoc
-val checkPerson = ("email" ->> checkEmail) *: ("age" ->> checkAge) *: ("session" ->> checkSessId) *: EmptyTuple
+val checkPerson = ("email" ->> checkEmail) :: ("age" ->> checkAge) :: ("session" ->> checkSessId) :: HNil
 ```
 
 From here we are able to parse a person out of Any using our Typify instance.
