@@ -1,6 +1,6 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-lazy val scala213 = "2.13.13"
+lazy val scala213 = "2.13.14"
 lazy val scala3 = "3.3.3"
 
 ThisBuild / crossScalaVersions := Seq(scala213, scala3)
@@ -71,13 +71,13 @@ lazy val root = project.in(file("."))
   .settings(noPublishSettings)
   .disablePlugins(MimaPlugin)
 
-lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.10.0")
-lazy val circe = "io.circe" %% "circe-core" % "0.14.6"
-lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.3.0")
+lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.12.0")
+lazy val circe = "io.circe" %% "circe-core" % "0.14.10"
+lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.5.1")
 lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.7"
-lazy val playJson = "org.playframework" %% "play-json" % "3.0.2"
-lazy val shapeless = Def.setting("com.chuusai" %%% "shapeless" % "2.3.10")
-lazy val scalacheck = Def.setting("org.scalacheck" %%% "scalacheck" % "1.17.0" % Test)
+lazy val playJson = "org.playframework" %% "play-json" % "3.0.4"
+lazy val shapeless = Def.setting("com.chuusai" %%% "shapeless" % "2.3.12")
+lazy val scalacheck = Def.setting("org.scalacheck" %%% "scalacheck" % "1.18.1" % Test)
 
 lazy val typify = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file("typify"))
   .settings(baseSettings)
