@@ -52,13 +52,12 @@ lazy val baseSettings = Seq(
     "-language:implicitConversions"
   ),
   licenses += License.Apache2,
-  gitPublishDir := file("/src/maven-repo")
+  publishTo := Some("GitHub Package Registry".at("https://maven.pkg.github.com/mblink/typify")),
 )
 
 lazy val noPublishSettings = Seq(
   publish := {},
   publishLocal := {},
-  gitRelease := {},
 )
 
 lazy val root = project.in(file("."))
