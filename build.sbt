@@ -52,13 +52,12 @@ lazy val baseSettings = Seq(
     "-language:implicitConversions"
   ),
   licenses += License.Apache2,
-  gitPublishDir := file("/src/maven-repo")
+  publishTo := Some("BondLink S3".at("s3://bondlink-maven-repo")),
 )
 
 lazy val noPublishSettings = Seq(
   publish := {},
   publishLocal := {},
-  gitRelease := {},
 )
 
 lazy val root = project.in(file("."))
