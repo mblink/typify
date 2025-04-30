@@ -33,7 +33,7 @@ lazy val baseSettings = Seq(
   crossScalaVersions := Seq(scala213, scala3),
   organization := "typify",
   version := "12.0.0",
-  resolvers += "bondlink-maven-repo" at "https://raw.githubusercontent.com/mblink/maven-repo/main",
+  resolvers += "bondlink-maven-repo" at "https://s3.amazonaws.com/bondlink-maven-repo",
   mimaPreviousArtifacts := Set("typify" %%% name.value % "12.0.0"),
   libraryDependencies ++= foldScalaV(scalaVersion.value)(
     Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.patch)),
@@ -52,13 +52,12 @@ lazy val baseSettings = Seq(
     "-language:implicitConversions"
   ),
   licenses += License.Apache2,
-  gitPublishDir := file("/src/maven-repo")
+  publishTo := Some("BondLink S3".at("s3://bondlink-maven-repo")),
 )
 
 lazy val noPublishSettings = Seq(
   publish := {},
   publishLocal := {},
-  gitRelease := {},
 )
 
 lazy val root = project.in(file("."))
