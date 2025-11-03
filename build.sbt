@@ -36,7 +36,7 @@ lazy val baseSettings = Seq(
   resolvers += "bondlink-maven-repo" at "https://maven.bondlink-cdn.com",
   mimaPreviousArtifacts := Set("typify" %%% name.value % "12.0.0"),
   libraryDependencies ++= foldScalaV(scalaVersion.value)(
-    Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.3" cross CrossVersion.patch)),
+    Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.4" cross CrossVersion.patch)),
     Seq(),
   ),
   scalacOptions ++= foldScalaV(scalaVersion.value)(
