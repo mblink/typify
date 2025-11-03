@@ -70,7 +70,7 @@ lazy val root = project.in(file("."))
   .settings(noPublishSettings)
   .disablePlugins(MimaPlugin)
 
-lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.12.0")
+lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.13.0")
 lazy val circe = "io.circe" %% "circe-core" % "0.14.10"
 lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.5.1")
 lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.7"
