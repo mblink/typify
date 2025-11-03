@@ -76,7 +76,7 @@ lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.5.1")
 lazy val json4s = "org.json4s" %% "json4s-jackson" % "4.0.7"
 lazy val playJson = "org.playframework" %% "play-json" % "3.0.4"
 lazy val shapeless = Def.setting("com.chuusai" %%% "shapeless" % "2.3.12")
-lazy val scalacheck = Def.setting("org.scalacheck" %%% "scalacheck" % "1.18.1" % Test)
+lazy val scalacheck = Def.setting("org.scalacheck" %%% "scalacheck" % "1.19.0" % Test)
 
 lazy val typify = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file("typify"))
   .settings(baseSettings)
