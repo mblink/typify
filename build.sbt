@@ -1,7 +1,7 @@
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val scala213 = "2.13.17"
-lazy val scala3 = "3.3.3"
+lazy val scala3 = "3.3.7"
 
 ThisBuild / crossScalaVersions := Seq(scala213, scala3)
 
