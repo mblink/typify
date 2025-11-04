@@ -6,7 +6,7 @@ lazy val scala3 = "3.3.7"
 ThisBuild / crossScalaVersions := Seq(scala213, scala3)
 
 // GitHub Actions config
-val javaVersions = Seq(8, 11, 17, 21).map(v => JavaSpec.temurin(v.toString))
+val javaVersions = Seq(8, 11, 17, 21, 25).map(v => JavaSpec.temurin(v.toString))
 
 ThisBuild / githubWorkflowJavaVersions := javaVersions
 ThisBuild / githubWorkflowArtifactUpload := false
@@ -17,7 +17,7 @@ def isJava(v: Int) = s"matrix.java == '${javaVersions.find(_.version == v.toStri
 
 ThisBuild / githubWorkflowBuild ++= Seq(
   WorkflowStep.Sbt(List("mimaReportBinaryIssues"), name = Some("Binary compatibility"), cond = Some(isJava(8))),
-  WorkflowStep.Sbt(List("docs/mdoc"), name = Some("Build docs"), cond = Some(isJava(17))),
+  WorkflowStep.Sbt(List("docs/mdoc"), name = Some("Build docs"), cond = Some(isJava(25))),
 )
 
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
