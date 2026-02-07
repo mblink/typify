@@ -120,7 +120,7 @@ lazy val docs = project.in(file("typify-docs"))
   .settings(noPublishSettings)
   .settings(
     mdocOut := file("."),
-    scalacOptions -= "-Xfatal-warnings",
+    scalacOptions -= "-Werror",
   )
   .dependsOn(typify.jvm)
   .enablePlugins(MdocPlugin)
