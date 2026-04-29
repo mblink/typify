@@ -39,6 +39,7 @@ lazy val baseSettings = Seq(
     Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.4" cross CrossVersion.patch)),
     Seq(),
   ),
+  libraryDependencySchemes += "org.scala-native" %% "test-interface_native0.5" % VersionScheme.EarlySemVer,
   scalacOptions ++= foldScalaV(scalaVersion.value)(
     Seq("-Vimplicits-verbose-tree"),
     Seq(
