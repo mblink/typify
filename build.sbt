@@ -1,9 +1,12 @@
+import scala.util.chaining.*
+
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val scala213 = "2.13.18"
 lazy val scala3 = "3.3.7"
+lazy val allScalaVersions = Seq(scala213, scala3)
 
-ThisBuild / crossScalaVersions := Seq(scala213, scala3)
+ThisBuild / scalaVersion := scala3
 
 // GitHub Actions config
 val javaVersions = Seq(8, 11, 17, 21, 25).map(v => JavaSpec.temurin(v.toString))
@@ -15,9 +18,10 @@ ThisBuild / githubWorkflowTargetBranches := Seq("master")
 
 def isJava(v: Int) = s"matrix.java == '${javaVersions.find(_.version == v.toString).get.render}'"
 
-ThisBuild / githubWorkflowBuild ++= Seq(
-  WorkflowStep.Sbt(List("mimaReportBinaryIssues"), name = Some("Binary compatibility"), cond = Some(isJava(8))),
-  WorkflowStep.Sbt(List("docs/mdoc"), name = Some("Build docs"), cond = Some(isJava(25))),
+ThisBuild / githubWorkflowBuild := Seq(
+  WorkflowStep.Run(List("sbt test"), name = Some("Build project")),
+  WorkflowStep.Run(List("sbt mimaReportBinaryIssues"), name = Some("Binary compatibility"), cond = Some(isJava(25))),
+  WorkflowStep.Run(List("sbt mdoc"), name = Some("Build docs"), cond = Some(isJava(25))),
 )
 
 ThisBuild / githubWorkflowPublishTargetBranches := Seq()
@@ -29,12 +33,8 @@ def foldScalaV[A](scalaVersion: String)(_213: => A, _3: => A): A =
   }
 
 lazy val baseSettings = Seq(
-  scalaVersion := scala3,
-  crossScalaVersions := Seq(scala213, scala3),
   organization := "typify",
   version := "13.0.0",
-  resolvers += "bondlink-maven-repo" at "https://maven.bondlink-cdn.com",
-  mimaPreviousArtifacts := Set("typify" %%% name.value % "12.0.0"),
   libraryDependencies ++= foldScalaV(scalaVersion.value)(
     Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.4" cross CrossVersion.patch)),
     Seq(),
@@ -52,75 +52,87 @@ lazy val baseSettings = Seq(
     "-language:implicitConversions"
   ),
   licenses += License.Apache2,
+  publish / skip := true,
+  mimaFailOnNoPrevious := false,
+)
+
+baseSettings
+
+lazy val publishSettings = Seq(
+  publish / skip := false,
   publishTo := Some("BondLink S3".at("s3://bondlink-maven-repo")),
+  resolvers += "bondlink-maven-repo" at "https://maven.bondlink-cdn.com",
+  mimaPreviousArtifacts := Set(organization.value %%% name.value % "12.0.0"),
 )
 
-lazy val noPublishSettings = Seq(
-  publish := {},
-  publishLocal := {},
-)
-
-lazy val root = project.in(file("."))
-  .aggregate((
-    typify.componentProjects ++
-    Seq(circeTypify, json4sTypify, sjsTypify) ++
-    (if (System.getProperty("java.version").startsWith("1.8")) Seq() else Seq(playjsonTypify))
-  ).map(p => p: ProjectReference):_*)
-  .settings(baseSettings)
-  .settings(noPublishSettings)
-  .disablePlugins(MimaPlugin)
+def baseProj(
+  id: String,
+  nme: String,
+  scalaVersions: Seq[String] = allScalaVersions,
+  includeJVM: Boolean = true,
+  includeJS: Boolean = true,
+  includeNative: Boolean = true,
+) =
+  sbt.internal.ProjectMatrix(id, file(id))
+    .pipe(p => if (includeJVM) p.jvmPlatform(scalaVersions = scalaVersions) else p)
+    .pipe(p => if (includeJS) p.jsPlatform(scalaVersions = scalaVersions) else p)
+    .pipe(p => if (includeNative) p.nativePlatform(scalaVersions = scalaVersions) else p)
+    .settings(baseSettings ++ Seq(name := nme))
 
 lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.13.0")
-lazy val circe = "io.circe" %% "circe-core" % "0.14.15"
+lazy val circe = Def.setting("io.circe" %%% "circe-core" % "0.14.15")
 lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.8.0")
 lazy val json4s = "io.github.json4s" %% "json4s-jackson" % "4.1.0"
-lazy val playJson = "org.playframework" %% "play-json" % "3.0.6"
+lazy val playJson = Def.setting("org.playframework" %%% "play-json" % "3.0.6")
 lazy val scalacheck = Def.setting("org.scalacheck" %%% "scalacheck" % "1.19.0" % Test)
 
-lazy val typify = crossProject(JSPlatform, JVMPlatform, NativePlatform).in(file("typify"))
-  .settings(baseSettings)
+lazy val typify = baseProj("typify", "typify")
+  .settings(publishSettings)
   .settings(
-    name := "typify",
     libraryDependencies ++= Seq(cats.value, formless.value, scalacheck.value),
   )
 
-lazy val circeTypify = project.in(file("circe-typify"))
-  .settings(baseSettings)
+lazy val circeTypify = baseProj("circe-typify", "circe-typify", includeJS = false, includeNative = false)
+  .settings(publishSettings)
   .settings(
-    name := "circe-typify",
-    libraryDependencies += circe,
+    libraryDependencies += circe.value,
   )
-  .dependsOn(typify.jvm % "test->test;compile->compile")
+  .dependsOn(typify % "test->test;compile->compile")
 
-lazy val json4sTypify = project.in(file("json4s-typify"))
-  .settings(baseSettings)
+lazy val json4sTypify = baseProj("json4s-typify", "json4s-typify", includeJS = false, includeNative = false)
+  .settings(publishSettings)
   .settings(
-    name := "json4s-typify",
     libraryDependencies += json4s
   )
-  .dependsOn(typify.jvm % "test->test;compile->compile")
+  .dependsOn(typify % "test->test;compile->compile")
 
-lazy val playjsonTypify = project.in(file("play-json-typify"))
-  .settings(baseSettings)
+lazy val playjsonTypify = baseProj(
+  "play-json-typify",
+  "play-json-typify",
+  // play-json is published with Java 11 so we can't compile this project with Java 8
+  scalaVersions = {
+    val jv = sys.props.getOrElse("java.specification.version", "")
+    if (jv == "1.8" || jv == "8") Seq.empty[String] else allScalaVersions
+  },
+  includeJS = false,
+  includeNative = false,
+)
+  .settings(publishSettings)
   .settings(
-    name := "play-json-typify",
-    libraryDependencies ++= Seq(cats.value, playJson)
+    libraryDependencies ++= Seq(cats.value, playJson.value)
   )
-  .dependsOn(typify.jvm % "test->test;compile->compile")
+  .dependsOn(typify % "test->test;compile->compile")
 
-lazy val sjsTypify = project.in(file("jsdynamic-typify"))
-  .settings(baseSettings)
-  .settings(name := "jsdynamic-typify")
-  .dependsOn(typify.js % "test->test;compile->compile")
-  .enablePlugins(ScalaJSPlugin)
+lazy val sjsTypify = baseProj("jsdynamic-typify", "jsdynamic-typify", includeJVM = false, includeNative = false)
+  .settings(publishSettings)
+  .dependsOn(typify % "test->test;compile->compile")
 
-lazy val docs = project.in(file("typify-docs"))
+lazy val docs = projectMatrix.in(file("typify-docs"))
+  .jvmPlatform(scalaVersions = Seq(scala3))
   .settings(baseSettings)
-  .settings(noPublishSettings)
   .settings(
     mdocOut := file("."),
     scalacOptions -= "-Werror",
   )
-  .dependsOn(typify.jvm)
+  .dependsOn(typify)
   .enablePlugins(MdocPlugin)
-  .disablePlugins(MimaPlugin)
