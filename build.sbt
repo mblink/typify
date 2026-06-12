@@ -41,10 +41,7 @@ lazy val baseSettings = Seq(
   ),
   scalacOptions ++= foldScalaV(scalaVersion.value)(
     Seq("-Vimplicits-verbose-tree"),
-    Seq(
-      "-no-indent",
-      "-Wunused:unsafe-warn-patvars",
-    ),
+    Seq("-no-indent"),
   ),
   scalacOptions --= Seq(
     "-language:existentials",
