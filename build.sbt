@@ -79,7 +79,7 @@ def baseProj(
 lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.13.0")
 lazy val circe = Def.setting("io.circe" %%% "circe-core" % "0.14.15")
 lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.8.0")
-lazy val json4s = "io.github.json4s" %% "json4s-jackson" % "4.1.0"
+lazy val json4s = "io.github.json4s" %% "json4s-jackson" % "4.1.1"
 lazy val playJson = Def.setting("org.playframework" %%% "play-json" % "3.0.6")
 lazy val scalacheck = Def.setting("org.scalacheck" %%% "scalacheck" % "1.19.0" % Test)
 
