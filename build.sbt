@@ -4,12 +4,12 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val scala213 = "2.13.18"
 lazy val scala3 = "3.3.8"
-lazy val allScalaVersions = Seq(scala213, scala3)
+lazy val scalaVersions = Seq(scala213, scala3)
 
 ThisBuild / scalaVersion := scala3
 
 // GitHub Actions config
-val javaVersions = Seq(8, 11, 17, 21, 25).map(v => JavaSpec.temurin(v.toString))
+val javaVersions = Seq(11, 17, 21, 25).map(v => JavaSpec.temurin(v.toString))
 
 ThisBuild / githubWorkflowJavaVersions := javaVersions
 ThisBuild / githubWorkflowArtifactUpload := false
@@ -65,7 +65,6 @@ lazy val publishSettings = Seq(
 def baseProj(
   id: String,
   nme: String,
-  scalaVersions: Seq[String] = allScalaVersions,
   includeJVM: Boolean = true,
   includeJS: Boolean = true,
   includeNative: Boolean = true,
@@ -79,7 +78,7 @@ def baseProj(
 lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.13.0")
 lazy val circe = Def.setting("io.circe" %%% "circe-core" % "0.14.15")
 lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.8.0")
-lazy val json4s = "io.github.json4s" %% "json4s-jackson" % "4.1.0"
+lazy val json4s = "io.github.json4s" %% "json4s-jackson" % "4.1.1"
 lazy val playJson = Def.setting("org.playframework" %%% "play-json" % "3.0.6")
 lazy val scalacheck = Def.setting("org.scalacheck" %%% "scalacheck" % "1.19.0" % Test)
 
@@ -103,17 +102,7 @@ lazy val json4sTypify = baseProj("json4s-typify", "json4s-typify", includeJS = f
   )
   .dependsOn(typify % "test->test;compile->compile")
 
-lazy val playjsonTypify = baseProj(
-  "play-json-typify",
-  "play-json-typify",
-  // play-json is published with Java 11 so we can't compile this project with Java 8
-  scalaVersions = {
-    val jv = sys.props.getOrElse("java.specification.version", "")
-    if (jv == "1.8" || jv == "8") Seq.empty[String] else allScalaVersions
-  },
-  includeJS = false,
-  includeNative = false,
-)
+lazy val playjsonTypify = baseProj("play-json-typify", "play-json-typify", includeJS = false, includeNative = false)
   .settings(publishSettings)
   .settings(
     libraryDependencies ++= Seq(cats.value, playJson.value)
