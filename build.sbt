@@ -36,12 +36,13 @@ lazy val baseSettings = Seq(
   organization := "typify",
   version := "13.0.0",
   libraryDependencies ++= foldScalaV(scalaVersion.value)(
-    Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.4" cross CrossVersion.patch)),
+    Seq(compilerPlugin(("org.typelevel" %% "kind-projector" % "0.13.4").cross(CrossVersion.patch))),
     Seq(),
   ),
+  libraryDependencySchemes += "org.scala-native" %% "test-interface_native0.5" % VersionScheme.EarlySemVer,
   scalacOptions ++= foldScalaV(scalaVersion.value)(
     Seq("-Vimplicits-verbose-tree"),
-    Seq("-no-indent"),
+    Seq(),
   ),
   scalacOptions --= Seq(
     "-language:existentials",
@@ -59,57 +60,57 @@ lazy val publishSettings = Seq(
   publish / skip := false,
   s3PublishBucket := "bondlink-maven-repo",
   resolvers += "bondlink-maven-repo" at "https://maven.bondlink-cdn.com",
-  mimaPreviousArtifacts := Set(organization.value %%% name.value % "12.0.0"),
+  mimaPreviousArtifacts := Set(organization.value %% name.value % "12.0.0"),
 )
 
 def baseProj(
-  id: String,
+  matrix: ProjectMatrix,
   nme: String,
   includeJVM: Boolean = true,
   includeJS: Boolean = true,
   includeNative: Boolean = true,
 ) =
-  sbt.internal.ProjectMatrix(id, file(id))
+  matrix
     .pipe(p => if (includeJVM) p.jvmPlatform(scalaVersions = scalaVersions) else p)
     .pipe(p => if (includeJS) p.jsPlatform(scalaVersions = scalaVersions) else p)
     .pipe(p => if (includeNative) p.nativePlatform(scalaVersions = scalaVersions) else p)
     .settings(baseSettings ++ Seq(name := nme))
 
-lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.13.0")
-lazy val circe = Def.setting("io.circe" %%% "circe-core" % "0.14.15")
-lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.8.0")
+lazy val cats = "org.typelevel" %% "cats-core" % "2.13.0"
+lazy val circe = "io.circe" %% "circe-core" % "0.14.15"
+lazy val formless = "com.bondlink" %% "formless" % "0.8.0"
 lazy val json4s = "io.github.json4s" %% "json4s-jackson" % "4.1.1"
-lazy val playJson = Def.setting("org.playframework" %%% "play-json" % "3.0.6")
-lazy val scalacheck = Def.setting("org.scalacheck" %%% "scalacheck" % "1.19.0" % Test)
+lazy val playJson = "org.playframework" %% "play-json" % "3.0.6"
+lazy val scalacheck = "org.scalacheck" %% "scalacheck" % "1.19.0" % Test
 
-lazy val typify = baseProj("typify", "typify")
+lazy val typify = baseProj(projectMatrix.in(file("typify")), "typify")
   .settings(publishSettings)
   .settings(
-    libraryDependencies ++= Seq(cats.value, formless.value, scalacheck.value),
+    libraryDependencies ++= Seq(cats, formless, scalacheck),
   )
 
-lazy val circeTypify = baseProj("circe-typify", "circe-typify", includeJS = false, includeNative = false)
+lazy val circeTypify = baseProj(projectMatrix.in(file("circe-typify")), "circe-typify", includeJS = false, includeNative = false)
   .settings(publishSettings)
   .settings(
-    libraryDependencies += circe.value,
+    libraryDependencies += circe,
   )
   .dependsOn(typify % "test->test;compile->compile")
 
-lazy val json4sTypify = baseProj("json4s-typify", "json4s-typify", includeJS = false, includeNative = false)
+lazy val json4sTypify = baseProj(projectMatrix.in(file("json4s-typify")), "json4s-typify", includeJS = false, includeNative = false)
   .settings(publishSettings)
   .settings(
     libraryDependencies += json4s
   )
   .dependsOn(typify % "test->test;compile->compile")
 
-lazy val playjsonTypify = baseProj("play-json-typify", "play-json-typify", includeJS = false, includeNative = false)
+lazy val playjsonTypify = baseProj(projectMatrix.in(file("play-json-typify")), "play-json-typify", includeJS = false, includeNative = false)
   .settings(publishSettings)
   .settings(
-    libraryDependencies ++= Seq(cats.value, playJson.value)
+    libraryDependencies ++= Seq(cats, playJson)
   )
   .dependsOn(typify % "test->test;compile->compile")
 
-lazy val sjsTypify = baseProj("jsdynamic-typify", "jsdynamic-typify", includeJVM = false, includeNative = false)
+lazy val sjsTypify = baseProj(projectMatrix.in(file("jsdynamic-typify")), "jsdynamic-typify", includeJVM = false, includeNative = false)
   .settings(publishSettings)
   .dependsOn(typify % "test->test;compile->compile")
 
