@@ -9,7 +9,7 @@ lazy val scalaVersions = Seq(scala213, scala3)
 ThisBuild / scalaVersion := scala3
 
 // GitHub Actions config
-val javaVersions = Seq(11, 17, 21, 25).map(v => JavaSpec.temurin(v.toString))
+val javaVersions = Seq(17, 21, 25).map(v => JavaSpec.temurin(v.toString))
 
 ThisBuild / githubWorkflowJavaVersions := javaVersions
 ThisBuild / githubWorkflowArtifactUpload := false
