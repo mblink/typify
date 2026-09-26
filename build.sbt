@@ -2,7 +2,7 @@ import scala.util.chaining.*
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-lazy val scala213 = "2.13.18"
+lazy val scala213 = "3.9.0"
 lazy val scala3 = "3.3.8"
 lazy val scalaVersions = Seq(scala213, scala3)
 
