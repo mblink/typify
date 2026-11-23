@@ -2,15 +2,38 @@
 
 Typify is a library for parsing and validating poorly-typed data into well-typed data.
 
-While it currently provides support for circe, play-json, and the Any type,
-new source types can be added easily by implementing a type class for your source type.
+It currently provides support for circe, play-json, json4s, Scala.js `js.Dynamic`, and the Any type,
+and new source types can be added easily by implementing a type class for your source type.
 
 Typify also does not prescribe a failure type, so you are able to accumulate parse/validation
 failures of your own type with whatever data is relevant to your use case.
 
-Validation rules and results are bare shapeless HLists, so shapeless record and HList
+Validation rules and results are bare [formless](https://github.com/mblink/formless) HLists, so formless record and HList
 operations are available to compose and manipulate validations and results. This easily
 supports re-use of validation rules, and partial parsing of inputs.
+
+## Installation
+
+Typify is cross-built for Scala 2.13 and Scala 3, on the JVM, Scala.js, and Scala Native.
+Artifacts are published to BondLink's Maven repository:
+
+```scala
+resolvers += "bondlink-maven-repo" at "https://maven.bondlink-cdn.com"
+
+libraryDependencies ++= Seq(
+  "typify" %%% "typify" % "14.0.0",
+  // Optional integrations (JVM only unless noted):
+  "typify" %% "circe-typify" % "14.0.0",
+  "typify" %% "play-json-typify" % "14.0.0",
+  "typify" %% "json4s-typify" % "14.0.0",
+  "typify" %%% "jsdynamic-typify" % "14.0.0", // Scala.js only
+)
+```
+
+Version 14.0.0 and later require Java 17 or newer on the JVM.
+See the [releases page](https://github.com/mblink/typify/releases) for the changelog of each version.
+
+## Usage
 
 It is best understood through an example.
 
