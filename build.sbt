@@ -3,13 +3,14 @@ import scala.util.chaining.*
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
 lazy val scala213 = "2.13.18"
-lazy val scala3 = "3.3.8"
+lazy val scala3 = "3.3.9"
 lazy val scalaVersions = Seq(scala213, scala3)
 
 ThisBuild / scalaVersion := scala3
 
 // GitHub Actions config
-val javaVersions = Seq(11, 17, 21, 25).map(v => JavaSpec.temurin(v.toString))
+// formless 0.9.0 requires Java 17 or newer on the JVM.
+val javaVersions = Seq(17, 21, 25).map(v => JavaSpec.temurin(v.toString))
 
 ThisBuild / githubWorkflowJavaVersions := javaVersions
 ThisBuild / githubWorkflowArtifactUpload := false
@@ -34,7 +35,7 @@ def foldScalaV[A](scalaVersion: String)(_213: => A, _3: => A): A =
 
 lazy val baseSettings = Seq(
   organization := "typify",
-  version := "13.0.0",
+  version := "14.0.0",
   libraryDependencies ++= foldScalaV(scalaVersion.value)(
     Seq(compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.4" cross CrossVersion.patch)),
     Seq(),
@@ -59,7 +60,8 @@ lazy val publishSettings = Seq(
   publish / skip := false,
   s3PublishBucket := "bondlink-maven-repo",
   resolvers += "bondlink-maven-repo" at "https://maven.bondlink-cdn.com",
-  mimaPreviousArtifacts := Set(organization.value %%% name.value % "12.0.0"),
+  // Use 14.0.0 as the MiMa baseline once it is published.
+  mimaPreviousArtifacts := Set(),
 )
 
 def baseProj(
@@ -77,7 +79,7 @@ def baseProj(
 
 lazy val cats = Def.setting("org.typelevel" %%% "cats-core" % "2.13.0")
 lazy val circe = Def.setting("io.circe" %%% "circe-core" % "0.14.16")
-lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.8.0")
+lazy val formless = Def.setting("com.bondlink" %%% "formless" % "0.9.0")
 lazy val json4s = "io.github.json4s" %% "json4s-jackson" % "4.1.1"
 lazy val playJson = Def.setting("org.playframework" %%% "play-json" % "3.0.6")
 lazy val scalacheck = Def.setting("org.scalacheck" %%% "scalacheck" % "1.19.0" % Test)
